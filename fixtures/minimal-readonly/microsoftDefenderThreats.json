@@ -1,0 +1,12 @@
+[
+  {
+    "id": "d9000001-0001-0001-0001-000000000001",
+    "type": "MicrosoftDefenderThreat",
+    "name": "Trojan:Win32/Emotet.A",
+    "severity": "Severe",
+    "category": "Trojan",
+    "status": "Active",
+    "detectedAt": "2025-03-10T12:00:00Z",
+    "affectedEndpoints": 1
+  }
+]

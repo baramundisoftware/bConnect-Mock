@@ -1,0 +1,20 @@
+[
+  {
+    "id": "bf011111-0000-0000-0000-000000000001",
+    "name": "Productivity",
+    "comment": "Productivity software bundles",
+    "parentId": null
+  },
+  {
+    "id": "bf011111-0000-0000-0000-000000000002",
+    "name": "Development",
+    "comment": "Development tools bundles",
+    "parentId": null
+  },
+  {
+    "id": "bf011111-0000-0000-0000-000000000003",
+    "name": "Media",
+    "comment": "Media applications bundles",
+    "parentId": null
+  }
+]

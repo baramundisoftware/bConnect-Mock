@@ -1,0 +1,11 @@
+[
+  {
+    "id": "f1000001-0001-0001-0001-000000000001",
+    "guid": "f1000001-0001-0001-0001-000000000001",
+    "type": "OrgUnit",
+    "name": "Root",
+    "distinguishedName": "DC=corp,DC=test",
+    "parentId": null,
+    "childCount": 2
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "d8000001-0001-0001-0001-000000000001",
+    "name": "baramundi Agent Service",
+    "state": "Running",
+    "message": null
+  },
+  {
+    "id": "d8000001-0001-0001-0001-000000000002",
+    "name": "baramundi Depot Service",
+    "state": "Running",
+    "message": null
+  },
+  {
+    "id": "d8000001-0001-0001-0001-000000000003",
+    "name": "baramundi Gateway Service",
+    "state": "Running",
+    "message": null
+  },
+  {
+    "id": "d8000001-0001-0001-0001-000000000004",
+    "name": "baramundi Update Service",
+    "state": "Stopped",
+    "message": "Service stopped for maintenance"
+  },
+  {
+    "id": "d8000001-0001-0001-0001-000000000005",
+    "name": "baramundi Inventory Service",
+    "state": "Running",
+    "message": null
+  }
+]

@@ -1,0 +1,170 @@
+/**
+ * ServerManagement routes — Microservices, ApiKeys, DownloadJobs, Dips,
+ * Gateway, ManagementServer, VpnAppliance, CloudConnectors, PxeRelays, Objects.
+ * Extracted from app.ts (P13.0.8). Extended P13.7.2–P13.7.4.
+ */
+
+import type { Express, Request, Response } from 'express';
+import type { IProfile } from '../profiles/ProfileManager';
+import { resolveEntityData, applyMultiKeywordSearch, parsePage } from './utils';
+import { registerSingleton } from './factories/singleton';
+
+export function registerServerManagementRoutes(app: Express, profile: IProfile): void {
+
+  // GET /v2.0/Microservices
+  app.get('/v2.0/Microservices', (req: Request, res: Response) => {
+    try {
+      let data = profile.getFixture('microservices') as Record<string, unknown>[];
+      const searchQuery = req.query.SearchQuery as string | undefined;
+      if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'state', 'message']); }
+      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const page = parsePage(req.query.Page);
+      const startIndex = page * pageSize;
+      res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  // GET /v2.0/Microservices/:id
+  app.get('/v2.0/Microservices/:id', (req: Request, res: Response) => {
+    try {
+      const data = profile.getFixture('microservices') as Record<string, unknown>[];
+      const item = data.find((ms) => ms['id'] === req.params.id);
+      if (!item) { res.status(404).json({ error: 'Microservice not found' }); return; }
+      res.status(200).json(item);
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  // POST /v2.0/Microservices/:id/Start
+  app.post('/v2.0/Microservices/:id/Start', (req: Request, res: Response) => {
+    try {
+      const data = profile.getFixture('microservices') as Record<string, unknown>[];
+      const item = data.find((ms) => ms['id'] === req.params.id);
+      if (!item) { res.status(404).json({ error: 'Microservice not found' }); return; }
+      res.status(200).json({ message: `Microservice ${item['name']} started` });
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  // POST /v2.0/Microservices/:id/Stop
+  app.post('/v2.0/Microservices/:id/Stop', (req: Request, res: Response) => {
+    try {
+      const data = profile.getFixture('microservices') as Record<string, unknown>[];
+      const item = data.find((ms) => ms['id'] === req.params.id);
+      if (!item) { res.status(404).json({ error: 'Microservice not found' }); return; }
+      res.status(200).json({ message: `Microservice ${item['name']} stopped` });
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  // POST /v2.0/Microservices/:id/Restart
+  app.post('/v2.0/Microservices/:id/Restart', (req: Request, res: Response) => {
+    try {
+      const data = profile.getFixture('microservices') as Record<string, unknown>[];
+      const item = data.find((ms) => ms['id'] === req.params.id);
+      if (!item) { res.status(404).json({ error: 'Microservice not found' }); return; }
+      res.status(200).json({ message: `Microservice ${item['name']} restarting` });
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  // P13.7.2 — Singleton routes: Gateway, ManagementServer, VpnAppliance
+  registerSingleton(app, profile, { path: '/v2.0/Gateway',          fixtureKey: 'gateway',          entityName: 'Gateway' });
+  registerSingleton(app, profile, { path: '/v2.0/ManagementServer', fixtureKey: 'managementServer', entityName: 'ManagementServer' });
+  registerSingleton(app, profile, { path: '/v2.0/VpnAppliance',     fixtureKey: 'vpnAppliance',     entityName: 'VpnAppliance' });
+  registerSingleton(app, profile, { path: '/v2.0/Dips',             fixtureKey: 'dips',             entityName: 'Dips' });
+
+  // P13.7.3 — List routes: CloudConnectors, PxeRelays
+  app.get('/v2.0/CloudConnectors', (req: Request, res: Response) => {
+    try {
+      let data = profile.getFixture('cloudConnectors') as Record<string, unknown>[];
+      const searchQuery = req.query.SearchQuery as string | undefined;
+      if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'state', 'region']); }
+      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const page = parsePage(req.query.Page);
+      const startIndex = page * pageSize;
+      res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  app.get('/v2.0/PxeRelays', (req: Request, res: Response) => {
+    try {
+      let data = profile.getFixture('pxeRelays') as Record<string, unknown>[];
+      const searchQuery = req.query.SearchQuery as string | undefined;
+      if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'state', 'ipAddress']); }
+      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const page = parsePage(req.query.Page);
+      const startIndex = page * pageSize;
+      res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  // P13.7.4 — Objects/{id} PATCH + Objects/{id}/Rights GET
+  app.patch('/v2.0/Objects/:id', (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      if (!id) { res.status(400).json({ error: 'Invalid ID' }); return; }
+      // Return patched object with merged body
+      res.status(200).json({ id, ...(req.body as object) });
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  app.get('/v2.0/Objects/:id/Rights', (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      if (!id) { res.status(400).json({ error: 'Invalid ID' }); return; }
+      res.status(200).json({
+        objectId: id,
+        rights: [
+          { principal: 'Domain Admins', permission: 'FullControl', inherited: false },
+          { principal: 'Domain Users', permission: 'Read', inherited: true },
+        ],
+      });
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+}
+
+export function registerServerManagement26R1Routes(app: Express, profile: IProfile): void {
+
+  // GET /v2.0/ApiKeys
+  app.get('/v2.0/ApiKeys', (req: Request, res: Response) => {
+    try {
+      const searchQuery = req.query.SearchQuery as string | undefined;
+      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const page = parsePage(req.query.Page);
+      const resolved = resolveEntityData(profile, 'apiKeys', { searchQuery, page, pageSize, searchFields: ['name', 'comment'] });
+      if (!resolved) { res.status(404).json({ error: 'ApiKeys not available' }); return; }
+      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  // GET /v2.0/DownloadJobs
+  app.get('/v2.0/DownloadJobs', (req: Request, res: Response) => {
+    try {
+      const searchQuery = req.query.SearchQuery as string | undefined;
+      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const page = parsePage(req.query.Page);
+      const resolved = resolveEntityData(profile, 'downloadJobs', { searchQuery, page, pageSize, searchFields: ['name', 'stateValue', 'stateMessage'] });
+      if (!resolved) { res.status(404).json({ error: 'DownloadJobs not available' }); return; }
+      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  // GET /v2.0/DownloadJobs/:id
+  app.get('/v2.0/DownloadJobs/:id', (req: Request, res: Response) => {
+    try {
+      const data = profile.getFixture('downloadJobs') as Record<string, unknown>[];
+      const item = data.find((j) => j['id'] === req.params.id);
+      if (!item) { res.status(404).json({ error: 'DownloadJob not found' }); return; }
+      res.status(200).json(item);
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  // POST /v2.0/Dips/SimulateMSWCleanup
+  app.post('/v2.0/Dips/SimulateMSWCleanup', (_req: Request, res: Response) => {
+    res.status(200).json({ message: 'MSW cleanup simulation triggered' });
+  });
+
+  // POST /v2.0/Dips/MSWCleanup
+  app.post('/v2.0/Dips/MSWCleanup', (_req: Request, res: Response) => {
+    res.status(200).json({ message: 'MSW cleanup triggered' });
+  });
+}

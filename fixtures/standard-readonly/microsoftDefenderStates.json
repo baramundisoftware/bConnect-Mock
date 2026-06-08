@@ -1,0 +1,44 @@
+[
+  {
+    "id": "mds00001-0001-0001-0001-000000000001",
+    "endpointId": "d0000001-0001-0001-0001-000000000001",
+    "endpointName": "DESKTOP-WIN001",
+    "type": "MicrosoftDefenderState",
+    "defenderStatus": "Enabled",
+    "realTimeProtection": true,
+    "signatureVersion": "1.401.123.0",
+    "signatureAge": 0,
+    "engineVersion": "1.1.24010.4",
+    "platformVersion": "4.18.24010.7",
+    "lastScanTime": "2025-03-28T02:00:00Z",
+    "threatCount": 0
+  },
+  {
+    "id": "mds00001-0001-0001-0001-000000000002",
+    "endpointId": "d0000001-0001-0001-0001-000000000002",
+    "endpointName": "DESKTOP-WIN002",
+    "type": "MicrosoftDefenderState",
+    "defenderStatus": "Enabled",
+    "realTimeProtection": true,
+    "signatureVersion": "1.399.100.0",
+    "signatureAge": 5,
+    "engineVersion": "1.1.23090.4",
+    "platformVersion": "4.18.23090.7",
+    "lastScanTime": "2025-03-25T03:00:00Z",
+    "threatCount": 1
+  },
+  {
+    "id": "mds00001-0001-0001-0001-000000000003",
+    "endpointId": "d0000001-0001-0001-0001-000000000003",
+    "endpointName": "LAPTOP-WIN003",
+    "type": "MicrosoftDefenderState",
+    "defenderStatus": "Disabled",
+    "realTimeProtection": false,
+    "signatureVersion": "1.380.50.0",
+    "signatureAge": 45,
+    "engineVersion": "1.1.22000.4",
+    "platformVersion": "4.18.22000.7",
+    "lastScanTime": "2025-02-01T04:00:00Z",
+    "threatCount": 2
+  }
+]

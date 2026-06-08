@@ -1,0 +1,41 @@
+[
+  {
+    "id": "d1000001-0001-0001-0001-000000000001",
+    "name": "All Endpoints",
+    "guid": "d1000001-0001-0001-0001-000000000001",
+    "type": "LogicalGroup",
+    "displayName": "All Endpoints",
+    "parentId": null,
+    "description": "Root logical group containing all managed endpoints",
+    "isBuiltIn": true,
+    "memberCount": 3,
+    "childGroupCount": 2,
+    "orgUnit": "ou=Groups,ou=Root"
+  },
+  {
+    "id": "d1000001-0002-0002-0002-000000000002",
+    "name": "Windows Endpoints",
+    "guid": "d1000001-0002-0002-0002-000000000002",
+    "type": "LogicalGroup",
+    "displayName": "Windows Endpoints",
+    "parentId": "d1000001-0001-0001-0001-000000000001",
+    "description": "All Windows-managed endpoints",
+    "isBuiltIn": false,
+    "memberCount": 1,
+    "childGroupCount": 0,
+    "orgUnit": "ou=Windows,ou=Groups,ou=Root"
+  },
+  {
+    "id": "d1000001-0003-0003-0003-000000000003",
+    "name": "Mobile Endpoints",
+    "guid": "d1000001-0003-0003-0003-000000000003",
+    "type": "LogicalGroup",
+    "displayName": "Mobile Endpoints",
+    "parentId": "d1000001-0001-0001-0001-000000000001",
+    "description": "All mobile endpoints (iOS, Android)",
+    "isBuiltIn": false,
+    "memberCount": 2,
+    "childGroupCount": 0,
+    "orgUnit": "ou=Mobile,ou=Groups,ou=Root"
+  }
+]

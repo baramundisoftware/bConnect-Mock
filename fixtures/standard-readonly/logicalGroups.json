@@ -1,0 +1,80 @@
+[
+  {
+    "id": "d1000001-0001-0001-0001-000000000001",
+    "name": "All Endpoints",
+    "guid": "d1000001-0001-0001-0001-000000000001",
+    "type": "LogicalGroup",
+    "displayName": "All Endpoints",
+    "parentId": null,
+    "description": "Root logical group containing all managed endpoints",
+    "isBuiltIn": true,
+    "memberCount": 25,
+    "childGroupCount": 5,
+    "orgUnit": "ou=Groups,ou=Root"
+  },
+  {
+    "id": "d1000001-0002-0002-0002-000000000002",
+    "name": "Windows Endpoints",
+    "guid": "d1000001-0002-0002-0002-000000000002",
+    "type": "LogicalGroup",
+    "displayName": "Windows Endpoints",
+    "parentId": "d1000001-0001-0001-0001-000000000001",
+    "description": "All Windows-managed endpoints",
+    "isBuiltIn": false,
+    "memberCount": 10,
+    "childGroupCount": 0,
+    "orgUnit": "ou=Windows,ou=Groups,ou=Root"
+  },
+  {
+    "id": "d1000001-0003-0003-0003-000000000003",
+    "name": "Mobile Endpoints",
+    "guid": "d1000001-0003-0003-0003-000000000003",
+    "type": "LogicalGroup",
+    "displayName": "Mobile Endpoints",
+    "parentId": "d1000001-0001-0001-0001-000000000001",
+    "description": "All mobile endpoints (iOS, Android)",
+    "isBuiltIn": false,
+    "memberCount": 8,
+    "childGroupCount": 0,
+    "orgUnit": "ou=Mobile,ou=Groups,ou=Root"
+  },
+  {
+    "id": "d1000001-0004-0004-0004-000000000004",
+    "name": "Linux Servers",
+    "guid": "d1000001-0004-0004-0004-000000000004",
+    "type": "LogicalGroup",
+    "displayName": "Linux Servers",
+    "parentId": "d1000001-0001-0001-0001-000000000001",
+    "description": "Linux server endpoints",
+    "isBuiltIn": false,
+    "memberCount": 3,
+    "childGroupCount": 0,
+    "orgUnit": "ou=Linux,ou=Groups,ou=Root"
+  },
+  {
+    "id": "d1000001-0005-0005-0005-000000000005",
+    "name": "Network Devices",
+    "guid": "d1000001-0005-0005-0005-000000000005",
+    "type": "LogicalGroup",
+    "displayName": "Network Devices",
+    "parentId": "d1000001-0001-0001-0001-000000000001",
+    "description": "Network infrastructure endpoints",
+    "isBuiltIn": false,
+    "memberCount": 2,
+    "childGroupCount": 0,
+    "orgUnit": "ou=Network,ou=Groups,ou=Root"
+  },
+  {
+    "id": "d1000001-0006-0006-0006-000000000006",
+    "name": "Mac Endpoints",
+    "guid": "d1000001-0006-0006-0006-000000000006",
+    "type": "LogicalGroup",
+    "displayName": "Mac Endpoints",
+    "parentId": "d1000001-0001-0001-0001-000000000001",
+    "description": "Apple Mac endpoints",
+    "isBuiltIn": false,
+    "memberCount": 2,
+    "childGroupCount": 0,
+    "orgUnit": "ou=Mac,ou=Groups,ou=Root"
+  }
+]

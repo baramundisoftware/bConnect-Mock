@@ -1,0 +1,38 @@
+[
+  {
+    "id": "d9000001-0001-0001-0001-000000000001",
+    "type": "MicrosoftDefenderThreat",
+    "name": "Trojan:Win32/Emotet.A",
+    "severity": "Severe",
+    "category": "Trojan",
+    "status": "Active",
+    "detectedAt": "2025-03-10T12:00:00Z",
+    "affectedEndpoints": 2,
+    "logicalGroupId": "d1000001-0001-0001-0001-000000000001",
+    "windowsEndpointId": "d0000001-0001-0001-0001-000000000001"
+  },
+  {
+    "id": "d9000001-0001-0001-0001-000000000002",
+    "type": "MicrosoftDefenderThreat",
+    "name": "Ransom:Win32/Wannacry.A",
+    "severity": "Critical",
+    "category": "Ransomware",
+    "status": "Remediated",
+    "detectedAt": "2025-02-20T09:30:00Z",
+    "affectedEndpoints": 1,
+    "logicalGroupId": "d1000001-0002-0002-0002-000000000002",
+    "windowsEndpointId": "d0000001-0001-0001-0001-000000000002"
+  },
+  {
+    "id": "d9000001-0001-0001-0001-000000000003",
+    "type": "MicrosoftDefenderThreat",
+    "name": "PUA:Win32/CoinMiner",
+    "severity": "Low",
+    "category": "PotentiallyUnwantedApplication",
+    "status": "Quarantined",
+    "detectedAt": "2025-03-15T15:45:00Z",
+    "affectedEndpoints": 1,
+    "logicalGroupId": "d1000001-0003-0003-0003-000000000003",
+    "windowsEndpointId": "d0000001-0001-0001-0001-000000000003"
+  }
+]

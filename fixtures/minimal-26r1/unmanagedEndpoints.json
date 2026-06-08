@@ -1,0 +1,26 @@
+[
+  {
+    "id": "e1000001-0001-0001-0001-000000000001",
+    "guid": "e1000001-0001-0001-0001-000000000001",
+    "type": "UnmanagedEndpoint",
+    "displayName": "UNMANAGED-PC-001",
+    "primaryIP": "192.168.1.100",
+    "primaryMAC": "AA:BB:CC:DD:EE:01",
+    "lastSeen": "2026-03-30T06:00:00Z",
+    "detectedOS": "Windows 11",
+    "discoveryMethod": "NetworkScan",
+    "isManaged": false
+  },
+  {
+    "id": "e1000001-0002-0002-0002-000000000002",
+    "guid": "e1000001-0002-0002-0002-000000000002",
+    "type": "UnmanagedEndpoint",
+    "displayName": "UNMANAGED-DEV-002",
+    "primaryIP": "192.168.1.101",
+    "primaryMAC": "AA:BB:CC:DD:EE:02",
+    "lastSeen": "2026-03-29T14:30:00Z",
+    "detectedOS": "Ubuntu 22.04",
+    "discoveryMethod": "ARPScan",
+    "isManaged": false
+  }
+]

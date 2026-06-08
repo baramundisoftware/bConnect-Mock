@@ -1,0 +1,37 @@
+[
+  {
+    "id": "d0011111-0000-0000-0000-000000000001",
+    "name": "All Windows Endpoints",
+    "comment": "Dynamic group containing all Windows endpoints",
+    "folderName": "Root",
+    "folderId": "f0011111-0000-0000-0000-000000000001"
+  },
+  {
+    "id": "d0011111-0000-0000-0000-000000000002",
+    "name": "Unpatched Critical Endpoints",
+    "comment": "Endpoints with unpatched critical vulnerabilities",
+    "folderName": "Security",
+    "folderId": "f0011111-0000-0000-0000-000000000002"
+  },
+  {
+    "id": "d0011111-0000-0000-0000-000000000003",
+    "name": "Windows Servers",
+    "comment": "All Windows Server endpoints",
+    "folderName": "Infrastructure",
+    "folderId": "f0011111-0000-0000-0000-000000000003"
+  },
+  {
+    "id": "d0011111-0000-0000-0000-000000000004",
+    "name": "Non-Compliant Endpoints",
+    "comment": "Endpoints with active compliance rule violations",
+    "folderName": "Security",
+    "folderId": "f0011111-0000-0000-0000-000000000002"
+  },
+  {
+    "id": "d0011111-0000-0000-0000-000000000005",
+    "name": "Laptops",
+    "comment": "All laptop endpoints",
+    "folderName": "Hardware Types",
+    "folderId": "f0011111-0000-0000-0000-000000000004"
+  }
+]

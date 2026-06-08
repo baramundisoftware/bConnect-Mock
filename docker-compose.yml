@@ -1,0 +1,84 @@
+version: '3.9'
+
+# ──────────────────────────────────────────────────────────
+# bConnect Mock Server — Docker Compose
+#
+# Usage:
+#   docker compose up                  # standard-readonly, BMS 25R2
+#   PROFILE=minimal-readwrite docker compose up
+#   BMS_VERSION=26r1 docker compose up
+#   BIND_ADDRESS=127.0.0.1 docker compose up   # restrict to loopback only
+#   docker compose --profile test up   # includes test runner
+# ──────────────────────────────────────────────────────────
+
+services:
+  bconnect-mock:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: bconnect-mock:latest
+    container_name: bconnect-mock
+    ports:
+      - "${HOST_PORT:-3433}:${PORT:-3433}"
+    environment:
+      PORT: "${PORT:-3433}"
+      # BIND_ADDRESS: restrict network interface the server listens on.
+      # Default 0.0.0.0 (all interfaces) with a security warning at startup.
+      # Set to 127.0.0.1 to restrict to loopback only (recommended for local dev).
+      BIND_ADDRESS: "${BIND_ADDRESS:-0.0.0.0}"
+      BCONNECT_PROFILE: "${PROFILE:-standard-readonly}"
+      BCONNECT_BMS_VERSION: "${BMS_VERSION:-25r2}"
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
+      # LOG_FORMAT: set to 'json' for structured JSON logs (recommended for Docker/K8s).
+      LOG_FORMAT: "${LOG_FORMAT:-text}"
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-}"
+      RATE_LIMIT_ENABLED: "${RATE_LIMIT_ENABLED:-true}"
+      RATE_LIMIT_MAX: "${RATE_LIMIT_MAX:-100}"
+      RATE_LIMIT_WINDOW_MS: "${RATE_LIMIT_WINDOW_MS:-60000}"
+      # REQUIRE_API_KEY: set a non-empty value to enforce API key authentication
+      # on all write operations (POST/PUT/PATCH/DELETE). Recommended for shared
+      # CI/staging environments where multiple consumers hit the same mock instance.
+      REQUIRE_API_KEY: "${REQUIRE_API_KEY:-}"
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('http').get('http://localhost:' + (process.env.PORT || 3433) + '/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "${MOCK_CPU_LIMIT:-1.0}"
+          memory: "${MOCK_MEM_LIMIT:-512m}"
+        reservations:
+          cpus: "0.25"
+          memory: "128m"
+
+  # Optional: run the test suite against a live mock instance
+  test-runner:
+    profiles: [test]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    image: bconnect-mock:builder
+    container_name: bconnect-mock-tests
+    command: npm test
+    environment:
+      BCONNECT_BMS_VERSION: "${BMS_VERSION:-25r2}"
+    depends_on:
+      bconnect-mock:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "${TEST_CPU_LIMIT:-2.0}"
+          memory: "${TEST_MEM_LIMIT:-1g}"
+        reservations:
+          cpus: "0.5"
+          memory: "256m"

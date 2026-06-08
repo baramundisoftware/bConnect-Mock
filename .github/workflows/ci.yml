@@ -1,0 +1,196 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-type-check:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run TypeScript type check
+        run: npx tsc --noEmit
+
+  test:
+    name: Test & Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage enforcement
+        # vitest exits non-zero when any threshold in vitest.config.ts is not met.
+        # Thresholds are set as a ratchet at current measured levels; raise them
+        # in vitest.config.ts as coverage improves toward the 80% target.
+        run: npm run test:coverage
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Verify build artifacts
+        run: |
+          if [ ! -d "build" ]; then
+            echo "❌ Build directory not found"
+            exit 1
+          fi
+
+          if [ ! -f "build/profiles/ProfileManager.js" ]; then
+            echo "❌ ProfileManager.js not found in build output"
+            exit 1
+          fi
+
+          echo "✅ Build artifacts verified"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: build-output
+          path: build/
+          retention-days: 7
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+
+      - name: License compliance check
+        run: npx license-checker --production --failOn "GPL-3.0-only;GPL-3.0-or-later;AGPL-3.0-only;AGPL-3.0-or-later;SSPL-1.0"
+
+      - name: Secrets scan
+        run: npx secretlint "**/*" --secretlintignore .gitignore
+
+      - name: Check for outdated dependencies
+        run: npm outdated || true
+
+  docker:
+    name: Docker Build & Test
+    runs-on: ubuntu-latest
+    needs: [build]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Build Docker image
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
+        with:
+          context: .
+          push: false
+          tags: bconnect-mock:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test Docker health check
+        run: |
+          docker run -d --name bconnect-test -p 3001:3433 bconnect-mock:ci
+          echo "Waiting for server to become healthy..."
+          for i in $(seq 1 20); do
+            if docker exec bconnect-test node -e \
+              "require('http').get('http://localhost:3433/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));" \
+              2>/dev/null; then
+              echo "✅ Health check passed"
+              break
+            fi
+            if [ $i -eq 20 ]; then
+              echo "❌ Health check timed out"
+              docker logs bconnect-test
+              exit 1
+            fi
+            sleep 2
+          done
+          docker stop bconnect-test
+          docker rm bconnect-test
+
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [lint-and-type-check, test, build, security, docker]
+    if: always()
+
+    steps:
+      - name: Check job results
+        run: |
+          echo "## CI Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint & Type Check | ${{ needs.lint-and-type-check.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test & Coverage | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Audit | ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.lint-and-type-check.result }}" != "success" ] || \
+             [ "${{ needs.test.result }}" != "success" ] || \
+             [ "${{ needs.build.result }}" != "success" ] || \
+             [ "${{ needs.docker.result }}" != "success" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **CI Pipeline Failed**" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **CI Pipeline Passed**" >> $GITHUB_STEP_SUMMARY
+          fi

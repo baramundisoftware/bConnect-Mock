@@ -1,0 +1,12 @@
+[
+  {
+    "id": "ba011111-0000-0000-0000-000000000001",
+    "bundleId": "b0011111-0000-0000-0000-000000000001",
+    "bundleName": "Office Suite Bundle",
+    "applicationId": "a0011111-0000-0000-0000-000000000001",
+    "applicationName": "Microsoft Word",
+    "applicationVendor": "Microsoft",
+    "applicationVersion": "16.0.0",
+    "order": 1
+  }
+]

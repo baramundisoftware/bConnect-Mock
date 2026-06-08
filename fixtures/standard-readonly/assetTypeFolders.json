@@ -1,0 +1,20 @@
+[
+  {
+    "id": "f2000001-0001-0001-0001-000000000001",
+    "name": "Hardware",
+    "comment": "Hardware asset types",
+    "parentId": null
+  },
+  {
+    "id": "f2000001-0002-0002-0002-000000000002",
+    "name": "Software",
+    "comment": "Software asset types",
+    "parentId": null
+  },
+  {
+    "id": "f2000001-0003-0003-0003-000000000003",
+    "name": "Peripherals",
+    "comment": "Peripheral hardware",
+    "parentId": "f2000001-0001-0001-0001-000000000001"
+  }
+]

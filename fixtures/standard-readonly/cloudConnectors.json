@@ -1,0 +1,22 @@
+[
+  {
+    "id": "cc000001-0001-0001-0001-000000000001",
+    "type": "CloudConnector",
+    "name": "Cloud Connector Primary",
+    "state": "Connected",
+    "region": "eu-west-1",
+    "endpoint": "https://cloud.bms.corp.test",
+    "isActive": true,
+    "lastConnected": "2026-03-31T07:00:00Z"
+  },
+  {
+    "id": "cc000001-0001-0001-0001-000000000002",
+    "type": "CloudConnector",
+    "name": "Cloud Connector Backup",
+    "state": "Disconnected",
+    "region": "eu-central-1",
+    "endpoint": "https://cloud-backup.bms.corp.test",
+    "isActive": false,
+    "lastConnected": "2026-03-20T12:00:00Z"
+  }
+]

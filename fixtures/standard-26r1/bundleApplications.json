@@ -1,0 +1,52 @@
+[
+  {
+    "id": "ba011111-0000-0000-0000-000000000001",
+    "bundleId": "b0011111-0000-0000-0000-000000000001",
+    "bundleName": "Office Suite Bundle",
+    "applicationId": "a0011111-0000-0000-0000-000000000001",
+    "applicationName": "Microsoft Word",
+    "applicationVendor": "Microsoft",
+    "applicationVersion": "16.0.0",
+    "order": 1
+  },
+  {
+    "id": "ba011111-0000-0000-0000-000000000002",
+    "bundleId": "b0011111-0000-0000-0000-000000000001",
+    "bundleName": "Office Suite Bundle",
+    "applicationId": "a0011111-0000-0000-0000-000000000002",
+    "applicationName": "Microsoft Excel",
+    "applicationVendor": "Microsoft",
+    "applicationVersion": "16.0.0",
+    "order": 2
+  },
+  {
+    "id": "ba011111-0000-0000-0000-000000000003",
+    "bundleId": "b0011111-0000-0000-0000-000000000002",
+    "bundleName": "Security Tools Bundle",
+    "applicationId": "a0011111-0000-0000-0000-000000000003",
+    "applicationName": "Malwarebytes",
+    "applicationVendor": "Malwarebytes Inc.",
+    "applicationVersion": "4.6.0",
+    "order": 1
+  },
+  {
+    "id": "ba011111-0000-0000-0000-000000000004",
+    "bundleId": "b0011111-0000-0000-0000-000000000003",
+    "bundleName": "Developer Tools Bundle",
+    "applicationId": "a0011111-0000-0000-0000-000000000004",
+    "applicationName": "Visual Studio Code",
+    "applicationVendor": "Microsoft",
+    "applicationVersion": "1.85.0",
+    "order": 1
+  },
+  {
+    "id": "ba011111-0000-0000-0000-000000000005",
+    "bundleId": "b0011111-0000-0000-0000-000000000003",
+    "bundleName": "Developer Tools Bundle",
+    "applicationId": "a0011111-0000-0000-0000-000000000005",
+    "applicationName": "Git",
+    "applicationVendor": "Git SCM",
+    "applicationVersion": "2.43.0",
+    "order": 2
+  }
+]

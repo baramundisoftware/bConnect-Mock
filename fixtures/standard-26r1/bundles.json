@@ -1,0 +1,47 @@
+[
+  {
+    "id": "b0011111-0000-0000-0000-000000000001",
+    "name": "Office Suite Bundle",
+    "type": "ApplicationBundle",
+    "ignoreDependencies": false,
+    "parentId": "bf011111-0000-0000-0000-000000000001",
+    "parentName": "Productivity",
+    "comment": "Bundle containing all Office applications"
+  },
+  {
+    "id": "b0011111-0000-0000-0000-000000000002",
+    "name": "Security Tools Bundle",
+    "type": "ApplicationBundle",
+    "ignoreDependencies": false,
+    "parentId": "bf011111-0000-0000-0000-000000000001",
+    "parentName": "Productivity",
+    "comment": "Bundle containing security utilities"
+  },
+  {
+    "id": "b0011111-0000-0000-0000-000000000003",
+    "name": "Developer Tools Bundle",
+    "type": "ApplicationBundle",
+    "ignoreDependencies": true,
+    "parentId": "bf011111-0000-0000-0000-000000000002",
+    "parentName": "Development",
+    "comment": "IDE, compilers and developer utilities"
+  },
+  {
+    "id": "b0011111-0000-0000-0000-000000000004",
+    "name": "Runtime Bundle",
+    "type": "ApplicationBundle",
+    "ignoreDependencies": false,
+    "parentId": "bf011111-0000-0000-0000-000000000002",
+    "parentName": "Development",
+    "comment": "Java, .NET and other runtimes"
+  },
+  {
+    "id": "b0011111-0000-0000-0000-000000000005",
+    "name": "Media Player Bundle",
+    "type": "ApplicationBundle",
+    "ignoreDependencies": false,
+    "parentId": "bf011111-0000-0000-0000-000000000003",
+    "parentName": "Media",
+    "comment": "Audio and video players"
+  }
+]

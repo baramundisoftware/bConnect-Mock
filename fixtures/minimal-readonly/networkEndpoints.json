@@ -1,0 +1,19 @@
+[
+  {
+    "id": "c6000001-0001-0001-0001-000000000001",
+    "guid": "c6000001-0001-0001-0001-000000000001",
+    "type": "NetworkEndpoint",
+    "displayName": "SWT-NET-00001",
+    "deviceType": "Switch",
+    "modelName": "Cisco Catalyst 9300",
+    "serialNumber": "NET000000001",
+    "primaryMAC": "00:00:00:00:00:01",
+    "primaryIP": "10.0.0.1",
+    "lastSeen": "2026-03-30T08:00:00Z",
+    "orgUnit": "ou=Network,ou=Infrastructure,ou=Americas",
+    "managementState": "Managed",
+    "isOnline": true,
+    "firmwareVersion": "v17.1.1",
+    "logicalGroupId": "d1000001-0005-0005-0005-000000000005"
+  }
+]

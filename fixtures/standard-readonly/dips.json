@@ -1,0 +1,13 @@
+[
+  {
+    "id": "dips0001-0001-0001-0001-000000000001",
+    "type": "Dips",
+    "name": "DIPS Service",
+    "state": "Running",
+    "version": "26.1.0.9012",
+    "port": 8080,
+    "isEnabled": true,
+    "lastCleanup": "2026-03-30T02:00:00Z",
+    "pendingItems": 0
+  }
+]

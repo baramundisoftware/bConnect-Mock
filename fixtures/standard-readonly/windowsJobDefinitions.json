@@ -1,0 +1,16 @@
+[
+  {
+    "id": "def00001-0001-0001-0001-000000000001",
+    "guid": "def00001-0001-0001-0001-000000000001",
+    "name": "Deploy Windows Updates",
+    "type": "WindowsJobDefinition",
+    "description": "Deploys critical Windows updates to endpoints"
+  },
+  {
+    "id": "def00001-0001-0001-0001-000000000002",
+    "guid": "def00001-0001-0001-0001-000000000002",
+    "name": "Inventory Scan",
+    "type": "WindowsJobDefinition",
+    "description": "Collects hardware and software inventory"
+  }
+]

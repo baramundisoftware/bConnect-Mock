@@ -1,0 +1,9 @@
+[
+  {
+    "id": "d0011111-0000-0000-0000-000000000001",
+    "name": "All Windows Endpoints",
+    "comment": "Dynamic group containing all Windows endpoints",
+    "folderName": "Root",
+    "folderId": "f0011111-0000-0000-0000-000000000001"
+  }
+]

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "f1000001-0001-0001-0001-000000000001",
+    "guid": "f1000001-0001-0001-0001-000000000001",
+    "type": "OrgUnit",
+    "name": "Root",
+    "distinguishedName": "DC=corp,DC=test",
+    "parentId": null,
+    "childCount": 2
+  },
+  {
+    "id": "f1000001-0002-0002-0002-000000000002",
+    "guid": "f1000001-0002-0002-0002-000000000002",
+    "type": "OrgUnit",
+    "name": "IT Department",
+    "distinguishedName": "OU=IT,DC=corp,DC=test",
+    "parentId": "f1000001-0001-0001-0001-000000000001",
+    "childCount": 1
+  },
+  {
+    "id": "f1000001-0003-0003-0003-000000000003",
+    "guid": "f1000001-0003-0003-0003-000000000003",
+    "type": "OrgUnit",
+    "name": "Engineering",
+    "distinguishedName": "OU=Engineering,OU=IT,DC=corp,DC=test",
+    "parentId": "f1000001-0002-0002-0002-000000000002",
+    "childCount": 0
+  }
+]

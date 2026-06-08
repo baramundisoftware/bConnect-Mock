@@ -1,0 +1,63 @@
+[
+  {
+    "id": "bb000001-0001-0001-0001-000000000001",
+    "name": "Deploy Microsoft Office 2021",
+    "type": "SoftwareDeployment",
+    "status": "Completed",
+    "targetGroup": "All Windows Endpoints",
+    "createdDate": "2026-03-15T10:00:00Z",
+    "lastRun": "2026-03-20T14:30:00Z",
+    "successCount": 445,
+    "failureCount": 5,
+    "folderId": "a1000001-0001-0001-0001-000000000001"
+  },
+  {
+    "id": "bb000001-0001-0001-0001-000000000002",
+    "name": "Windows Update - Critical Patches",
+    "type": "UpdateDeployment",
+    "status": "Running",
+    "targetGroup": "All Endpoints",
+    "createdDate": "2026-03-25T08:00:00Z",
+    "lastRun": "2026-03-26T06:00:00Z",
+    "successCount": 320,
+    "failureCount": 15,
+    "folderId": "a1000001-0002-0002-0002-000000000002"
+  },
+  {
+    "id": "bb000001-0001-0001-0001-000000000003",
+    "name": "Hardware Inventory Scan",
+    "type": "InventoryScan",
+    "status": "Scheduled",
+    "targetGroup": "All Endpoints",
+    "createdDate": "2026-03-10T12:00:00Z",
+    "lastRun": "2026-03-24T02:00:00Z",
+    "successCount": 980,
+    "failureCount": 20,
+    "folderId": "a1000001-0003-0003-0003-000000000003"
+  },
+  {
+    "id": "bb000001-0001-0001-0001-000000000004",
+    "name": "Remove Deprecated Java 7",
+    "type": "SoftwareUninstall",
+    "status": "Completed",
+    "targetGroup": "Development Workstations",
+    "createdDate": "2026-03-01T09:00:00Z",
+    "lastRun": "2026-03-05T16:45:00Z",
+    "successCount": 85,
+    "failureCount": 3,
+    "folderId": "a1000001-0001-0001-0001-000000000001"
+  },
+  {
+    "id": "bb000001-0001-0001-0001-000000000005",
+    "name": "Security Compliance Check",
+    "type": "ComplianceScan",
+    "status": "Failed",
+    "targetGroup": "All Windows Endpoints",
+    "createdDate": "2026-03-22T11:00:00Z",
+    "lastRun": "2026-03-26T10:00:00Z",
+    "successCount": 0,
+    "failureCount": 1,
+    "errorMessage": "Connection timeout to compliance server",
+    "folderId": "a1000001-0002-0002-0002-000000000002"
+  }
+]

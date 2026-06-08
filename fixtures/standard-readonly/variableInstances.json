@@ -1,0 +1,80 @@
+[
+  {
+    "id": "b0000001-0001-0001-0001-000000000001",
+    "variableDefinitionId": "a0000001-0001-0001-0001-000000000001",
+    "endpointId": "d0000001-0001-0001-0001-000000000001",
+    "value": "New York",
+    "logicalGroupId": "d1000001-0001-0001-0001-000000000001",
+    "adObjectId": "ad000001-0001-0001-0001-000000000001",
+    "windowsApplicationId": "ca000001-0001-0001-0001-000000000001",
+    "windowsJobDefinitionId": "def00001-0001-0001-0001-000000000001"
+  },
+  {
+    "id": "b0000001-0002-0002-0002-000000000002",
+    "variableDefinitionId": "a0000001-0001-0001-0001-000000000001",
+    "endpointId": "d0000001-0001-0001-0001-000000000002",
+    "value": "New York",
+    "logicalGroupId": "d1000001-0002-0002-0002-000000000002",
+    "adObjectId": "ad000001-0001-0001-0001-000000000002",
+    "windowsApplicationId": "ca000001-0001-0001-0001-000000000002",
+    "windowsJobDefinitionId": "def00001-0001-0001-0001-000000000002"
+  },
+  {
+    "id": "b0000001-0003-0003-0003-000000000003",
+    "variableDefinitionId": "a0000001-0001-0001-0001-000000000001",
+    "endpointId": "d0000001-0001-0001-0001-000000000003",
+    "value": "London",
+    "logicalGroupId": "d1000001-0003-0003-0003-000000000003",
+    "adObjectId": "ad000001-0001-0001-0001-000000000003",
+    "windowsApplicationId": "ca000001-0001-0001-0001-000000000001",
+    "windowsJobDefinitionId": "def00001-0001-0001-0001-000000000001"
+  },
+  {
+    "id": "b0000001-0004-0004-0004-000000000004",
+    "variableDefinitionId": "a0000001-0001-0001-0001-000000000002",
+    "endpointId": "d0000001-0001-0001-0001-000000000001",
+    "value": "Production",
+    "logicalGroupId": "d1000001-0001-0001-0001-000000000001",
+    "adObjectId": "ad000001-0001-0001-0001-000000000001",
+    "windowsApplicationId": "ca000001-0001-0001-0001-000000000002",
+    "windowsJobDefinitionId": "def00001-0001-0001-0001-000000000002"
+  },
+  {
+    "id": "b0000001-0005-0005-0005-000000000005",
+    "variableDefinitionId": "a0000001-0001-0001-0001-000000000002",
+    "endpointId": "d0000001-0001-0001-0001-000000000004",
+    "value": "Development",
+    "logicalGroupId": "d1000001-0002-0002-0002-000000000002",
+    "adObjectId": "ad000001-0001-0001-0001-000000000002",
+    "windowsApplicationId": "ca000001-0001-0001-0001-000000000001",
+    "windowsJobDefinitionId": "def00001-0001-0001-0001-000000000001"
+  },
+  {
+    "id": "b0000001-0006-0006-0006-000000000006",
+    "variableDefinitionId": "a0000001-0001-0001-0001-000000000001",
+    "windowsApplicationId": "ca000001-0001-0001-0001-000000000002",
+    "value": "EdgeProfile-EMEA",
+    "windowsJobDefinitionId": "def00001-0001-0001-0001-000000000002"
+  },
+  {
+    "id": "b0000001-0007-0007-0007-000000000007",
+    "variableDefinitionId": "a0000001-0001-0001-0001-000000000002",
+    "windowsApplicationId": "ca000001-0001-0001-0001-000000000001",
+    "value": "7ZipProfile-EMEA",
+    "windowsJobDefinitionId": "def00001-0001-0001-0001-000000000001"
+  },
+  {
+    "id": "b0000001-0008-0008-0008-000000000008",
+    "variableDefinitionId": "a0000001-0001-0001-0001-000000000001",
+    "windowsJobDefinitionId": "def00001-0001-0001-0001-000000000002",
+    "value": "UpdateSchedule-EMEA",
+    "windowsApplicationId": "ca000001-0001-0001-0001-000000000002"
+  },
+  {
+    "id": "b0000001-0009-0009-0009-000000000009",
+    "variableDefinitionId": "a0000001-0001-0001-0001-000000000002",
+    "windowsJobDefinitionId": "def00001-0001-0001-0001-000000000001",
+    "value": "InventoryScope-ALL",
+    "windowsApplicationId": "ca000001-0001-0001-0001-000000000001"
+  }
+]

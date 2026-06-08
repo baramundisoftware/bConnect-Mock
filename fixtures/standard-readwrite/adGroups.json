@@ -1,0 +1,108 @@
+{
+  "groups": [
+    {
+      "id": "a9000001-0001-0001-0001-000000000001",
+      "name": "Domain Admins",
+      "distinguishedName": "CN=Domain Admins,CN=Users,DC=company,DC=com",
+      "groupScope": "Global",
+      "groupType": "Security",
+      "memberCount": 5,
+      "parentAdGroupId": "a9000001-0001-0001-0001-000000000001",
+      "orgUnitId": "f1000001-0001-0001-0001-000000000001",
+      "memberAdObjectIds": [
+        "ad000001-0001-0001-0001-000000000001"
+      ]
+    },
+    {
+      "id": "a9000001-0001-0001-0001-000000000002",
+      "name": "IT Department",
+      "distinguishedName": "CN=IT Department,OU=Departments,DC=company,DC=com",
+      "groupScope": "Global",
+      "groupType": "Security",
+      "memberCount": 45,
+      "parentAdGroupId": "a9000001-0001-0001-0001-000000000002",
+      "orgUnitId": "f1000001-0002-0002-0002-000000000002",
+      "memberAdObjectIds": [
+        "ad000001-0001-0001-0001-000000000002"
+      ]
+    },
+    {
+      "id": "a9000001-0001-0001-0001-000000000003",
+      "name": "Finance Team",
+      "distinguishedName": "CN=Finance Team,OU=Departments,DC=company,DC=com",
+      "groupScope": "Global",
+      "groupType": "Security",
+      "memberCount": 32,
+      "parentAdGroupId": "a9000001-0001-0001-0001-000000000003",
+      "orgUnitId": "f1000001-0003-0003-0003-000000000003",
+      "memberAdObjectIds": [
+        "ad000001-0001-0001-0001-000000000003"
+      ]
+    },
+    {
+      "id": "a9000001-0001-0001-0001-000000000004",
+      "name": "Developers",
+      "distinguishedName": "CN=Developers,OU=Engineering,DC=company,DC=com",
+      "groupScope": "Global",
+      "groupType": "Security",
+      "memberCount": 120,
+      "parentAdGroupId": "a9000001-0001-0001-0001-000000000001",
+      "orgUnitId": "f1000001-0001-0001-0001-000000000001",
+      "memberAdObjectIds": [
+        "ad000001-0001-0001-0001-000000000001"
+      ]
+    },
+    {
+      "id": "a9000001-0001-0001-0001-000000000005",
+      "name": "Sales Representatives",
+      "distinguishedName": "CN=Sales Representatives,OU=Sales,DC=company,DC=com",
+      "groupScope": "Global",
+      "groupType": "Security",
+      "memberCount": 85,
+      "parentAdGroupId": "a9000001-0001-0001-0001-000000000005",
+      "orgUnitId": "f1000001-0002-0002-0002-000000000002",
+      "memberAdObjectIds": [
+        "ad000001-0001-0001-0001-000000000002"
+      ]
+    },
+    {
+      "id": "a9000001-0001-0001-0001-000000000006",
+      "name": "Marketing Team",
+      "distinguishedName": "CN=Marketing Team,OU=Marketing,DC=company,DC=com",
+      "groupScope": "Global",
+      "groupType": "Security",
+      "memberCount": 28,
+      "parentAdGroupId": "a9000001-0001-0001-0001-000000000006",
+      "orgUnitId": "f1000001-0003-0003-0003-000000000003",
+      "memberAdObjectIds": [
+        "ad000001-0001-0001-0001-000000000003"
+      ]
+    },
+    {
+      "id": "a9000001-0001-0001-0001-000000000007",
+      "name": "Remote Workers",
+      "distinguishedName": "CN=Remote Workers,OU=Access Groups,DC=company,DC=com",
+      "groupScope": "Universal",
+      "groupType": "Security",
+      "memberCount": 342,
+      "parentAdGroupId": "a9000001-0001-0001-0001-000000000007",
+      "orgUnitId": "f1000001-0001-0001-0001-000000000001",
+      "memberAdObjectIds": [
+        "ad000001-0001-0001-0001-000000000001"
+      ]
+    },
+    {
+      "id": "a9000001-0001-0001-0001-000000000008",
+      "name": "VPN Users",
+      "distinguishedName": "CN=VPN Users,OU=Access Groups,DC=company,DC=com",
+      "groupScope": "Universal",
+      "groupType": "Security",
+      "memberCount": 415,
+      "parentAdGroupId": "a9000001-0001-0001-0001-000000000008",
+      "orgUnitId": "f1000001-0002-0002-0002-000000000002",
+      "memberAdObjectIds": [
+        "ad000001-0001-0001-0001-000000000002"
+      ]
+    }
+  ]
+}

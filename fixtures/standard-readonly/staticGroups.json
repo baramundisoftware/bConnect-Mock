@@ -1,0 +1,42 @@
+[
+  {
+    "id": "e1000001-0001-0001-0001-000000000001",
+    "guid": "e1000001-0001-0001-0001-000000000001",
+    "type": "StaticGroup",
+    "displayName": "Critical Windows Endpoints",
+    "description": "Windows endpoints requiring immediate patching",
+    "memberCount": 4,
+    "memberIds": [
+      "d0000001-0001-0001-0001-000000000001",
+      "d0000001-0001-0001-0001-000000000002",
+      "d0000001-0001-0001-0001-000000000003",
+      "d0000001-0001-0001-0001-000000000004"
+    ]
+  },
+  {
+    "id": "e1000001-0002-0002-0002-000000000002",
+    "guid": "e1000001-0002-0002-0002-000000000002",
+    "type": "StaticGroup",
+    "displayName": "Executive Devices",
+    "description": "Endpoints assigned to executive staff",
+    "memberCount": 3,
+    "memberIds": [
+      "d0000001-0001-0001-0001-000000000005",
+      "d0000004-0001-0001-0001-000000000001",
+      "d0000004-0001-0001-0001-000000000002"
+    ]
+  },
+  {
+    "id": "e1000001-0003-0003-0003-000000000003",
+    "guid": "e1000001-0003-0003-0003-000000000003",
+    "type": "StaticGroup",
+    "displayName": "Remote Workers",
+    "description": "Endpoints used by remote workers",
+    "memberCount": 3,
+    "memberIds": [
+      "d0000001-0001-0001-0001-000000000008",
+      "d0000001-0001-0001-0001-000000000009",
+      "d0000001-0001-0001-0001-000000000010"
+    ]
+  }
+]

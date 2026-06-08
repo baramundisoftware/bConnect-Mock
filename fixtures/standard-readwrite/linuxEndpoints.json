@@ -1,0 +1,61 @@
+{
+  "endpoints": [
+    {
+      "id": "d0000003-0001-0001-0001-000000000001",
+      "displayName": "LNX-PROD-001",
+      "endpointType": "LinuxEndpoint",
+      "logicalGroupId": "d1000001-0004-0004-0004-000000000004",
+      "publicKey": "PFJTQUtleVZhbHVlPjxNb2R1bHVzPmxpbnV4LXB1YmxpYy1rZXktZGF0YTwvTW9kdWx1cz48RXhwb25lbnQ+QVFBQjwvRXhwb25lbnQ+PC9SU0FLZXlWYWx1ZT4=",
+      "version": "6.5.0.1234",
+      "orgUnit": "ou=DataCenter,ou=Americas,ou=Production",
+      "primaryUser": "sysadmin@company.com",
+      "operatingSystem": "Ubuntu 22.04.3 LTS",
+      "lastSeen": "2026-03-26T11:30:00Z",
+      "primaryMAC": "00:1B:44:22:3A:C1",
+      "machineModel": "Dell PowerEdge R750",
+      "serialNumber": "DELR750-001",
+      "kernelVersion": "5.15.0-91-generic",
+      "dynamicGroupId": "e2000001-0001-0001-0001-000000000001",
+      "staticGroupId": "e1000001-0001-0001-0001-000000000001",
+      "adUserId": "a1000001-0001-0001-0001-000000000001"
+    },
+    {
+      "id": "d0000003-0001-0001-0001-000000000002",
+      "displayName": "LNX-DEV-002",
+      "endpointType": "LinuxEndpoint",
+      "logicalGroupId": "d1000001-0004-0004-0004-000000000004",
+      "publicKey": "PFJTQUtleVZhbHVlPjxNb2R1bHVzPmxpbnV4LXB1YmxpYy1rZXktZGF0YTwvTW9kdWx1cz48RXhwb25lbnQ+QVFBQjwvRXhwb25lbnQ+PC9SU0FLZXlWYWx1ZT4=",
+      "version": "6.5.0.1234",
+      "orgUnit": "ou=Development,ou=EMEA,ou=Engineering",
+      "primaryUser": "dev-team@company.com",
+      "operatingSystem": "Red Hat Enterprise Linux 9.2",
+      "lastSeen": "2026-03-26T10:15:00Z",
+      "primaryMAC": "00:1B:44:22:3A:C2",
+      "machineModel": "HP ProLiant DL380 Gen10",
+      "serialNumber": "HPDL380-002",
+      "kernelVersion": "5.14.0-284.el9.x86_64",
+      "dynamicGroupId": "e2000001-0002-0002-0002-000000000002",
+      "staticGroupId": "e1000001-0002-0002-0002-000000000002",
+      "adUserId": "a1000001-0002-0002-0002-000000000002"
+    },
+    {
+      "id": "d0000003-0001-0001-0001-000000000003",
+      "displayName": "LNX-WEB-003",
+      "endpointType": "LinuxEndpoint",
+      "logicalGroupId": "d1000001-0004-0004-0004-000000000004",
+      "publicKey": "PFJTQUtleVZhbHVlPjxNb2R1bHVzPmxpbnV4LXB1YmxpYy1rZXktZGF0YTwvTW9kdWx1cz48RXhwb25lbnQ+QVFBQjwvRXhwb25lbnQ+PC9SU0FLZXlWYWx1ZT4=",
+      "version": "6.5.0.1234",
+      "orgUnit": "ou=WebServices,ou=APAC,ou=Production",
+      "primaryUser": "webadmin@company.com",
+      "operatingSystem": "Debian 12 (bookworm)",
+      "lastSeen": "2026-03-26T07:45:00Z",
+      "primaryMAC": "00:1B:44:22:3A:C3",
+      "machineModel": "Lenovo ThinkSystem SR650",
+      "serialNumber": "LENSR650-003",
+      "kernelVersion": "6.1.0-13-amd64",
+      "dynamicGroupId": "e2000001-0001-0001-0001-000000000001",
+      "staticGroupId": "e1000001-0003-0003-0003-000000000003",
+      "adUserId": "a1000001-0003-0003-0003-000000000003"
+    }
+  ]
+}

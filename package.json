@@ -1,0 +1,88 @@
+{
+  "name": "bconnect-mock",
+  "version": "0.3.0",
+  "description": "Mock server for baramundi bConnect V2.0 REST API - supports multiple data profiles for testing and development",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build/",
+    "fixtures/",
+    "openapi/",
+    "scripts/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "bin": {
+    "bconnect-mock": "build/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node build/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src tests --ext .ts",
+    "lint:fix": "eslint src tests --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "type-check": "tsc --noEmit",
+    "generate-types": "bash scripts/generate-types.sh",
+    "audit-routes": "npm run build --silent && node scripts/audit-routes.js",
+    "audit-routes:check": "node scripts/audit-routes.js --check",
+    "clean": "rm -rf build coverage"
+  },
+  "keywords": [
+    "baramundi",
+    "bconnect",
+    "mock",
+    "testing",
+    "api",
+    "rest",
+    "endpoint-management"
+  ],
+  "author": "baramundi software AG",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/baramundisoftware/bConnect-Mock.git"
+  },
+  "bugs": {
+    "url": "https://github.com/baramundisoftware/bConnect-Mock/issues"
+  },
+  "homepage": "https://github.com/baramundisoftware/bConnect-Mock#readme",
+  "optionalDependencies": {
+    "@rolldown/binding-linux-arm64-gnu": "^1.0.0-rc.12"
+  },
+  "dependencies": {
+    "@types/swagger-ui-express": "^4.1.8",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "swagger-ui-express": "^5.0.1",
+    "tslib": "^2.8.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.5.0",
+    "@types/supertest": "^7.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.2",
+    "@typescript-eslint/parser": "^8.57.2",
+    "@vitest/coverage-v8": "^4.1.1",
+    "eslint": "^10.1.0",
+    "eslint-config-prettier": "^10.1.8",
+    "openapi-typescript": "^7.13.0",
+    "prettier": "^3.8.1",
+    "supertest": "^7.2.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.1"
+  }
+}

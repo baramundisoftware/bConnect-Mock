@@ -1,0 +1,14 @@
+[
+  {
+    "id": "bb000001-0001-0001-0001-000000000001",
+    "name": "Deploy Test Agent",
+    "type": "SoftwareDeployment",
+    "status": "Completed",
+    "targetGroup": "Default Group",
+    "createdDate": "2026-01-15T10:00:00Z",
+    "lastRun": "2026-03-20T14:30:00Z",
+    "successCount": 2,
+    "failureCount": 0,
+    "folderId": "a1000001-0001-0001-0001-000000000001"
+  }
+]

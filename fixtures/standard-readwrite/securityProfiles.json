@@ -1,0 +1,26 @@
+[
+  {
+    "id": "e0000001-0001-0001-0001-000000000001",
+    "name": "Standard Security Profile",
+    "description": "Standard endpoint security profile",
+    "level": "Standard",
+    "firewallEnabled": true,
+    "encryptionRequired": false
+  },
+  {
+    "id": "e0000001-0002-0002-0002-000000000002",
+    "name": "High Security Profile",
+    "description": "High security profile for sensitive data environments",
+    "level": "High",
+    "firewallEnabled": true,
+    "encryptionRequired": true
+  },
+  {
+    "id": "e0000001-0003-0003-0003-000000000003",
+    "name": "Minimal Security Profile",
+    "description": "Minimal security for isolated lab environments",
+    "level": "Minimal",
+    "firewallEnabled": false,
+    "encryptionRequired": false
+  }
+]
