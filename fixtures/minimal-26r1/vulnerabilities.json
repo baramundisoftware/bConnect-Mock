@@ -1,0 +1,11 @@
+[
+  {
+    "id": "c0022222-0000-0000-0000-000000000001",
+    "cveId": "CVE-2024-0001",
+    "cvssScore": 9.8,
+    "severity": "Critical",
+    "description": "Remote code execution vulnerability in network stack",
+    "affectedProducts": "Windows Server 2022",
+    "affectedOperatingSystems": "Windows"
+  }
+]

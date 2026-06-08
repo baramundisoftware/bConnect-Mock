@@ -1,0 +1,9 @@
+[
+  {
+    "id": "def00001-0001-0001-0001-000000000001",
+    "guid": "def00001-0001-0001-0001-000000000001",
+    "name": "Deploy Windows Updates",
+    "type": "WindowsJobDefinition",
+    "description": "Deploys critical Windows updates to endpoints"
+  }
+]

@@ -1,0 +1,40 @@
+{
+  "endpoints": [
+    {
+      "id": "d0000004-0001-0001-0001-000000000001",
+      "displayName": "MAC-EXEC-001",
+      "endpointType": "MacEndpoint",
+      "publicKey": "PFJTQUtleVZhbHVlPjxNb2R1bHVzPm1hYy1wdWJsaWMta2V5LWRhdGE8L01vZHVsdXM+PEV4cG9uZW50PkFRQUI8L0V4cG9uZW50PjwvUlNBS2V5VmFsdWU+",
+      "version": "6.5.0.1234",
+      "orgUnit": "ou=Executive,ou=Americas,ou=Leadership",
+      "primaryUser": "ceo@company.com",
+      "operatingSystem": "macOS Sonoma 14.3",
+      "lastSeen": "2026-03-26T11:00:00Z",
+      "primaryMAC": "00:1B:44:33:3A:D1",
+      "machineModel": "MacBook Pro 16-inch M3 Max",
+      "serialNumber": "MBP16-001",
+      "logicalGroupId": "d1000001-0006-0006-0006-000000000006",
+      "staticGroupId": "e1000001-0002-0002-0002-000000000002",
+      "adUserId": "a1000001-0001-0001-0001-000000000001",
+      "dynamicGroupId": "e2000001-0001-0001-0001-000000000001"
+    },
+    {
+      "id": "d0000004-0001-0001-0001-000000000002",
+      "displayName": "MAC-DESIGN-002",
+      "endpointType": "MacEndpoint",
+      "publicKey": "PFJTQUtleVZhbHVlPjxNb2R1bHVzPm1hYy1wdWJsaWMta2V5LWRhdGE8L01vZHVsdXM+PEV4cG9uZW50PkFRQUI8L0V4cG9uZW50PjwvUlNBS2V5VmFsdWU+",
+      "version": "6.5.0.1234",
+      "orgUnit": "ou=Design,ou=EMEA,ou=Creative",
+      "primaryUser": "designer@company.com",
+      "operatingSystem": "macOS Ventura 13.6",
+      "lastSeen": "2026-03-26T09:20:00Z",
+      "primaryMAC": "00:1B:44:33:3A:D2",
+      "machineModel": "Mac Studio M2 Ultra",
+      "serialNumber": "MACSTD-002",
+      "logicalGroupId": "d1000001-0006-0006-0006-000000000006",
+      "staticGroupId": "e1000001-0002-0002-0002-000000000002",
+      "adUserId": "a1000001-0002-0002-0002-000000000002",
+      "dynamicGroupId": "e2000001-0002-0002-0002-000000000002"
+    }
+  ]
+}

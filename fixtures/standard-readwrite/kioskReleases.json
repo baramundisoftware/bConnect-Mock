@@ -1,0 +1,26 @@
+[
+  {
+    "id": "c0000001-0001-0001-0001-000000000001",
+    "name": "Kiosk Browser v2.1",
+    "version": "2.1.0",
+    "releaseDate": "2026-01-15",
+    "status": "Active",
+    "description": "Kiosk browser release for public terminals"
+  },
+  {
+    "id": "c0000001-0002-0002-0002-000000000002",
+    "name": "Kiosk Viewer v1.5",
+    "version": "1.5.3",
+    "releaseDate": "2025-11-20",
+    "status": "Active",
+    "description": "Read-only kiosk viewer for information displays"
+  },
+  {
+    "id": "c0000001-0003-0003-0003-000000000003",
+    "name": "Kiosk Manager v3.0",
+    "version": "3.0.1",
+    "releaseDate": "2026-02-01",
+    "status": "Pending",
+    "description": "Management console for kiosk deployments"
+  }
+]

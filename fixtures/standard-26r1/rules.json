@@ -1,0 +1,51 @@
+[
+  {
+    "id": "c0011111-0000-0000-0000-000000000001",
+    "ruleName": "Password Policy Compliance",
+    "type": "PasswordPolicy",
+    "severity": "High",
+    "description": "Enforces minimum password length and complexity requirements"
+  },
+  {
+    "id": "c0011111-0000-0000-0000-000000000002",
+    "ruleName": "Disk Encryption Required",
+    "type": "Encryption",
+    "severity": "Critical",
+    "description": "All system drives must be encrypted with BitLocker"
+  },
+  {
+    "id": "c0011111-0000-0000-0000-000000000003",
+    "ruleName": "Firewall Enabled",
+    "type": "NetworkSecurity",
+    "severity": "Medium",
+    "description": "Windows Firewall must be enabled on all network profiles"
+  },
+  {
+    "id": "c0011111-0000-0000-0000-000000000004",
+    "ruleName": "Antivirus Up-to-Date",
+    "type": "Antivirus",
+    "severity": "High",
+    "description": "Antivirus definitions must be updated within the last 24 hours"
+  },
+  {
+    "id": "c0011111-0000-0000-0000-000000000005",
+    "ruleName": "Automatic Updates Enabled",
+    "type": "UpdatePolicy",
+    "severity": "Medium",
+    "description": "Windows Update must be configured for automatic installation"
+  },
+  {
+    "id": "c0011111-0000-0000-0000-000000000006",
+    "ruleName": "Screen Lock Timeout",
+    "type": "ScreenLock",
+    "severity": "Low",
+    "description": "Screen must lock automatically after 10 minutes of inactivity"
+  },
+  {
+    "id": "c0011111-0000-0000-0000-000000000007",
+    "ruleName": "UAC Enabled",
+    "type": "AccessControl",
+    "severity": "High",
+    "description": "User Account Control must be enabled and set to notify on changes"
+  }
+]

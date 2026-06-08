@@ -1,0 +1,20 @@
+[
+  {
+    "id": "f3000001-0001-0001-0001-000000000001",
+    "name": "New York HQ",
+    "comment": "Assets in New York HQ",
+    "parentId": null
+  },
+  {
+    "id": "f3000001-0002-0002-0002-000000000002",
+    "name": "London Office",
+    "comment": "Assets in London Office",
+    "parentId": null
+  },
+  {
+    "id": "f3000001-0003-0003-0003-000000000003",
+    "name": "Floor 15",
+    "comment": "Floor 15 assets",
+    "parentId": "f3000001-0001-0001-0001-000000000001"
+  }
+]

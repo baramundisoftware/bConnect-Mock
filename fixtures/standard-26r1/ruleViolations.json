@@ -1,0 +1,42 @@
+[
+  {
+    "endpointId": "d0000001-0001-0001-0001-000000000001",
+    "endpointName": "PCDE001-NYC",
+    "ruleId": "c0011111-0000-0000-0000-000000000001",
+    "ruleName": "Password Policy Compliance",
+    "detected": "2026-01-20T10:00:00Z",
+    "ignored": false
+  },
+  {
+    "endpointId": "d0000001-0001-0001-0001-000000000002",
+    "endpointName": "PCDE002-NYC",
+    "ruleId": "c0011111-0000-0000-0000-000000000002",
+    "ruleName": "Disk Encryption Required",
+    "detected": "2026-01-22T08:45:00Z",
+    "ignored": false
+  },
+  {
+    "endpointId": "d0000001-0001-0001-0001-000000000003",
+    "endpointName": "PCDE003-LON",
+    "ruleId": "c0011111-0000-0000-0000-000000000003",
+    "ruleName": "Firewall Enabled",
+    "detected": "2026-01-25T13:00:00Z",
+    "ignored": true
+  },
+  {
+    "endpointId": "d0000001-0001-0001-0001-000000000004",
+    "endpointName": "PCDE004-SIN",
+    "ruleId": "c0011111-0000-0000-0000-000000000004",
+    "ruleName": "Antivirus Up-to-Date",
+    "detected": "2026-02-05T09:30:00Z",
+    "ignored": false
+  },
+  {
+    "endpointId": "d0000001-0001-0001-0001-000000000005",
+    "endpointName": "PCDE005-NYC",
+    "ruleId": "c0011111-0000-0000-0000-000000000005",
+    "ruleName": "Automatic Updates Enabled",
+    "detected": "2026-02-12T16:15:00Z",
+    "ignored": false
+  }
+]

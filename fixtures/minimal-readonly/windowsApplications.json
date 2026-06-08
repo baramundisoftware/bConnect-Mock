@@ -1,0 +1,10 @@
+[
+  {
+    "id": "ca000001-0001-0001-0001-000000000001",
+    "guid": "ca000001-0001-0001-0001-000000000001",
+    "name": "Microsoft Edge",
+    "type": "WindowsApplication",
+    "version": "122.0.2365.92",
+    "vendor": "Microsoft Corporation"
+  }
+]

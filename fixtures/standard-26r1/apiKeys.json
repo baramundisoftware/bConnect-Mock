@@ -1,0 +1,29 @@
+[
+  {
+    "id": "ak011111-0000-0000-0000-000000000001",
+    "name": "CI/CD Pipeline Key",
+    "expirationDate": "2027-01-01T00:00:00Z",
+    "comment": "Used for automated deployments",
+    "isActive": true,
+    "isAvailableViaGateway": true,
+    "securityProfiles": ["Administrators"]
+  },
+  {
+    "id": "ak011111-0000-0000-0000-000000000002",
+    "name": "Monitoring Key",
+    "expirationDate": "2027-06-01T00:00:00Z",
+    "comment": "Read-only key for monitoring systems",
+    "isActive": true,
+    "isAvailableViaGateway": false,
+    "securityProfiles": ["Operators"]
+  },
+  {
+    "id": "ak011111-0000-0000-0000-000000000003",
+    "name": "Legacy Integration Key",
+    "expirationDate": "2026-01-01T00:00:00Z",
+    "comment": "Key for legacy system integration",
+    "isActive": false,
+    "isAvailableViaGateway": false,
+    "securityProfiles": []
+  }
+]

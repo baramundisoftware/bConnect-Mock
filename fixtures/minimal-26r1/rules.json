@@ -1,0 +1,9 @@
+[
+  {
+    "id": "c0011111-0000-0000-0000-000000000001",
+    "ruleName": "Password Policy Compliance",
+    "type": "PasswordPolicy",
+    "severity": "High",
+    "description": "Enforces minimum password length and complexity requirements"
+  }
+]

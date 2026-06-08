@@ -1,0 +1,56 @@
+[
+  {
+    "id": "c0022222-0000-0000-0000-000000000001",
+    "cveId": "CVE-2024-0001",
+    "cvssScore": 9.8,
+    "severity": "Critical",
+    "description": "Remote code execution vulnerability in network stack",
+    "affectedProducts": "Windows Server 2022",
+    "affectedOperatingSystems": "Windows"
+  },
+  {
+    "id": "c0022222-0000-0000-0000-000000000002",
+    "cveId": "CVE-2024-0042",
+    "cvssScore": 7.5,
+    "severity": "High",
+    "description": "Privilege escalation in Windows kernel",
+    "affectedProducts": "Windows 10, Windows 11, Windows Server 2019, Windows Server 2022",
+    "affectedOperatingSystems": "Windows"
+  },
+  {
+    "id": "c0022222-0000-0000-0000-000000000003",
+    "cveId": "CVE-2024-0107",
+    "cvssScore": 6.1,
+    "severity": "Medium",
+    "description": "Information disclosure in SMB service",
+    "affectedProducts": "Windows Server 2016, Windows Server 2019",
+    "affectedOperatingSystems": "Windows"
+  },
+  {
+    "id": "c0022222-0000-0000-0000-000000000004",
+    "cveId": "CVE-2023-4567",
+    "cvssScore": 8.8,
+    "severity": "High",
+    "description": "Buffer overflow in print spooler service",
+    "affectedProducts": "Windows 10, Windows 11",
+    "affectedOperatingSystems": "Windows"
+  },
+  {
+    "id": "c0022222-0000-0000-0000-000000000005",
+    "cveId": "CVE-2023-3210",
+    "cvssScore": 5.5,
+    "severity": "Medium",
+    "description": "Denial of service via crafted RDP packet",
+    "affectedProducts": "Windows Server 2019, Windows Server 2022",
+    "affectedOperatingSystems": "Windows"
+  },
+  {
+    "id": "c0022222-0000-0000-0000-000000000006",
+    "cveId": "CVE-2024-1122",
+    "cvssScore": 9.1,
+    "severity": "Critical",
+    "description": "Authentication bypass in Active Directory authentication",
+    "affectedProducts": "Windows Server 2022",
+    "affectedOperatingSystems": "Windows"
+  }
+]

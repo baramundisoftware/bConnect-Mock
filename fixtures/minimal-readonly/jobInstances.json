@@ -1,0 +1,25 @@
+[
+  {
+    "id": "c8000001-0001-0001-0001-000000000001",
+    "guid": "c8000001-0001-0001-0001-000000000001",
+    "type": "JobInstance",
+    "jobDefinitionId": "bb000001-0001-0001-0001-000000000001",
+    "jobDefinitionName": "Deploy Windows Updates",
+    "jobDefinitionDisplayName": "Deploy Windows Updates",
+    "jobDefinitionType": "WindowsJobDefinition",
+    "endpointId": "a1000001-0001-0001-0001-000000000001",
+    "endpointName": "WIN-CORP-00001",
+    "endpointType": "WindowsEndpoint",
+    "initiator": "admin@company.com",
+    "start": "2026-03-29T08:00:00Z",
+    "lastAction": "2026-03-29T08:15:00Z",
+    "state": "Completed",
+    "stateDescription": "Job completed on endpoint",
+    "successfulExecutions": 1,
+    "erroneousExecutions": 0,
+    "retries": 0,
+    "logicalGroupId": "d1000001-0001-0001-0001-000000000001",
+    "staticGroupId": "e1000001-0001-0001-0001-000000000001",
+    "dynamicGroupId": "e2000001-0001-0001-0001-000000000001"
+  }
+]

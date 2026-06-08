@@ -1,0 +1,13 @@
+[
+  {
+    "id": "e2000001-0001-0001-0001-000000000001",
+    "guid": "e2000001-0001-0001-0001-000000000001",
+    "type": "DynamicGroup",
+    "displayName": "All Managed Endpoints",
+    "description": "Dynamically includes all endpoints with managementState=Managed",
+    "filterCriteria": {
+      "managementState": "Managed"
+    },
+    "memberCount": 5
+  }
+]

@@ -1,0 +1,39 @@
+{
+  "variables": [
+    {
+      "id": "a0000001-0001-0001-0001-000000000001",
+      "name": "Location",
+      "type": "String",
+      "description": "Physical office location",
+      "values": ["New York", "London", "Singapore", "Frankfurt", "Tokyo", "Berlin", "Sydney"]
+    },
+    {
+      "id": "a0000001-0001-0001-0001-000000000002",
+      "name": "Department",
+      "type": "String",
+      "description": "Organizational department",
+      "values": ["Finance", "Development", "Engineering", "Marketing", "Sales", "Support", "IT Operations", "Research", "Operations"]
+    },
+    {
+      "id": "a0000001-0001-0001-0001-000000000003",
+      "name": "CostCenter",
+      "type": "String",
+      "description": "Financial cost center code",
+      "values": ["FIN-001", "DEV-002", "ENG-APAC", "MKT-001", "SALES-EMEA", "SUP-APAC", "IT-OPS-001", "RES-EMEA", "OPS-APAC"]
+    },
+    {
+      "id": "a0000001-0001-0001-0001-000000000004",
+      "name": "Region",
+      "type": "String",
+      "description": "Geographic region",
+      "values": ["Americas", "EMEA", "APAC"]
+    },
+    {
+      "id": "a0000001-0001-0001-0001-000000000005",
+      "name": "ComplianceLevel",
+      "type": "String",
+      "description": "Security compliance classification",
+      "values": ["Standard", "High", "Critical"]
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+      - name: Create release archive
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          ARCHIVE="bconnect-mock-${VERSION}.zip"
+
+          mkdir -p release-package
+          cp -r build release-package/
+          cp -r fixtures release-package/
+          cp -r openapi-specs release-package/
+          cp package.json release-package/
+          cp package-lock.json release-package/
+          cp README.md release-package/
+          cp LICENSE release-package/
+          cp CHANGELOG.md release-package/
+          cp SECURITY.md release-package/
+          cp Dockerfile release-package/
+          cp docker-compose.yml release-package/
+          [ -f .env.example ] && cp .env.example release-package/
+
+          cat > release-package/INSTALL.md << 'INSTALLEOF'
+          # Installation
+
+          ## Option 1: Node.js
+          1. Extract this archive
+          2. Run: npm ci --production
+          3. Start: npm start
+          4. Open: http://localhost:3433/api-docs
+
+          ## Option 2: Docker
+          1. Extract this archive
+          2. Run: docker compose up
+          3. Open: http://localhost:3433/api-docs
+
+          See README.md for full documentation.
+          INSTALLEOF
+
+          cd release-package
+          zip -r "../${ARCHIVE}" .
+          cd ..
+
+          sha256sum "${ARCHIVE}" > "${ARCHIVE}.sha256"
+
+          echo "ARCHIVE=${ARCHIVE}" >> $GITHUB_ENV
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+
+      - name: Extract release notes from CHANGELOG
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk "/^## \[${VERSION}\]/{found=1; next} /^## \[/{if(found) exit} found{print}" CHANGELOG.md > release-notes.md
+
+          if [ ! -s release-notes.md ]; then
+            echo "Release ${VERSION}" > release-notes.md
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-notes.md
+          files: |
+            ${{ env.ARCHIVE }}
+            ${{ env.ARCHIVE }}.sha256
+          draft: false
+          prerelease: true

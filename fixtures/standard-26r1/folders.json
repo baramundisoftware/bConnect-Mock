@@ -1,0 +1,30 @@
+[
+  {
+    "id": "f0011111-0000-0000-0000-000000000001",
+    "name": "Root",
+    "comment": null,
+    "parentId": null,
+    "parent": null
+  },
+  {
+    "id": "f0011111-0000-0000-0000-000000000002",
+    "name": "Security",
+    "comment": "Security-related dynamic groups",
+    "parentId": "f0011111-0000-0000-0000-000000000001",
+    "parent": "Root"
+  },
+  {
+    "id": "f0011111-0000-0000-0000-000000000003",
+    "name": "Infrastructure",
+    "comment": "Infrastructure server dynamic groups",
+    "parentId": "f0011111-0000-0000-0000-000000000001",
+    "parent": "Root"
+  },
+  {
+    "id": "f0011111-0000-0000-0000-000000000004",
+    "name": "Hardware Types",
+    "comment": "Groups by hardware category",
+    "parentId": "f0011111-0000-0000-0000-000000000001",
+    "parent": "Root"
+  }
+]

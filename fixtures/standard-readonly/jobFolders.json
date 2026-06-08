@@ -1,0 +1,32 @@
+[
+  {
+    "id": "a1000001-0001-0001-0001-000000000001",
+    "name": "Root",
+    "comment": null,
+    "parentId": null
+  },
+  {
+    "id": "a1000001-0002-0002-0002-000000000002",
+    "name": "Operating System Deployment",
+    "comment": "OS deployment job definitions",
+    "parentId": "a1000001-0001-0001-0001-000000000001"
+  },
+  {
+    "id": "a1000001-0003-0003-0003-000000000003",
+    "name": "Software Installation",
+    "comment": "Software installation job definitions",
+    "parentId": "a1000001-0001-0001-0001-000000000001"
+  },
+  {
+    "id": "a1000001-0004-0004-0004-000000000004",
+    "name": "Patch Management",
+    "comment": "Windows update and patching jobs",
+    "parentId": "a1000001-0001-0001-0001-000000000001"
+  },
+  {
+    "id": "a1000001-0005-0005-0005-000000000005",
+    "name": "Security Baseline",
+    "comment": "Security hardening jobs",
+    "parentId": "a1000001-0002-0002-0002-000000000002"
+  }
+]

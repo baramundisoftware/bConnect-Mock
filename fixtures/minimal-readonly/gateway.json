@@ -1,0 +1,13 @@
+[
+  {
+    "id": "gw000001-0001-0001-0001-000000000001",
+    "type": "Gateway",
+    "name": "bConnect Gateway",
+    "version": "26.1.0.1234",
+    "state": "Running",
+    "primaryUrl": "https://bconnect.corp.test",
+    "port": 443,
+    "isConnected": true,
+    "lastSeen": "2026-03-31T08:00:00Z"
+  }
+]

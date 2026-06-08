@@ -1,0 +1,21 @@
+[
+  {
+    "id": "c5000001-0001-0001-0001-000000000001",
+    "guid": "c5000001-0001-0001-0001-000000000001",
+    "type": "IOSEndpoint",
+    "displayName": "IOS-MOB-00001",
+    "primaryUser": "alice.johnson@mobile.company.com",
+    "operatingSystem": "iOS 17.4",
+    "modelName": "iPhone 15 Pro",
+    "serialNumber": "APL000000001",
+    "udid": "ios-udid-00100001-0000-0000-0000-000000000001",
+    "lastSeen": "2026-03-30T08:00:00Z",
+    "orgUnit": "ou=iOS,ou=Mobile,ou=Americas",
+    "clientAgentVersion": "6.5.0.1234",
+    "managementState": "Managed",
+    "isOnline": true,
+    "isSupervised": true,
+    "logicalGroupId": "d1000001-0003-0003-0003-000000000003",
+    "adUserId": "a1000001-0001-0001-0001-000000000001"
+  }
+]

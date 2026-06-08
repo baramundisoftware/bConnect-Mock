@@ -1,0 +1,30 @@
+[
+  {
+    "id": "d1000001-0001-0001-0001-000000000001",
+    "name": "Default Security Group",
+    "description": "Default security policy group for all endpoints",
+    "isDefault": true,
+    "memberCount": 42
+  },
+  {
+    "id": "d1000001-0002-0002-0002-000000000002",
+    "name": "High Security Group",
+    "description": "Enhanced security policies for sensitive endpoints",
+    "isDefault": false,
+    "memberCount": 12
+  },
+  {
+    "id": "d1000001-0003-0003-0003-000000000003",
+    "name": "DMZ Security Group",
+    "description": "Security policies for DMZ-facing endpoints",
+    "isDefault": false,
+    "memberCount": 5
+  },
+  {
+    "id": "d1000001-0004-0004-0004-000000000004",
+    "name": "Development Security Group",
+    "description": "Relaxed security for development workstations",
+    "isDefault": false,
+    "memberCount": 28
+  }
+]

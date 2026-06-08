@@ -1,0 +1,14 @@
+[
+  {
+    "id": "vpn00001-0001-0001-0001-000000000001",
+    "type": "VpnAppliance",
+    "name": "BMS VPN Appliance",
+    "state": "Running",
+    "ipAddress": "192.168.1.1",
+    "port": 1194,
+    "protocol": "OpenVPN",
+    "connectedClients": 42,
+    "isEnabled": true,
+    "version": "2.6.0"
+  }
+]

@@ -1,0 +1,30 @@
+[
+  {
+    "id": "f1000001-0001-0001-0001-000000000001",
+    "deviceId": "a0000001-0001-0001-0001-000000000001",
+    "entraObjectId": "entra-obj-00000001",
+    "entraDeviceName": "WIN-CL-00001",
+    "azureAdDeviceId": "aad-dev-00000001",
+    "enrollmentType": "AzureADJoined",
+    "complianceState": "Compliant",
+    "lastSyncDateTime": "2026-03-30T07:00:00Z",
+    "intuneManaged": true,
+    "operatingSystem": "Windows 11",
+    "osVersion": "10.0.22631.3296",
+    "trustType": "AzureAd"
+  },
+  {
+    "id": "f1000001-0002-0002-0002-000000000002",
+    "deviceId": "a0000001-0002-0002-0002-000000000002",
+    "entraObjectId": "entra-obj-00000002",
+    "entraDeviceName": "WIN-CL-00002",
+    "azureAdDeviceId": "aad-dev-00000002",
+    "enrollmentType": "HybridAzureADJoined",
+    "complianceState": "NonCompliant",
+    "lastSyncDateTime": "2026-03-29T10:30:00Z",
+    "intuneManaged": false,
+    "operatingSystem": "Windows 10",
+    "osVersion": "10.0.19045.4123",
+    "trustType": "ServerAd"
+  }
+]

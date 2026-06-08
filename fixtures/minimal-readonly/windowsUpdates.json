@@ -1,0 +1,15 @@
+[
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "title": "2024-11 Cumulative Update for Windows 11 Version 23H2",
+    "kbArticle": "KB5034763",
+    "classification": "Security Updates",
+    "severity": "Critical",
+    "installed": true,
+    "installDate": "2024-11-20T10:30:00Z",
+    "endpointId": "b2c3d4e5-6789-01bc-def0-234567890abc",
+    "releaseDate": "2024-11-12T00:00:00Z",
+    "downloadSize": 524288000,
+    "description": "Security Update 2024-11 Cumulative Update for Windows 11 Version 23H2 (KB5034763)"
+  }
+]

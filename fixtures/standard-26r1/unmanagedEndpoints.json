@@ -1,0 +1,62 @@
+[
+  {
+    "id": "e1000001-0001-0001-0001-000000000001",
+    "guid": "e1000001-0001-0001-0001-000000000001",
+    "type": "UnmanagedEndpoint",
+    "displayName": "UNMANAGED-PC-001",
+    "primaryIP": "192.168.1.100",
+    "primaryMAC": "AA:BB:CC:DD:EE:01",
+    "lastSeen": "2026-03-30T06:00:00Z",
+    "detectedOS": "Windows 11",
+    "discoveryMethod": "NetworkScan",
+    "isManaged": false
+  },
+  {
+    "id": "e1000001-0002-0002-0002-000000000002",
+    "guid": "e1000001-0002-0002-0002-000000000002",
+    "type": "UnmanagedEndpoint",
+    "displayName": "UNMANAGED-DEV-002",
+    "primaryIP": "192.168.1.101",
+    "primaryMAC": "AA:BB:CC:DD:EE:02",
+    "lastSeen": "2026-03-29T14:30:00Z",
+    "detectedOS": "Ubuntu 22.04",
+    "discoveryMethod": "ARPScan",
+    "isManaged": false
+  },
+  {
+    "id": "e1000001-0003-0003-0003-000000000003",
+    "guid": "e1000001-0003-0003-0003-000000000003",
+    "type": "UnmanagedEndpoint",
+    "displayName": "PRINTER-FLOOR2-003",
+    "primaryIP": "10.10.2.50",
+    "primaryMAC": "AA:BB:CC:DD:EE:03",
+    "lastSeen": "2026-03-28T09:15:00Z",
+    "detectedOS": "Embedded/Unknown",
+    "discoveryMethod": "NetworkScan",
+    "isManaged": false
+  },
+  {
+    "id": "e1000001-0004-0004-0004-000000000004",
+    "guid": "e1000001-0004-0004-0004-000000000004",
+    "type": "UnmanagedEndpoint",
+    "displayName": "SMARTTV-CONF-004",
+    "primaryIP": "10.10.3.70",
+    "primaryMAC": "AA:BB:CC:DD:EE:04",
+    "lastSeen": "2026-03-27T11:00:00Z",
+    "detectedOS": "Android TV",
+    "discoveryMethod": "WLANScan",
+    "isManaged": false
+  },
+  {
+    "id": "e1000001-0005-0005-0005-000000000005",
+    "guid": "e1000001-0005-0005-0005-000000000005",
+    "type": "UnmanagedEndpoint",
+    "displayName": "ROGUE-LAPTOP-005",
+    "primaryIP": "10.10.4.200",
+    "primaryMAC": "AA:BB:CC:DD:EE:05",
+    "lastSeen": "2026-03-25T16:45:00Z",
+    "detectedOS": "macOS 14",
+    "discoveryMethod": "NetworkScan",
+    "isManaged": false
+  }
+]

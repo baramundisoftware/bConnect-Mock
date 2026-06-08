@@ -1,0 +1,15 @@
+[
+  {
+    "id": "a1000001-0001-0001-0001-000000000001",
+    "guid": "a1000001-0001-0001-0001-000000000001",
+    "type": "ADUser",
+    "displayName": "John Smith",
+    "samAccountName": "jsmith",
+    "userPrincipalName": "jsmith@corp.test",
+    "email": "jsmith@corp.test",
+    "department": "Engineering",
+    "title": "Senior Engineer",
+    "isEnabled": true,
+    "lastLogon": "2026-03-30T08:00:00Z"
+  }
+]

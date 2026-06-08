@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+build/
+dist/
+*.tsbuildinfo
+
+# Test coverage output (anchored to root — does not exclude tests/integration/coverage/)
+/coverage/
+.nyc_output/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Debug
+.inspect/
+heap*.heapsnapshot
+
+# Release artifacts
+*.tgz
+*.tgz.asc
+
+# Claude Code
+.claude/
+CLAUDE.md
+
+# Internal docs — not for repository
+Tasks.md
+Requirements.md
+Bugs_Mock.md
+docs/ADR-*
+docs/AUDIT-*
+docs/SDLC-PIPELINE.md
+docs/CONTEXT-IMPROVEMENTS-SUMMARY.md
+docs/WORKFLOW-OPTIMIZATION-PROPOSAL.md
+docs/CONTEXT-OPTIMIZATION-GUIDE.md
+docs/THREAT-MODEL.md
+docs/archive/
+docs/API.md
+docs/FIXTURE-STRUCTURE.md
+docs/TYPES_USAGE.md
+scripts/compress-tasks.sh
+scripts/show-completed-tasks.sh
+scripts/visualize-status.js
+scripts/README-visualize-status.md

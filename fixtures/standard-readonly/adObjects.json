@@ -1,0 +1,79 @@
+[
+  {
+    "id": "ad000001-0001-0001-0001-000000000001",
+    "name": "John Smith",
+    "distinguishedName": "CN=John Smith,OU=Engineering,DC=company,DC=com",
+    "objectType": "User",
+    "samAccountName": "jsmith",
+    "userPrincipalName": "jsmith@company.com",
+    "adGroupId": "a9000001-0001-0001-0001-000000000001",
+    "orgUnitId": "f1000001-0001-0001-0001-000000000001"
+  },
+  {
+    "id": "ad000001-0001-0001-0001-000000000002",
+    "name": "Jane Doe",
+    "distinguishedName": "CN=Jane Doe,OU=Finance,DC=company,DC=com",
+    "objectType": "User",
+    "samAccountName": "jdoe",
+    "userPrincipalName": "jdoe@company.com",
+    "adGroupId": "a9000001-0001-0001-0001-000000000002",
+    "orgUnitId": "f1000001-0002-0002-0002-000000000002"
+  },
+  {
+    "id": "ad000001-0001-0001-0001-000000000003",
+    "name": "Bob Johnson",
+    "distinguishedName": "CN=Bob Johnson,OU=HR,DC=company,DC=com",
+    "objectType": "User",
+    "samAccountName": "bjohnson",
+    "userPrincipalName": "bjohnson@company.com",
+    "adGroupId": "a9000001-0001-0001-0001-000000000003",
+    "orgUnitId": "f1000001-0003-0003-0003-000000000003"
+  },
+  {
+    "id": "ad000001-0001-0001-0001-000000000004",
+    "name": "Alice Williams",
+    "distinguishedName": "CN=Alice Williams,OU=IT,DC=company,DC=com",
+    "objectType": "User",
+    "samAccountName": "awilliams",
+    "userPrincipalName": "awilliams@company.com",
+    "adGroupId": "a9000001-0001-0001-0001-000000000001",
+    "orgUnitId": "f1000001-0001-0001-0001-000000000001"
+  },
+  {
+    "id": "ad000001-0001-0001-0001-000000000005",
+    "name": "Charlie Brown",
+    "distinguishedName": "CN=Charlie Brown,OU=Management,DC=company,DC=com",
+    "objectType": "User",
+    "samAccountName": "cbrown",
+    "userPrincipalName": "cbrown@company.com",
+    "adGroupId": "a9000001-0001-0001-0001-000000000002",
+    "orgUnitId": "f1000001-0002-0002-0002-000000000002"
+  },
+  {
+    "id": "ad000001-0001-0001-0001-000000000006",
+    "name": "Domain Admins",
+    "distinguishedName": "CN=Domain Admins,CN=Users,DC=company,DC=com",
+    "objectType": "Group",
+    "samAccountName": "Domain Admins",
+    "adGroupId": "a9000001-0001-0001-0001-000000000001",
+    "orgUnitId": "f1000001-0001-0001-0001-000000000001"
+  },
+  {
+    "id": "ad000001-0001-0001-0001-000000000007",
+    "name": "IT Department",
+    "distinguishedName": "CN=IT Department,OU=Departments,DC=company,DC=com",
+    "objectType": "Group",
+    "samAccountName": "IT Department",
+    "adGroupId": "a9000001-0001-0001-0001-000000000002",
+    "orgUnitId": "f1000001-0002-0002-0002-000000000002"
+  },
+  {
+    "id": "ad000001-0001-0001-0001-000000000008",
+    "name": "Finance Team",
+    "distinguishedName": "CN=Finance Team,OU=Departments,DC=company,DC=com",
+    "objectType": "Group",
+    "samAccountName": "Finance Team",
+    "adGroupId": "a9000001-0001-0001-0001-000000000003",
+    "orgUnitId": "f1000001-0003-0003-0003-000000000003"
+  }
+]
