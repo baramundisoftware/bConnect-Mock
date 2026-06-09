@@ -42,7 +42,11 @@
     "rest",
     "endpoint-management"
   ],
-  "author": "baramundi software GmbH",
+  "author": {
+    "name": "baramundi software GmbH",
+    "email": "bernd.wiedemann@baramundi.com",
+    "url": "https://www.baramundi.com"
+  },
   "license": "MIT",
   "engines": {
     "node": ">=20.0.0",
