@@ -116,7 +116,7 @@ const SOFTWARE_BY_CATEGORY: Record<string, Array<{ vendor: string; name: string;
     { vendor: 'Datadog Inc.', name: 'Datadog Agent', baseVersion: '7.52.0' },
     { vendor: 'New Relic Inc.', name: 'New Relic Infrastructure Agent', baseVersion: '1.52.0' },
     { vendor: 'Dynatrace LLC', name: 'Dynatrace OneAgent', baseVersion: '1.285.0' },
-    { vendor: 'baramundi software AG', name: 'baramundi Management Agent', baseVersion: '26.1.0' },
+    { vendor: 'baramundi software GmbH', name: 'baramundi Management Agent', baseVersion: '26.1.0' },
   ],
 };
 

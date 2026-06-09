@@ -26,7 +26,7 @@ FROM node:20-alpine
 LABEL org.opencontainers.image.title="bConnect Mock Server" \
       org.opencontainers.image.description="Mock server for baramundi bConnect V2.0 REST API" \
       org.opencontainers.image.version="1.0.0" \
-      org.opencontainers.image.vendor="baramundi software AG"
+      org.opencontainers.image.vendor="baramundi software GmbH"
 
 WORKDIR /app
 

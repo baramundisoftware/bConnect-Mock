@@ -42,7 +42,7 @@
     "rest",
     "endpoint-management"
   ],
-  "author": "baramundi software AG",
+  "author": "baramundi software GmbH",
   "license": "MIT",
   "engines": {
     "node": ">=20.0.0",

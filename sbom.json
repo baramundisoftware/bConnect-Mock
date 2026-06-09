@@ -84,7 +84,7 @@
       "name": "bconnect-mock",
       "version": "1.2.0",
       "bom-ref": "bconnect-mock@1.2.0",
-      "author": "baramundi software AG",
+      "author": "baramundi software GmbH",
       "description": "Mock server for baramundi bConnect V2.0 REST API - supports multiple data profiles for testing and development",
       "licenses": [
         {
