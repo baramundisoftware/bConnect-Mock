@@ -18,7 +18,7 @@ Do not expose bConnect-Mock to the public internet.
 
 Report vulnerabilities by email to:
 
-**bernd.wiedemann@baramundi.com**
+**bernd.wiedemann@baramundi.de**
 
 Include as much of the following as possible:
 
