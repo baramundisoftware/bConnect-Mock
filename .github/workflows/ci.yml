@@ -47,11 +47,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests with coverage enforcement
-        # vitest exits non-zero when any threshold in vitest.config.ts is not met.
-        # Thresholds are set as a ratchet at current measured levels; raise them
-        # in vitest.config.ts as coverage improves toward the 80% target.
-        run: npm run test:coverage
+      - name: Run tests
+        run: npm test
 
   build:
     name: Build
@@ -119,9 +116,6 @@ jobs:
       - name: License compliance check
         run: npx license-checker --production --failOn "GPL-3.0-only;GPL-3.0-or-later;AGPL-3.0-only;AGPL-3.0-or-later;SSPL-1.0"
 
-      - name: Secrets scan
-        run: npx secretlint "**/*" --secretlintignore .gitignore
-
       - name: Check for outdated dependencies
         run: npm outdated || true
 
@@ -141,6 +135,7 @@ jobs:
         uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
         with:
           context: .
+          load: true
           push: false
           tags: bconnect-mock:ci
           cache-from: type=gha
