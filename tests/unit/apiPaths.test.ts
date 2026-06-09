@@ -33,7 +33,7 @@ describe('OpenAPI path cross-check', () => {
 
     for (const specPath of specPaths) {
       // Skip non-API paths (health, reset)
-      if (specPath === '/health' || specPath === '/api/reset') continue;
+      if (specPath === '/health' || specPath === '/api/reset') { continue; }
 
       // Convert OpenAPI {id} params to a dummy GUID
       const testPath = specPath.replace(/\{[^}]+\}/g, '00000000-0000-0000-0000-000000000000');
@@ -42,7 +42,7 @@ describe('OpenAPI path cross-check', () => {
       const methods = Object.keys(specObj.paths[specPath]);
       const method = methods.includes('get') ? 'get' : methods[0];
 
-      const res = await (request(app) as any)[method](testPath).send(method === 'post' ? {} : undefined);
+      const res = await (request(app) as unknown as Record<string, (path: string) => { send: (body?: object) => Promise<{ status: number; text?: string }> }>)[method](testPath).send(method === 'post' ? {} : undefined);
       // 404 from Express ("Cannot GET/POST/...") means route is not registered
       // 404 from our handler (entity not found) is fine — it means the route exists
       const is404Express = res.status === 404 && /Cannot (GET|POST|PUT|PATCH|DELETE)/.test(res.text || '');

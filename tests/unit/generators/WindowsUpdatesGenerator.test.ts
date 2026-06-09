@@ -143,7 +143,7 @@ describe('WindowsUpdatesGenerator', () => {
     it('~70% installed, ~30% not installed', () => {
       let installedCount = 0;
       for (let i = 0; i < 200; i++) {
-        if (gen.generateItem(i).installed) installedCount++;
+        if (gen.generateItem(i).installed) { installedCount++; }
       }
       const pct = installedCount / 200;
       // Allow some tolerance: 55%–85%

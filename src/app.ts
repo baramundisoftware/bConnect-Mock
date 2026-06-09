@@ -342,7 +342,7 @@ export function createApp(
   registerAllRoutes(app, profile);
   const bconnectRouter = express.Router();
   // Share app.locals with the sub-router so route handlers can access stateManager
-  (bconnectRouter as any).locals = app.locals;
+  (bconnectRouter as unknown as { locals: typeof app.locals }).locals = app.locals;
   registerAllRoutes(bconnectRouter as unknown as Express, profile);
   app.use('/bconnect', bconnectRouter);
 

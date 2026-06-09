@@ -236,7 +236,7 @@ describe('ServerManagement 26R1 routes (serverManagement.ts)', () => {
 
   it('GET /v2.0/DownloadJobs/:id returns 200 for known', async () => {
     const list = await request(app).get('/v2.0/DownloadJobs').expect(200);
-    if (list.body.data.length === 0) return;
+    if (list.body.data.length === 0) { return; }
     const id = list.body.data[0].id as string;
     const res = await request(app).get(`/v2.0/DownloadJobs/${id}`).expect(200);
     expect(res.body).toHaveProperty('id', id);
@@ -448,7 +448,7 @@ describe('Assets — VariableDefinitions aliases and AssetStock (assets.ts, 26R1
 
   it('GET /v2.0/VariableDefinitions/:id returns 200 for known', async () => {
     const list = await request(app).get('/v2.0/VariableDefinitions').expect(200);
-    if (list.body.data.length === 0) return;
+    if (list.body.data.length === 0) { return; }
     const id = list.body.data[0].id as string;
     const res = await request(app).get(`/v2.0/VariableDefinitions/${id}`).expect(200);
     expect(res.body).toHaveProperty('id', id);
