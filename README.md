@@ -18,17 +18,13 @@ A mock server for the **baramundi bConnect REST API**. Use it to develop and tes
 ### Step 1: Install
 
 ```bash
-npm install -g bconnect-mock
-```
-
-Or clone and build from source:
-
-```bash
 git clone https://github.com/baramundisoftware/bConnect-Mock.git
 cd bConnect-Mock
 npm ci
 npm run build
 ```
+
+> **Future**: once published to npm, you'll be able to install via `npm install -g bconnect-mock`.
 
 ### Step 2: Start the Mock Server
 
