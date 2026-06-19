@@ -67,3 +67,6 @@ scripts/show-completed-tasks.sh
 scripts/visualize-status.js
 scripts/README-visualize-status.md
 tests/unit/audit/
+
+# Generated SBOM (CycloneDX) — produced by `npm run sbom`, attached to releases
+sbom.json
