@@ -121,7 +121,7 @@ export class WindowsUpdatesGenerator extends BaseGenerator<WindowsUpdateRecord> 
     }
 
     const severity = pick(SEVERITIES, index);
-    const classification = CLASSIFICATION_MAP[index % CLASSIFICATION_MAP.length]!;
+    const classification = pick(CLASSIFICATION_MAP, index);
     const os = pick(OS_TARGETS, index);
     const titleFn = pick(TITLE_PATTERNS, index);
     const year = 2024 + Math.floor(index / 120);

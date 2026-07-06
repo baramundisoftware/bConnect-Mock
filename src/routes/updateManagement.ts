@@ -34,7 +34,9 @@ function toUpdateProjection(ep: Record<string, unknown>): Record<string, unknown
   const missingCritical = isPatched ? 0 : (h % 5);
   const missingSecurity = isPatched ? 0 : ((h >> 3) % 8);
   const missingOther = isPatched ? 0 : ((h >> 6) % 12);
-  const state = isPatched ? 'UpToDate' : UPDATE_STATES[(h >> 4) % UPDATE_STATES.length]!;
+  const state = isPatched
+    ? 'UpToDate'
+    : (UPDATE_STATES[(h >> 4) % UPDATE_STATES.length] as (typeof UPDATE_STATES)[number]);
   const profile = UPDATE_PROFILES[h % UPDATE_PROFILES.length] ?? null;
 
   // Deterministic dates: last inventory 0–30 days ago, last update 0–60 days ago
