@@ -66,6 +66,7 @@ This shows all available endpoints with try-it-out functionality.
 | `standard-readonly` | 10-20 endpoints per type, read-only | Integration tests, demos |
 | `standard-readwrite` | 10-20 endpoints per type, full CRUD | Full integration testing with writes |
 | `largescale-readonly` | 70,000+ endpoints, read-only | Performance and load testing |
+| `largescale-readwrite` | 70,000+ endpoints, full CRUD | Performance and load testing with writes |
 
 Set the profile via environment variable:
 
@@ -98,8 +99,8 @@ Verify: `curl http://localhost:3433/health`
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `BCONNECT_MOCK_PROFILE` | `minimal-readonly` | Data profile (see table above) |
-| `BCONNECT_MOCK_PORT` | `3433` | HTTP port |
-| `BMS_VERSION` | `25r2` | bMS version to simulate: `25r2` or `26r1` |
+| `PORT` | `3433` | HTTP port |
+| `BCONNECT_BMS_VERSION` | `25r2` | bMS version to simulate: `25r2` or `26r1` |
 | `LOG_LEVEL` | `info` | Logging: `debug` or `info` |
 | `RATE_LIMIT_ENABLED` | `true` | Rate limiting (100 req/min per IP) |
 | `RATE_LIMIT_MAX` | `100` | Max requests per window |
@@ -116,7 +117,7 @@ Verify: `curl http://localhost:3433/health`
 npm start
 
 # 26R1
-BMS_VERSION=26r1 npm start
+BCONNECT_BMS_VERSION=26r1 npm start
 ```
 
 ---
@@ -215,7 +216,7 @@ const server = app.listen(3433);
 npm install      # Install dependencies
 npm run dev      # Start in watch mode
 npm run build    # Compile TypeScript
-npm test         # Run tests (2017 tests)
+npm test         # Run tests (2018 tests)
 npm run lint     # Lint
 npm run format   # Format code
 ```
