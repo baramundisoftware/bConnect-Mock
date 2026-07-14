@@ -4,24 +4,17 @@ Automation scripts for build, deployment, and maintenance tasks.
 
 ## Available Scripts
 
-### Development
-- **generate-types.sh** - Generate TypeScript types from OpenAPI specs
-- **setup-dev.sh** - Set up local development environment
+### Types & Route Auditing
+- **generate-types.sh** - Generate TypeScript types from versioned OpenAPI specs
+- **audit-routes.js** - Compare registered Express routes against the OpenAPI specs (25R2 / 26R1) and regenerate the implementation-status docs
 
-### Build & Deploy
-- **build.sh** - Production build (TypeScript compilation)
-- **docker-build.sh** - Build Docker image
-- **docker-push.sh** - Push Docker image to registry
+### Task Management
+- **compress-tasks.sh** - Archive completed tasks from `Tasks.md` to `Tasks-Archive.md`
+- **show-completed-tasks.sh** - Show completed tasks from the git log
 
-### Testing
-- **run-integration-tests.sh** - Run integration tests against consumer projects
-- **run-performance-tests.sh** - Run performance benchmarks
-- **generate-coverage-report.sh** - Generate and open HTML coverage report
-
-### Maintenance
-- **clean.sh** - Remove build artifacts and node_modules
-- **update-fixtures.sh** - Regenerate fixture data
-- **check-dependencies.sh** - Check for outdated dependencies (npm audit)
+### Status & Monitoring
+- **show-running-mocks.sh** - List all running bConnectMock instances with their status
+- **visualize-status.js** - Parse `Requirements.md` and `Tasks.md` to visualize project status with colors
 
 ## Usage
 
@@ -29,5 +22,5 @@ All scripts are executable from project root:
 
 ```bash
 ./scripts/generate-types.sh
-./scripts/build.sh
+node scripts/audit-routes.js
 ```

@@ -75,7 +75,7 @@ BCONNECT_MOCK_PROFILE=minimal-readonly npm start
 
    **Fix:**
    ```bash
-   BMS_VERSION=26r1 BCONNECT_MOCK_PROFILE=largescale-readonly npm start
+   BCONNECT_BMS_VERSION=26r1 BCONNECT_MOCK_PROFILE=largescale-readonly npm start
    ```
 
 3. **ID does not exist.** `GET /v2.0/WindowsEndpoints/:id` returns 404 when the GUID is not in the dataset. Check available IDs first:
@@ -119,15 +119,15 @@ curl -X POST http://localhost:3433/v2.0/WindowsEndpoints \
 
 ### Problem: `GET` returns `400` about `PageSize`
 
-**Cause:** `PageSize` is outside the allowed range (0–100,000) or is negative.
+**Cause:** `PageSize` is outside the allowed range (0–10,000) or is negative.
 
 ```json
-{ "error": "PageSize must be between 0 and 100000" }
+{ "error": "PageSize must be between 0 and 10000" }
 ```
 
 **Fix:** Use a valid PageSize:
 ```bash
-# Valid: omit for all, or use 1–100000
+# Valid: omit for all, or use 1–10000
 curl "http://localhost:3433/v2.0/WindowsEndpoints?PageSize=50"
 ```
 
