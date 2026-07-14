@@ -1,6 +1,6 @@
 # bConnect-Mock
 
-[![CI](https://github.com/baramundisoftware/bConnect-Mock/actions/workflows/ci.yml/badge.svg)](https://github.com/baramundisoftware/bConnect-Mock/actions/workflows/ci.yml)
+[![tests](https://img.shields.io/badge/tests-passing-brightgreen)](tests/README.md)
 
 A mock server for the **baramundi bConnect REST API**. Use it to develop and test integrations with baramundi Management Suite (bMS) without needing a real bMS server.
 
