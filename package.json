@@ -62,7 +62,7 @@
   },
   "homepage": "https://github.com/baramundisoftware/bConnect-Mock#readme",
   "optionalDependencies": {
-    "@rolldown/binding-linux-arm64-gnu": "^1.0.0-rc.12"
+    "@rolldown/binding-linux-arm64-gnu": "^1.1.5"
   },
   "dependencies": {
     "@types/swagger-ui-express": "^4.1.8",
