@@ -2,77 +2,69 @@
 
 ## Overview
 
-This directory contains the bConnect Mock V2.0 source code, organized by architectural layers.
+This directory contains the bConnect Mock V2.0 source code. The mock is a
+version-aware (25R2 / 26R1) Express server that serves generated data and, on
+readwrite profiles, maintains in-memory CRUD state.
 
 ## Directory Layout
 
 ```
 src/
-├── modules/           # API domain modules (Endpoints, Software, Jobs, etc.)
-│   ├── endpoints/     # Endpoints module (Windows, Android, Linux, Mac)
-│   ├── software/      # Software module
-│   ├── jobs/          # Jobs module
-│   ├── assets/        # Assets module
-│   └── ...            # Other modules
-├── profiles/          # Data profile managers
-│   ├── ProfileManager.ts          # Profile loading and selection
-│   ├── MinimalProfile.ts          # Minimal profile (readonly/readwrite)
-│   ├── StandardProfile.ts         # Standard profile (readonly/readwrite)
-│   └── LargeScaleProfile.ts       # Large-scale profile (readonly/readwrite)
-├── fixtures/          # Test data fixtures (JSON files)
-│   ├── minimal/       # Minimal profile fixtures
-│   ├── standard/      # Standard profile fixtures
-│   └── largescale/    # Large-scale profile generators
-├── middleware/        # Express middleware
-│   ├── readOnlyGuard.ts          # Block write methods for readonly profiles
-│   ├── validation.ts              # Request validation (zod schemas)
-│   ├── errorHandler.ts            # Global error handling
-│   └── logging.ts                 # Request logging
-├── utils/             # Utility functions
-│   ├── dataGenerator.ts           # Lazy data generation
-│   ├── pagination.ts              # Pagination logic
-│   ├── filtering.ts               # SearchQuery filtering
-│   └── sorting.ts                 # OrderBy sorting
-├── generated/         # OpenAPI-generated TypeScript types (gitignored)
-│   └── types.ts       # Generated from OpenAPI specs
-└── index.ts           # Main entry point (server startup)
+├── app.ts             # Express app assembly (security, middleware, route registration)
+├── index.ts           # Server startup (reads PORT / BCONNECT_* env vars)
+├── cli.ts             # CLI entry point (bin: bconnect-mock)
+├── openapi.ts         # OpenAPI/Swagger spec, served at /api-docs
+├── validateFixtureIntegrity.ts   # Startup fixture validation
+├── routes/            # Express route handlers, one file per API domain
+│   ├── endpoints.ts, jobs.ts, software.ts, groups.ts, compliance.ts, …
+│   ├── factories/     # Reusable route factories (CRUD, sub-resource lists)
+│   └── index.ts       # Version-aware route registration
+├── generators/        # Lazy, deterministic data generators
+│   ├── BaseGenerator.ts, IDataGenerator.ts, index.ts
+│   └── <Entity>Generator.ts   # WindowsEndpoint, Android, iOS, Industrial, AD, …
+├── profiles/          # ProfileManager — profile selection & data resolution
+├── state/             # StateManager — in-memory CRUD state (readwrite profiles)
+├── middleware/        # Express middleware (apiKeyGuard, validateBody)
+└── generated/         # OpenAPI-generated TypeScript types (committed to the repo)
+    ├── 25r2/ , 26r1/  # Version-specific generated types
+    └── *.types.ts     # Shared domain types
 ```
 
-## Module Architecture
+> JSON fixtures live in the repository-root `fixtures/` directory, not under `src/`.
 
-Each API module follows this structure:
+## Request Flow
+
+Routes are registered in `routes/index.ts` (version-aware for 25R2 / 26R1) and
+wired up in `app.ts`. A request flows:
 
 ```
-modules/endpoints/
-├── endpoints.controller.ts       # HTTP request handlers
-├── endpoints.service.ts          # Business logic
-├── endpoints.types.ts            # TypeScript types
-└── endpoints.fixtures.ts         # Fixture data
+middleware (security headers, apiKeyGuard, validateBody)
+  → route handler (src/routes/<domain>.ts)
+    → data source:
+        • list / readonly data  → generators/ (lazy, deterministic) + fixtures/
+        • readwrite CRUD state   → state/StateManager.ts
 ```
 
 ## Key Design Patterns
 
-1. **Layered Architecture:**
-   - Controller → Service → Data (fixtures/generators)
-   - Clear separation of concerns
+1. **Version-aware routing:** `routes/index.ts` registers only the routes valid
+   for the selected `BCONNECT_BMS_VERSION` (25R2 or 26R1).
 
-2. **Profile Strategy Pattern:**
-   - ProfileManager selects appropriate profile
-   - Each profile implements IProfile interface
-   - Readonly profiles return HTTP 501 for write methods
+2. **Profile strategy:** `ProfileManager` selects the active data profile.
+   Readonly profiles reject write methods with **HTTP 403**; readwrite profiles
+   mutate in-memory state via `StateManager`.
 
-3. **Lazy Loading:**
-   - Large-scale profiles generate data on-demand
-   - Pagination-aware (only generate requested page)
-   - Deterministic (same query = same result)
+3. **Lazy, deterministic generation:** large-scale profiles generate data
+   on-demand, pagination-aware (only the requested page), so the same query
+   always yields the same result.
 
-4. **Middleware Pipeline:**
-   - Validation → ReadOnly Guard → Controller → Error Handler
+4. **Route factories:** common CRUD and sub-resource-list behaviour is produced
+   by factories in `routes/factories/` rather than duplicated per domain.
 
 ## Development Guidelines
 
-- Follow TypeScript strict mode
-- Use OpenAPI-generated types from `generated/`
-- Write unit tests in `tests/unit/` (mirror src/ structure)
-- Document public APIs with TSDoc comments
-- Use dependency injection where possible
+- Follow TypeScript strict mode.
+- Use the OpenAPI-generated types in `generated/` (regenerate via
+  `npm run generate-types`).
+- Write unit tests under `tests/unit/`.
+- Document public APIs with TSDoc comments.

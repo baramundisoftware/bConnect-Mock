@@ -144,7 +144,7 @@ export const openApiSpec = {
         requestBody: { content: { 'application/json': { schema: { type: 'object' } } } },
         responses: {
           '201': { description: 'Created' },
-          '501': { description: 'Read-only profile' },
+          '403': { description: 'Read-only profile' },
         },
       },
     },
@@ -191,7 +191,7 @@ export const openApiSpec = {
         ],
         responses: { '200': { description: 'Paginated Android endpoints', content: { 'application/json': { schema: { $ref: '#/components/schemas/PaginatedResponse' } } } } },
       },
-      post: { tags: ['Endpoints'], summary: 'Create Android endpoint', requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '201': { description: 'Created' }, '501': { description: 'Read-only' } } },
+      post: { tags: ['Endpoints'], summary: 'Create Android endpoint', requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '201': { description: 'Created' }, '403': { description: 'Read-only' } } },
     },
     '/v2.0/LinuxEndpoints': {
       get: {
@@ -205,7 +205,7 @@ export const openApiSpec = {
         ],
         responses: { '200': { description: 'Paginated Linux endpoints', content: { 'application/json': { schema: { $ref: '#/components/schemas/PaginatedResponse' } } } } },
       },
-      post: { tags: ['Endpoints'], summary: 'Create Linux endpoint', requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '201': { description: 'Created' }, '501': { description: 'Read-only' } } },
+      post: { tags: ['Endpoints'], summary: 'Create Linux endpoint', requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '201': { description: 'Created' }, '403': { description: 'Read-only' } } },
     },
     '/v2.0/LinuxEndpoints/{id}': {
       put: { tags: ['Endpoints'], summary: 'Replace Linux endpoint', parameters: [{ $ref: '#/components/parameters/IdPath' }], requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '200': { description: 'Updated' } } },
@@ -224,7 +224,7 @@ export const openApiSpec = {
         ],
         responses: { '200': { description: 'Paginated Mac endpoints', content: { 'application/json': { schema: { $ref: '#/components/schemas/PaginatedResponse' } } } } },
       },
-      post: { tags: ['Endpoints'], summary: 'Create Mac endpoint', requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '201': { description: 'Created' }, '501': { description: 'Read-only' } } },
+      post: { tags: ['Endpoints'], summary: 'Create Mac endpoint', requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '201': { description: 'Created' }, '403': { description: 'Read-only' } } },
     },
     '/v2.0/MacEndpoints/{id}': {
       put: { tags: ['Endpoints'], summary: 'Replace Mac endpoint', parameters: [{ $ref: '#/components/parameters/IdPath' }], requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '200': { description: 'Updated' } } },
@@ -289,7 +289,7 @@ export const openApiSpec = {
         ],
         responses: { '200': { description: 'Paginated job instances', content: { 'application/json': { schema: { $ref: '#/components/schemas/PaginatedResponse' } } } } },
       },
-      post: { tags: ['Jobs'], summary: 'Create (assign) job instance', requestBody: { content: { 'application/json': { schema: { type: 'object', required: ['jobDefinitionId', 'endpointId'], properties: { jobDefinitionId: { type: 'string' }, endpointId: { type: 'string' }, startIfAlreadyAssigned: { type: 'boolean' } } } } } }, responses: { '201': { description: 'Created' }, '501': { description: 'Read-only profile' } } },
+      post: { tags: ['Jobs'], summary: 'Create (assign) job instance', requestBody: { content: { 'application/json': { schema: { type: 'object', required: ['jobDefinitionId', 'endpointId'], properties: { jobDefinitionId: { type: 'string' }, endpointId: { type: 'string' }, startIfAlreadyAssigned: { type: 'boolean' } } } } } }, responses: { '201': { description: 'Created' }, '403': { description: 'Read-only profile' } } },
     },
     '/v2.0/JobInstances/{id}': {
       get: { tags: ['Jobs'], summary: 'Get job instance by ID', parameters: [{ $ref: '#/components/parameters/IdPath' }], responses: { '200': { description: 'Job instance' }, '404': { description: 'Not found' } } },
@@ -453,7 +453,7 @@ export const openApiSpec = {
         ],
         responses: { '200': { description: 'Paginated iOS endpoints', content: { 'application/json': { schema: { $ref: '#/components/schemas/PaginatedResponse' } } } } },
       },
-      post: { tags: ['Endpoints'], summary: 'Create iOS endpoint (readwrite profiles)', requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '201': { description: 'Created' }, '501': { description: 'Read-only profile' } } },
+      post: { tags: ['Endpoints'], summary: 'Create iOS endpoint (readwrite profiles)', requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '201': { description: 'Created' }, '403': { description: 'Read-only profile' } } },
     },
     '/v2.0/IosEndpoints/{id}': {
       get: { tags: ['Endpoints'], summary: 'Get iOS endpoint by ID', parameters: [{ $ref: '#/components/parameters/IdPath' }], responses: { '200': { description: 'iOS endpoint' }, '404': { description: 'Not found' } } },
@@ -474,7 +474,7 @@ export const openApiSpec = {
         ],
         responses: { '200': { description: 'Paginated network endpoints', content: { 'application/json': { schema: { $ref: '#/components/schemas/PaginatedResponse' } } } } },
       },
-      post: { tags: ['Endpoints'], summary: 'Create network endpoint (readwrite profiles)', requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '201': { description: 'Created' }, '501': { description: 'Read-only profile' } } },
+      post: { tags: ['Endpoints'], summary: 'Create network endpoint (readwrite profiles)', requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '201': { description: 'Created' }, '403': { description: 'Read-only profile' } } },
     },
     '/v2.0/NetworkEndpoints/{id}': {
       get: { tags: ['Endpoints'], summary: 'Get network endpoint by ID', parameters: [{ $ref: '#/components/parameters/IdPath' }], responses: { '200': { description: 'Network endpoint' }, '404': { description: 'Not found' } } },
@@ -495,7 +495,7 @@ export const openApiSpec = {
         ],
         responses: { '200': { description: 'Paginated industrial endpoints', content: { 'application/json': { schema: { $ref: '#/components/schemas/PaginatedResponse' } } } } },
       },
-      post: { tags: ['Endpoints'], summary: 'Create industrial endpoint (readwrite profiles)', requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '201': { description: 'Created' }, '501': { description: 'Read-only profile' } } },
+      post: { tags: ['Endpoints'], summary: 'Create industrial endpoint (readwrite profiles)', requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '201': { description: 'Created' }, '403': { description: 'Read-only profile' } } },
     },
     '/v2.0/IndustrialEndpoints/{id}': {
       get: { tags: ['Endpoints'], summary: 'Get industrial endpoint by ID', parameters: [{ $ref: '#/components/parameters/IdPath' }], responses: { '200': { description: 'Industrial endpoint' }, '404': { description: 'Not found' } } },
@@ -516,7 +516,7 @@ export const openApiSpec = {
         ],
         responses: { '200': { description: 'Paginated logical groups', content: { 'application/json': { schema: { $ref: '#/components/schemas/PaginatedResponse' } } } } },
       },
-      post: { tags: ['Endpoints'], summary: 'Create logical group (readwrite profiles)', requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '201': { description: 'Created' }, '501': { description: 'Read-only profile' } } },
+      post: { tags: ['Endpoints'], summary: 'Create logical group (readwrite profiles)', requestBody: { content: { 'application/json': { schema: { type: 'object' } } } }, responses: { '201': { description: 'Created' }, '403': { description: 'Read-only profile' } } },
     },
     '/v2.0/LogicalGroups/{id}': {
       get: { tags: ['Endpoints'], summary: 'Get logical group by ID', parameters: [{ $ref: '#/components/parameters/IdPath' }], responses: { '200': { description: 'Logical group' }, '404': { description: 'Not found' } } },

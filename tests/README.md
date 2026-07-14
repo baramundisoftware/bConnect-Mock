@@ -8,23 +8,26 @@ Comprehensive test suite following the Test Pyramid (70% unit, 20% integration, 
 
 ```
 tests/
-├── unit/              # Unit tests (fast, isolated, 70% of tests)
-│   ├── modules/       # Module unit tests
+├── unit/              # Unit tests (fast, isolated — bulk of the suite)
+│   ├── generators/    # Data-generator tests
+│   ├── generated/     # Generated-type tests
 │   ├── profiles/      # Profile manager tests
-│   ├── middleware/    # Middleware tests
-│   └── utils/         # Utility function tests
-├── integration/       # Integration tests (20% of tests)
-│   ├── endpoints/     # Full endpoint integration tests
-│   ├── profiles/      # Profile integration tests
-│   └── state/         # State management tests (readwrite profiles)
-├── e2e/               # End-to-end tests (10% of tests)
-│   ├── minimal-readonly.test.ts
-│   ├── standard-readwrite.test.ts
-│   └── largescale-readonly.test.ts
+│   ├── factories/     # Route-factory tests
+│   ├── fixtures/      # Fixture tests
+│   └── audit/         # Route/spec audit tests
+├── integration/       # Integration tests (in-memory, no external services)
+│   ├── endpoints/     # Endpoint integration tests
+│   ├── crud/          # CRUD lifecycle tests (readwrite profiles)
+│   ├── catalog/       # Catalog tests
+│   ├── concurrency/   # Concurrency tests
+│   ├── coverage/      # Coverage-boost tests
+│   ├── security/      # Security / OWASP tests
+│   └── bconnect-mcp/  # bConnect-MCP consumer integration
+├── e2e/               # End-to-end tests (server start → request → stop)
+│   └── all-profiles.e2e.test.ts
 └── performance/       # Performance benchmarks
     ├── response-time.test.ts
-    ├── memory.test.ts
-    └── load.test.ts
+    └── largescale-generators.test.ts
 ```
 
 ## Testing Strategy
@@ -56,10 +59,8 @@ tests/
 ## Test Conventions
 
 **File Naming:**
-- Unit tests: `*.test.ts` (e.g., `pagination.test.ts`)
-- Integration tests: `*.integration.test.ts`
+- Unit / integration / performance tests: `*.test.ts` (located by directory)
 - E2E tests: `*.e2e.test.ts`
-- Performance tests: `*.perf.test.ts`
 
 **Test Structure (AAA Pattern):**
 ```typescript
