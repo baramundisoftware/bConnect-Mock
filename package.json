@@ -32,6 +32,8 @@
     "generate-types": "bash scripts/generate-types.sh",
     "audit-routes": "npm run build --silent && node scripts/audit-routes.js",
     "audit-routes:check": "node scripts/audit-routes.js --check",
+    "publish:image": "bash scripts/publish-image.sh",
+    "publish:image:dry": "bash scripts/publish-image.sh --dry-run",
     "clean": "rm -rf build coverage"
   },
   "keywords": [
