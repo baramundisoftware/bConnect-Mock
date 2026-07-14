@@ -247,7 +247,7 @@ bConnect Mock returns all list responses in this format:
 **Read-only profiles** (`minimal-readonly`, `standard-readonly`, `largescale-readonly`):
 - Data never changes between requests
 - Safe to run tests in parallel
-- Write operations return `501 Not Implemented`
+- Write operations return `403 Forbidden`
 - Ideal for GET-heavy consumer tests
 
 **Read-write profiles** (`minimal-readwrite`, `standard-readwrite`):
@@ -322,7 +322,7 @@ To run consumer integration tests in CI, add a service step to start the mock:
 |---|---|---|
 | `ECONNREFUSED localhost:3433` | Mock not started | Start mock before running tests |
 | `429 Too Many Requests` | Rate limit hit | Set `RATE_LIMIT_ENABLED=false` |
-| `501 Not Implemented` on write | Wrong profile | Use `standard-readwrite` for CRUD tests |
+| `403 Forbidden` on write | Wrong profile | Use `standard-readwrite` for CRUD tests |
 | `404` on 26R1-only routes | Wrong bMS version | Set `BCONNECT_BMS_VERSION=26r1` |
 | State leaks between test runs | Shared readwrite profile | Call `POST /api/reset` in `afterEach` |
 | Flaky tests at high concurrency | Rate limit with default settings | Set `RATE_LIMIT_ENABLED=false` |

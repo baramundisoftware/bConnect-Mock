@@ -35,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Initial release. Mock server for the baramundi bConnect V2.0 REST API.
 
 - 6 data profiles: minimal/standard/largescale x readonly/readwrite
-- 264 endpoints (26R1 mode) / 172 endpoints (25R2 mode)
+- 264 endpoints (26R1 mode) / 228 endpoints (25R2 mode)
 - Swagger UI at /api-docs
 - Pagination, search, sort on all list endpoints
 - Full CRUD on readwrite profiles with in-memory state
