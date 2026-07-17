@@ -28,6 +28,8 @@ npm run build
 
 > **Future**: once published to npm, you'll be able to install via `npm install -g bconnect-mock`.
 
+> **Releases & images**: tagged versions and notes are on the [Releases page](https://github.com/baramundisoftware/bConnect-Mock/releases); prebuilt multi-arch Docker images are in [Packages](https://github.com/orgs/baramundisoftware/packages?repo_name=bConnect-Mock) (see [Docker](#docker) below).
+
 ### Step 2: Start the Mock Server
 
 ```bash
@@ -78,14 +80,30 @@ BCONNECT_MOCK_PROFILE=standard-readwrite npm start
 
 ## Docker
 
+Prebuilt multi-arch (`linux/amd64` + `linux/arm64`) images are published to the
+GitHub Container Registry — browse them on the
+[Packages page](https://github.com/orgs/baramundisoftware/packages?repo_name=bConnect-Mock).
+Image tags mirror the [Releases](https://github.com/baramundisoftware/bConnect-Mock/releases)
+(`0.3.2`, `0.3`, `0`, `latest`).
+
+> The image is **private**. Authenticate first with a token that has `read:packages`
+> and access to the `baramundisoftware` org:
+> ```bash
+> echo "$GITHUB_TOKEN" | docker login ghcr.io -u <your-github-user> --password-stdin
+> ```
+
 ```bash
-# Quick start
+# Run the published image
+docker run -p 3433:3433 -e BCONNECT_PROFILE=standard-readonly \
+  ghcr.io/baramundisoftware/bconnect-mock:latest
+
+# Quick start from a clone (docker compose)
 docker compose up
 
 # Custom profile and bMS version
 PROFILE=standard-readwrite BMS_VERSION=26r1 docker compose up
 
-# Or build manually
+# Or build locally
 docker build -t bconnect-mock .
 docker run -p 3433:3433 -e BCONNECT_PROFILE=standard-readonly bconnect-mock
 ```
