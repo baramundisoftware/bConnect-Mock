@@ -5,6 +5,8 @@
 A mock server for the **baramundi bConnect REST API**. Use it to develop and test integrations with baramundi Management Suite (bMS) without needing a real bMS server.
 
 > **This is a development and testing tool — not for production use.**
+>
+> **Not an official baramundi product** and not covered by baramundi Support — see [Support](#support).
 
 ---
 
@@ -271,5 +273,11 @@ MIT — see [LICENSE](LICENSE).
 
 ## Support
 
-- **Issues**: https://github.com/baramundisoftware/bConnect-Mock/issues
-- **bConnect API docs**: https://docs.baramundi.com/api/bconnect/
+> **Not an official baramundi product.** This is a testing/mock tool provided
+> **as-is** under the MIT license (see [LICENSE](LICENSE)). It is **not covered by
+> baramundi support, maintenance, or SLAs**. It aims to match the bConnect API but
+> is not guaranteed to behave exactly like a real bMS. Please do **not** contact
+> baramundi Support for this tool — use the GitHub issues below.
+
+- **Issues & questions (this tool)**: https://github.com/baramundisoftware/bConnect-Mock/issues
+- **bConnect API reference** (official baramundi docs, for the real API): https://docs.baramundi.com/api/bconnect/
