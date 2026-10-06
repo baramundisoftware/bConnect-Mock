@@ -7,8 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-06
+
 ### Changed
 - **Breaking:** routes now answer only under the module prefix that owns them in the bConnect spec of the selected bMS version, as on a real bMS. A path without a module (`/v2.0/...`, `/bconnect/v2.0/...`), with an unknown module, or with a module that doesn't own the route gets 404; a route the spec doesn't declare gets 404, and an undeclared method on a declared path gets 405 with `Allow`. Set `BCONNECT_MODULE_ROUTING=lenient` to restore the previous behaviour. The route table is generated from the specs (`npm run generate-module-routes`) (#49)
+
+### Fixed
+- README and TROUBLESHOOTING named the profile variable `BCONNECT_MOCK_PROFILE` (default `minimal-readonly`), which the server ignores; it is `BCONNECT_PROFILE` (default `standard-readonly`) (#56)
+
+### Upgrading from 0.3.x
+- Use module-prefixed paths, e.g. `/bconnect/endpoints/v2.0/WindowsEndpoints` instead of `/v2.0/WindowsEndpoints`; each route's module is the spec file that declares it (`npm run generate-module-routes` lists them in `src/generated/moduleRoutes.ts`)
+- Or set `BCONNECT_MODULE_ROUTING=lenient` to keep the 0.3.x behaviour
 
 ## [0.3.3] - 2026-10-06
 
