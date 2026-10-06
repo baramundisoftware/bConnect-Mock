@@ -44,7 +44,7 @@ BCONNECT_MOCK_PORT=3001 npm start
 
 ### Problem: `Unknown profile mode: ...`
 
-**Cause:** `BCONNECT_MOCK_PROFILE` is set to an unrecognised value.
+**Cause:** `BCONNECT_PROFILE` is set to an unrecognised value.
 
 **Valid values:**
 ```
@@ -58,7 +58,7 @@ largescale-readwrite
 
 **Fix:**
 ```bash
-BCONNECT_MOCK_PROFILE=minimal-readonly npm start
+BCONNECT_PROFILE=minimal-readonly npm start
 ```
 
 ---
@@ -75,7 +75,7 @@ BCONNECT_MOCK_PROFILE=minimal-readonly npm start
 
    **Fix:**
    ```bash
-   BCONNECT_BMS_VERSION=26r1 BCONNECT_MOCK_PROFILE=largescale-readonly npm start
+   BCONNECT_BMS_VERSION=26r1 BCONNECT_PROFILE=largescale-readonly npm start
    ```
 
 3. **ID does not exist.** `GET /v2.0/WindowsEndpoints/:id` returns 404 when the GUID is not in the dataset. Check available IDs first:
@@ -102,9 +102,9 @@ BCONNECT_MOCK_PROFILE=minimal-readonly npm start
 
 **Fix:** Use a readwrite profile:
 ```bash
-BCONNECT_MOCK_PROFILE=minimal-readwrite npm start
+BCONNECT_PROFILE=minimal-readwrite npm start
 # or
-BCONNECT_MOCK_PROFILE=standard-readwrite npm start
+BCONNECT_PROFILE=standard-readwrite npm start
 ```
 
 **Exception:** Action paths (`/Start`, `/Stop`, `/Restart`) always return 200 even in read-only profiles — they represent mock triggers, not CRUD mutations.
@@ -189,7 +189,7 @@ Retry-After: 42
 3. **Disable rate limiting** (default state — no env var needed):
    ```bash
    # Simply don't set RATE_LIMIT_ENABLED
-   BCONNECT_MOCK_PROFILE=standard-readonly npm start
+   BCONNECT_PROFILE=standard-readonly npm start
    ```
 
 ---
@@ -207,7 +207,7 @@ Retry-After: 42
 
 2. **Profile has no data for this entity type.** The `minimal-*` profiles contain only a few items. Use `standard-*` or `largescale-*` for richer data:
    ```bash
-   BCONNECT_MOCK_PROFILE=standard-readonly npm start
+   BCONNECT_PROFILE=standard-readonly npm start
    ```
 
 3. **State was deleted.** In readwrite profiles, if all records were deleted, the list is empty. Reset state:
@@ -363,7 +363,7 @@ npm run format
 1. **Check the Swagger UI** at http://localhost:3433/api-docs for the exact request format.
 2. **Enable debug logging** to see full request details:
    ```bash
-   LOG_LEVEL=debug BCONNECT_MOCK_PROFILE=standard-readonly npm start
+   LOG_LEVEL=debug BCONNECT_PROFILE=standard-readonly npm start
    ```
 3. **Run the test suite** to verify the server is working correctly:
    ```bash

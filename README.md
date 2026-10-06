@@ -36,7 +36,7 @@ npm run build
 
 ```bash
 # Start with realistic test data (10-20 endpoints per type)
-BCONNECT_MOCK_PROFILE=standard-readonly npm start
+BCONNECT_PROFILE=standard-readonly npm start
 ```
 
 You should see: `bConnect Mock running on port 3433`
@@ -75,7 +75,7 @@ This shows all available endpoints with try-it-out functionality.
 Set the profile via environment variable:
 
 ```bash
-BCONNECT_MOCK_PROFILE=standard-readwrite npm start
+BCONNECT_PROFILE=standard-readwrite npm start
 ```
 
 ---
@@ -114,7 +114,7 @@ Verify: `curl http://localhost:3433/health`
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `BCONNECT_MOCK_PROFILE` | `minimal-readonly` | Data profile (see table above) |
+| `BCONNECT_PROFILE` | `standard-readonly` | Data profile (see table above) |
 | `PORT` | `3433` | HTTP port |
 | `BCONNECT_BMS_VERSION` | `25r2` | bMS version to simulate: `25r2` or `26r1` |
 | `LOG_LEVEL` | `info` | Logging: `debug` or `info` |
