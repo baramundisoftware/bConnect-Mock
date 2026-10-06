@@ -118,12 +118,12 @@ describe('Zod validation — write endpoints (standard-readwrite)', () => {
     expect(res.body.error).toMatch(/name/i);
   });
 
-  it('POST /v2.0/LogicalGroups — rejects body missing displayName with 400', async () => {
+  it('POST /v2.0/LogicalGroups — rejects body missing name with 400', async () => {
     const res = await request(app)
       .post('/v2.0/LogicalGroups')
-      .send({ description: 'test' });
+      .send({ comment: 'test' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/displayName/i);
+    expect(res.body.error).toMatch(/\bname\b/);
   });
 
   // --- Type coercion resistance ---
