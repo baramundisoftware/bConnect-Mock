@@ -86,7 +86,7 @@ Prebuilt multi-arch (`linux/amd64` + `linux/arm64`) images are published to the
 GitHub Container Registry — browse them on the
 [Packages page](https://github.com/orgs/baramundisoftware/packages?repo_name=bConnect-Mock).
 Image tags mirror the [Releases](https://github.com/baramundisoftware/bConnect-Mock/releases)
-(`0.3.3`, `0.3`, `0`, `latest`).
+(`0.4.0`, `0.4`, `0`, `latest`).
 
 The image is **public**. `docker pull` works without logging in to `ghcr.io`.
 
@@ -199,7 +199,7 @@ bConnect spec of the selected version: `/bconnect/<module>/v2.0/...`, for exampl
 | `/bconnect/jobs/v2.0/WindowsEndpoints` (module doesn't own the route) | 404 |
 | A route or method the spec doesn't declare | 404, or 405 with `Allow` |
 
-Set `BCONNECT_MODULE_ROUTING=lenient` to accept any module prefix, or none, as before 0.4.
+Set `BCONNECT_MODULE_ROUTING=lenient` to accept any module prefix, or none, as in 0.3.x.
 
 ### Query Parameters
 
