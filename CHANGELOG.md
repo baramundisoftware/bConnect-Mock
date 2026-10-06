@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- Resolved all 13 `npm audit` advisories, including critical `proxy-addr` IP spoofing (GHSA-jqcg-44mw-7w3h) and moderate `qs` / low `body-parser` DoS in runtime dependencies; dev-only fixes for `brace-expansion`, `postcss`, `js-yaml`, `nanoid`, `source-map-js`, `@redocly/openapi-core`, `@humanfs/node` and vitest (4.1.10 → 4.1.11)
+
 ### Fixed
 - `POST /v2.0/LogicalGroups` now requires `name` as in the spec's `LogicalGroupForCreation` (25R2 + 26R1), instead of `displayName`; a body without `name` gets 400 naming `name`. Created groups also get `displayName` mirrored from `name`, so they read back like fixture groups. LogicalGroups search also matches the spec fields `name` and `comment` (#48)
 
