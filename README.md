@@ -86,11 +86,7 @@ GitHub Container Registry — browse them on the
 Image tags mirror the [Releases](https://github.com/baramundisoftware/bConnect-Mock/releases)
 (`0.3.2`, `0.3`, `0`, `latest`).
 
-> The image is **private**. Authenticate first with a token that has `read:packages`
-> and access to the `baramundisoftware` org:
-> ```bash
-> echo "$GITHUB_TOKEN" | docker login ghcr.io -u <your-github-user> --password-stdin
-> ```
+The image is **public**. `docker pull` works without logging in to `ghcr.io`.
 
 ```bash
 # Run the published image
