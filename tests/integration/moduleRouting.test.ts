@@ -143,23 +143,78 @@ describe('Module routing — strict (25R2)', () => {
   });
 });
 
-describe.each([BmsVersion.BMS_25R2, BmsVersion.BMS_26R1])('Module routing — every spec route is served (%s)', (version) => {
+const SWEEP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
+const PLACEHOLDER_ID = '00000000-0000-0000-0000-000000000000';
+
+/** The spec's paths per module, each with the methods declared for it. */
+function declaredPaths(version: BmsVersion): { moduleName: string; path: string; methods: string[] }[] {
+  const result: { moduleName: string; path: string; methods: string[] }[] = [];
+  for (const [moduleName, routes] of Object.entries(MODULE_ROUTES[version] ?? {})) {
+    const byPath = new Map<string, string[]>();
+    for (const route of routes) {
+      const [method = '', path = ''] = route.split(' ');
+      byPath.set(path, [...(byPath.get(path) ?? []), method]);
+    }
+    for (const [path, methods] of byPath) { result.push({ moduleName, path, methods }); }
+  }
+  return result;
+}
+
+function send(app: Express, method: string, url: string): request.Test {
+  const req = request(app)[method.toLowerCase() as 'get' | 'post' | 'put' | 'patch' | 'delete'](url);
+  return method === 'GET' || method === 'DELETE' ? req : req.send({});
+}
+
+describe.each([BmsVersion.BMS_25R2, BmsVersion.BMS_26R1])('Module routing — every spec route (%s)', (version) => {
   let app: Express;
+  let info: ReturnType<typeof vi.spyOn>;
 
   beforeAll(() => {
     app = withRoutingMode('strict', () => createApp(ProfileMode.STANDARD_READWRITE, version));
+    // ~1,300 requests per version; keep the request log out of the test output.
+    info = vi.spyOn(console, 'info').mockImplementation(() => {});
   });
 
-  it('answers each parameter-free GET route under its own module', async () => {
-    const rejected: string[] = [];
-    for (const [moduleName, routes] of Object.entries(MODULE_ROUTES[version] ?? {})) {
-      for (const route of routes) {
-        if (!route.startsWith('GET ') || route.includes('{}')) { continue; }
-        const res = await request(app).get(`/bconnect/${moduleName}${route.slice(4)}`);
-        if (res.status === 404 || res.status === 405) { rejected.push(`${res.status} ${moduleName} ${route}`); }
+  afterAll(async () => {
+    await request(app).post('/api/reset');
+    info.mockRestore();
+  });
+
+  // Path parameters get a placeholder id, so most answers are a handler's JSON 404 or 400.
+  // What must not happen: a guard rejection, or Express's HTML 404 for a route without a handler.
+  it('reaches a mock handler for every declared method, under its own module', async () => {
+    const unserved: string[] = [];
+    for (const { moduleName, path, methods } of declaredPaths(version)) {
+      const url = `/bconnect/${moduleName}${path.replaceAll('{}', PLACEHOLDER_ID)}`;
+      for (const method of methods) {
+        const res = await send(app, method, url);
+        const noHandler = res.status === 404 && /text\/html/.test(res.headers['content-type'] ?? '');
+        const rejected = res.status === 405 || (res.status === 404 && /is not a route|unknown module/.test(String(res.body?.error)));
+        if (noHandler || rejected) { unserved.push(`${res.status} ${method} ${url}`); }
       }
     }
-    expect(rejected).toEqual([]);
+    expect(unserved).toEqual([]);
+  });
+
+  it('answers every undeclared method with 405 and the declared methods in Allow', async () => {
+    const wrong: string[] = [];
+    for (const { moduleName, path, methods } of declaredPaths(version)) {
+      const url = `/bconnect/${moduleName}${path.replaceAll('{}', PLACEHOLDER_ID)}`;
+      const allow = [...new Set(methods)].sort().join(', ');
+      for (const method of SWEEP_METHODS.filter((m) => !methods.includes(m))) {
+        const res = await send(app, method, url);
+        if (res.status !== 405 || res.headers['allow'] !== allow) {
+          wrong.push(`${method} ${url}: ${res.status} Allow=${String(res.headers['allow'])}, expected 405 Allow=${allow}`);
+        }
+      }
+    }
+    expect(wrong).toEqual([]);
+  });
+
+  it('prefers a literal segment over a path parameter (AssetTypes/Folders is not AssetTypes/{id})', async () => {
+    const res = await request(app).delete('/bconnect/assets/v2.0/AssetTypes/Folders');
+    expect(res.status).toBe(405);
+    expect(res.headers['allow']).toBe('GET, POST');
   });
 });
 
