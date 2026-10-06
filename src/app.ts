@@ -101,6 +101,51 @@ export function createApp(
     next();
   });
 
+  // Request logging middleware (P6.8/P6.9)
+  // Supports text format (default, human-readable) and JSON format (LOG_FORMAT=json,
+  // suitable for log aggregation in Docker/Kubernetes environments).
+  // Registered before the module routing guard, rate limit and auth so their responses are
+  // logged too, and logs the path as requested (with its module prefix), not the stripped one.
+  app.use((req: Request, res: Response, next) => {
+    const start = Date.now();
+    const requestPath = req.originalUrl.split('?')[0] ?? req.path;
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      if (isJsonFormat) {
+        const entry: Record<string, unknown> = {
+          time: new Date().toISOString(),
+          level: res.statusCode >= 500 ? 'error' : 'info',
+          method: req.method,
+          path: requestPath,
+          status: res.statusCode,
+          durationMs: duration,
+        };
+        if (isDebug) {entry.query = req.query;}
+        console.info(JSON.stringify(entry));
+      } else {
+        const msg = `${req.method} ${requestPath} ${res.statusCode} ${duration}ms`;
+        if (isDebug) {
+          console.info(`[DEBUG] ${msg} | query=${JSON.stringify(req.query)}`);
+        } else {
+          console.info(`[LOG] ${msg}`);
+        }
+      }
+    });
+    next();
+  });
+
+  // Metrics collection middleware — registered before any middleware that can answer
+  // a request itself (module routing guard, rate limit, auth), so every response is counted
+  app.use((req: Request, res: Response, next) => {
+    totalRequests++;
+    requestsByMethod[req.method] = (requestsByMethod[req.method] ?? 0) + 1;
+    res.on('finish', () => {
+      const statusKey = String(res.statusCode);
+      requestsByStatus[statusKey] = (requestsByStatus[statusKey] ?? 0) + 1;
+    });
+    next();
+  });
+
   // Reject paths a real bMS would refuse: no module prefix, or a module that does not
   // own the route in the selected version's spec (#49). Must run before the prefix is
   // stripped below. BCONNECT_MODULE_ROUTING=lenient restores the old behaviour.
@@ -115,17 +160,6 @@ export function createApp(
 
   // Trust first proxy for accurate IP detection behind reverse proxies/Docker (P10.7)
   app.set('trust proxy', 1);
-
-  // Metrics collection middleware — placed after trust proxy so req.ip is accurate
-  app.use((req: Request, res: Response, next) => {
-    totalRequests++;
-    requestsByMethod[req.method] = (requestsByMethod[req.method] ?? 0) + 1;
-    res.on('finish', () => {
-      const statusKey = String(res.statusCode);
-      requestsByStatus[statusKey] = (requestsByStatus[statusKey] ?? 0) + 1;
-    });
-    next();
-  });
 
   // Rate limiting middleware (P10.7 — enabled by default; disable with RATE_LIMIT_ENABLED=false)
   if (process.env.RATE_LIMIT_ENABLED !== 'false') {
@@ -221,36 +255,6 @@ export function createApp(
         return;
       }
     }
-    next();
-  });
-
-  // Request logging middleware (P6.8/P6.9)
-  // Supports text format (default, human-readable) and JSON format (LOG_FORMAT=json,
-  // suitable for log aggregation in Docker/Kubernetes environments).
-  app.use((req: Request, res: Response, next) => {
-    const start = Date.now();
-    res.on('finish', () => {
-      const duration = Date.now() - start;
-      if (isJsonFormat) {
-        const entry: Record<string, unknown> = {
-          time: new Date().toISOString(),
-          level: res.statusCode >= 500 ? 'error' : 'info',
-          method: req.method,
-          path: req.path,
-          status: res.statusCode,
-          durationMs: duration,
-        };
-        if (isDebug) {entry.query = req.query;}
-        console.info(JSON.stringify(entry));
-      } else {
-        const msg = `${req.method} ${req.path} ${res.statusCode} ${duration}ms`;
-        if (isDebug) {
-          console.info(`[DEBUG] ${msg} | query=${JSON.stringify(req.query)}`);
-        } else {
-          console.info(`[LOG] ${msg}`);
-        }
-      }
-    });
     next();
   });
 
