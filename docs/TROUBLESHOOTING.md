@@ -80,10 +80,17 @@ BCONNECT_MOCK_PROFILE=minimal-readonly npm start
 
 3. **ID does not exist.** `GET /v2.0/WindowsEndpoints/:id` returns 404 when the GUID is not in the dataset. Check available IDs first:
    ```bash
-   curl http://localhost:3433/v2.0/WindowsEndpoints | jq '.data[0].id'
+   curl http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints | jq '.data[0].id'
    ```
 
-4. **Wrong base path.** The API base is `/v2.0/`, not `/api/v2/` or `/bconnect/v2.0/`.
+4. **Missing or wrong module prefix.** Like a real bMS, the mock answers each route only under the module that owns it in the bConnect spec, e.g. `/bconnect/endpoints/v2.0/WindowsEndpoints` or `/bconnect/compliance/v2.0/Rules`. `/v2.0/WindowsEndpoints`, `/bconnect/v2.0/WindowsEndpoints` and `/bconnect/jobs/v2.0/WindowsEndpoints` return 404; the error message names the problem. The `/bconnect` part is optional (`/endpoints/v2.0/...` works too).
+
+5. **Route not in the spec of the selected version.** In strict mode, routes the bConnect spec doesn't declare return 404 (e.g. `StaticGroups`, `Variables`, or `IndustrialEndpoints` on 26R1), and a method the spec doesn't declare returns 405 with an `Allow` header.
+
+   **Fix for 4 and 5:** use the module prefix from the spec. To get the old behaviour back (any prefix, or none), start the mock with:
+   ```bash
+   BCONNECT_MODULE_ROUTING=lenient npm start
+   ```
 
 ---
 
@@ -112,7 +119,7 @@ BCONNECT_MOCK_PROFILE=standard-readwrite npm start
 
 **Fix:** Include `displayName` in the request body:
 ```bash
-curl -X POST http://localhost:3433/v2.0/WindowsEndpoints \
+curl -X POST http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints \
   -H "Content-Type: application/json" \
   -d '{"displayName": "MY-PC-001"}'
 ```
@@ -128,7 +135,7 @@ curl -X POST http://localhost:3433/v2.0/WindowsEndpoints \
 **Fix:** Use a valid PageSize:
 ```bash
 # Valid: omit for all, or use 1–10000
-curl "http://localhost:3433/v2.0/WindowsEndpoints?PageSize=50"
+curl "http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints?PageSize=50"
 ```
 
 ### Problem: `GET` returns `400` about `Page`
@@ -137,7 +144,7 @@ curl "http://localhost:3433/v2.0/WindowsEndpoints?PageSize=50"
 
 **Fix:**
 ```bash
-curl "http://localhost:3433/v2.0/WindowsEndpoints?Page=0"
+curl "http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints?Page=0"
 ```
 
 ### Problem: `GET` returns `400` about `SearchQuery`
@@ -152,7 +159,7 @@ curl "http://localhost:3433/v2.0/WindowsEndpoints?Page=0"
 
 **Fix:**
 ```bash
-curl -X POST http://localhost:3433/v2.0/WindowsEndpoints \
+curl -X POST http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints \
   -H "Content-Type: application/json" \
   -d '{"displayName": "MY-PC-001"}'
 ```
@@ -195,7 +202,7 @@ Retry-After: 42
 
 1. **SearchQuery too specific.** The filter returns no matches. Try omitting `SearchQuery`:
    ```bash
-   curl http://localhost:3433/v2.0/WindowsEndpoints
+   curl http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints
    ```
 
 2. **Profile has no data for this entity type.** The `minimal-*` profiles contain only a few items. Use `standard-*` or `largescale-*` for richer data:
@@ -225,13 +232,13 @@ To preserve test state across server restarts, use the fixture files directly (`
 **Fix:** Increment `Page` and ensure `PageSize` is smaller than `totalCount`:
 ```bash
 # Page 0 of 3 (5 items per page, 15 total)
-curl "http://localhost:3433/v2.0/WindowsEndpoints?PageSize=5&Page=0"
+curl "http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints?PageSize=5&Page=0"
 
 # Page 1 of 3
-curl "http://localhost:3433/v2.0/WindowsEndpoints?PageSize=5&Page=1"
+curl "http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints?PageSize=5&Page=1"
 
 # Page 2 of 3
-curl "http://localhost:3433/v2.0/WindowsEndpoints?PageSize=5&Page=2"
+curl "http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints?PageSize=5&Page=2"
 ```
 
 ### Problem: `totalCount` does not match expected count
@@ -241,11 +248,11 @@ curl "http://localhost:3433/v2.0/WindowsEndpoints?PageSize=5&Page=2"
 **Example:**
 ```bash
 # 10 total without filter
-curl "http://localhost:3433/v2.0/WindowsEndpoints"
+curl "http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints"
 # {"totalCount": 10, ...}
 
 # Only 2 match "NYC"
-curl "http://localhost:3433/v2.0/WindowsEndpoints?SearchQuery=NYC"
+curl "http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints?SearchQuery=NYC"
 # {"totalCount": 2, ...}
 ```
 

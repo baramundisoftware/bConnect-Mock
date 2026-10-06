@@ -54,8 +54,11 @@ export default defineConfig({
     reporters: ['verbose'],
 
     // Disable rate limiting during tests so performance/load tests are not throttled
+    // The existing suites call unprefixed /v2.0/... paths; strict module routing (#49)
+    // is covered by tests/integration/moduleRouting.test.ts, which opts in explicitly.
     env: {
       RATE_LIMIT_ENABLED: 'false',
+      BCONNECT_MODULE_ROUTING: 'lenient',
     },
 
     // Setup files

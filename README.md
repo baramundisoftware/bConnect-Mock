@@ -47,7 +47,7 @@ You should see: `bConnect Mock running on port 3433`
 curl http://localhost:3433/health
 # {"status":"ok", ...}
 
-curl http://localhost:3433/v2.0/WindowsEndpoints
+curl http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints
 # Returns a JSON array of mock Windows endpoints
 ```
 
@@ -122,6 +122,7 @@ Verify: `curl http://localhost:3433/health`
 | `RATE_LIMIT_MAX` | `100` | Max requests per window |
 | `ALLOWED_ORIGINS` | `*` | CORS allowed origins |
 | `REQUIRE_API_KEY` | — | If set, write operations require `X-Api-Key` header |
+| `BCONNECT_MODULE_ROUTING` | `strict` | `strict`: like a real bMS, each route answers only under its module prefix; `lenient`: any prefix or none (pre-0.4 behaviour). See [Module prefixes](#module-prefixes) |
 
 ### bMS Version Support
 
@@ -143,46 +144,62 @@ BCONNECT_BMS_VERSION=26r1 npm start
 ### List Endpoints
 
 ```bash
-curl http://localhost:3433/v2.0/WindowsEndpoints
-curl http://localhost:3433/v2.0/LinuxEndpoints
-curl http://localhost:3433/v2.0/AndroidEndpoints
+curl http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints
+curl http://localhost:3433/bconnect/endpoints/v2.0/LinuxEndpoints
+curl http://localhost:3433/bconnect/endpoints/v2.0/AndroidEndpoints
 ```
 
 ### Search and Filter
 
 ```bash
 # Search by name
-curl "http://localhost:3433/v2.0/WindowsEndpoints?SearchQuery=NYC"
+curl "http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints?SearchQuery=NYC"
 
 # Sort
-curl "http://localhost:3433/v2.0/WindowsEndpoints?OrderBy=DisplayName%20asc"
+curl "http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints?OrderBy=DisplayName%20asc"
 
 # Paginate
-curl "http://localhost:3433/v2.0/WindowsEndpoints?PageSize=5&Page=0"
+curl "http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints?PageSize=5&Page=0"
 
 # Combine
-curl "http://localhost:3433/v2.0/WindowsEndpoints?SearchQuery=NYC&OrderBy=DisplayName%20asc&PageSize=5&Page=0"
+curl "http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints?SearchQuery=NYC&OrderBy=DisplayName%20asc&PageSize=5&Page=0"
 ```
 
 ### Create, Update, Delete (readwrite profiles only)
 
 ```bash
 # Create
-curl -X POST http://localhost:3433/v2.0/WindowsEndpoints \
+curl -X POST http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints \
   -H "Content-Type: application/json" \
   -d '{"displayName": "NEW-ENDPOINT", "primaryUser": "jdoe"}'
 
 # Update
-curl -X PATCH http://localhost:3433/v2.0/WindowsEndpoints/<guid> \
+curl -X PATCH http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints/<guid> \
   -H "Content-Type: application/json" \
   -d '{"displayName": "UPDATED-NAME"}'
 
 # Delete
-curl -X DELETE http://localhost:3433/v2.0/WindowsEndpoints/<guid>
+curl -X DELETE http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints/<guid>
 
 # Reset all data back to initial state
 curl -X POST http://localhost:3433/api/reset
 ```
+
+### Module prefixes
+
+Like a real bMS, the mock answers each route only under the module that owns it in the
+bConnect spec of the selected version: `/bconnect/<module>/v2.0/...`, for example
+`/bconnect/endpoints/v2.0/WindowsEndpoints` or `/bconnect/compliance/v2.0/Rules`
+(`/bconnect` itself is optional).
+
+| Request | Result |
+|---|---|
+| `/bconnect/endpoints/v2.0/WindowsEndpoints` | 200 |
+| `/v2.0/WindowsEndpoints` or `/bconnect/v2.0/WindowsEndpoints` (no module) | 404 |
+| `/bconnect/jobs/v2.0/WindowsEndpoints` (module doesn't own the route) | 404 |
+| A route or method the spec doesn't declare | 404, or 405 with `Allow` |
+
+Set `BCONNECT_MODULE_ROUTING=lenient` to accept any module prefix, or none, as before 0.4.
 
 ### Query Parameters
 
