@@ -41,7 +41,7 @@ export function getModuleRoutingMode(): ModuleRoutingMode {
   return 'strict';
 }
 
-interface CompiledRoute { method: string; pattern: RegExp }
+interface CompiledRoute { method: string; pattern: RegExp; params: number }
 
 /** Compile 'GET /v2.0/WindowsEndpoints/{}' into a method plus a case-insensitive path regex. */
 function compileRoute(route: string): CompiledRoute {
@@ -50,7 +50,7 @@ function compileRoute(route: string): CompiledRoute {
     .split('{}')
     .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
     .join('[^/]+');
-  return { method, pattern: new RegExp(`^${source}$`, 'i') };
+  return { method, pattern: new RegExp(`^${source}$`, 'i'), params: routePath.split('{}').length - 1 };
 }
 
 // Optional /bconnect, optional module segment, then the API version and the rest of the path.
@@ -95,7 +95,11 @@ export function createModuleRoutingGuard(
       return;
     }
 
-    const pathMatches = routes.filter((r) => r.pattern.test(apiPath));
+    // A literal segment wins over a path parameter, as in ASP.NET routing: AssetTypes/Folders
+    // is its own route, not AssetTypes/{id} with id "Folders". Keep only the most specific matches.
+    const matches = routes.filter((r) => r.pattern.test(apiPath));
+    const fewestParams = Math.min(...matches.map((r) => r.params));
+    const pathMatches = matches.filter((r) => r.params === fewestParams);
     if (pathMatches.length === 0) {
       res.status(404).json({
         error: `Not found: ${apiPath} is not a route of module "${moduleSegment}" in bMS ${bmsVersion}`,

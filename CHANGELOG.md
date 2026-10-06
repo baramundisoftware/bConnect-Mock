@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Strict module routing let `DELETE /assets/v2.0/AssetTypes/Folders` through, treating `Folders` as the `{id}` of `AssetTypes/{id}`. A literal segment now wins over a path parameter, as in ASP.NET routing, so the guard answers 405 (`Allow: GET, POST`). It's the only such overlap in the 25R2 and 26R1 specs
+
 ## [0.4.1] - 2026-10-07
 
 ### Fixed
