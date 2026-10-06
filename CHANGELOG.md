@@ -7,11 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-10-06
+
 ### Security
-- Resolved all 13 `npm audit` advisories, including critical `proxy-addr` IP spoofing (GHSA-jqcg-44mw-7w3h) and moderate `qs` / low `body-parser` DoS in runtime dependencies; dev-only fixes for `brace-expansion`, `postcss`, `js-yaml`, `nanoid`, `source-map-js`, `@redocly/openapi-core`, `@humanfs/node` and vitest (4.1.10 → 4.1.11)
+- Resolved all 13 `npm audit` advisories, including critical `proxy-addr` IP spoofing (GHSA-jqcg-44mw-7w3h) and moderate `qs` / low `body-parser` DoS in runtime dependencies; dev-only fixes for `brace-expansion`, `postcss`, `js-yaml`, `nanoid`, `source-map-js`, `@redocly/openapi-core`, `@humanfs/node` and vitest (4.1.10 → 4.1.11) (#51)
 
 ### Fixed
 - `POST /v2.0/LogicalGroups` now requires `name` as in the spec's `LogicalGroupForCreation` (25R2 + 26R1), instead of `displayName`; a body without `name` gets 400 naming `name`. Created groups also get `displayName` mirrored from `name`, so they read back like fixture groups. LogicalGroups search also matches the spec fields `name` and `comment` (#48)
+- The OpenAPI document declares 403 (not 501) for writes on read-only profiles, matching the runtime (#33)
+
+### Added
+- `scripts/publish-image.sh` builds and publishes the multi-arch image locally, without GitHub Actions (#32)
+
+### Changed
+- The GHCR image `ghcr.io/baramundisoftware/bconnect-mock` is public; `docker pull` needs no login (#47)
+- README and SECURITY.md state that this is not an official baramundi product, without baramundi support or SLA; security response times are best-effort (#52)
+- Bumped dev dependencies: eslint 10.6.0 → 10.12.0 (#40), @typescript-eslint/parser 8.64.0 → 8.71.0 (#41), @typescript-eslint/eslint-plugin 8.62.1 → 8.64.0 (#21), vitest 4.1.1 → 4.1.10 (#22), prettier 3.8.1 → 3.9.5 (#24), tsx 4.23.0 → 4.23.1 (#37), @rolldown/binding-linux-arm64-gnu 1.0.3 → 1.1.5 (#23)
+- Bumped CI actions: actions/setup-node 6 → 7 (#36), docker/setup-buildx-action → 4.4.1 (#30, #46), docker/build-push-action 7.3.0 → 7.4.0 (#45), docker/login-action → 4.6.0 (#30, #43), actions/download-artifact → 8 (#30)
+- Corrected factual and command errors in the docs (#31, #33)
 
 ## [0.3.2] - 2026-07-10
 
