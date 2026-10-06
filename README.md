@@ -86,7 +86,7 @@ Prebuilt multi-arch (`linux/amd64` + `linux/arm64`) images are published to the
 GitHub Container Registry — browse them on the
 [Packages page](https://github.com/orgs/baramundisoftware/packages?repo_name=bConnect-Mock).
 Image tags mirror the [Releases](https://github.com/baramundisoftware/bConnect-Mock/releases)
-(`0.4.0`, `0.4`, `0`, `latest`).
+(`0.4.1`, `0.4`, `0`, `latest`).
 
 The image is **public**. `docker pull` works without logging in to `ghcr.io`.
 
