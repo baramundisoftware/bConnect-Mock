@@ -30,6 +30,7 @@
     "type-check": "tsc --noEmit",
     "sbom": "npx @cyclonedx/cyclonedx-npm --output-file sbom.json --spec-version 1.6",
     "generate-types": "bash scripts/generate-types.sh",
+    "generate-module-routes": "node scripts/generate-module-routes.js",
     "audit-routes": "npm run build --silent && node scripts/audit-routes.js",
     "audit-routes:check": "node scripts/audit-routes.js --check",
     "publish:image": "bash scripts/publish-image.sh",

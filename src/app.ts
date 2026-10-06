@@ -14,6 +14,7 @@ import { openApiSpec } from './openapi';
 import { runAndLogFixtureIntegrity } from './validateFixtureIntegrity';
 import { apiKeyGuard } from './middleware/apiKeyGuard';
 import { registerAllRoutes } from './routes/index';
+import { createModuleRoutingGuard } from './middleware/moduleRouting';
 
 /**
  * Windows endpoint interface (used for StateManager initialization)
@@ -99,6 +100,11 @@ export function createApp(
     res.setHeader('X-XSS-Protection', '0');
     next();
   });
+
+  // Reject paths a real bMS would refuse: no module prefix, or a module that does not
+  // own the route in the selected version's spec (#49). Must run before the prefix is
+  // stripped below. BCONNECT_MODULE_ROUTING=lenient restores the old behaviour.
+  app.use(createModuleRoutingGuard(profile.bmsVersion));
 
   // Strip bConnect module prefix so connector paths like /endpoints/v2.0/... become /v2.0/...
   // Excludes /updatemanagement/ which has dedicated projection routes (updateManagement.ts).
