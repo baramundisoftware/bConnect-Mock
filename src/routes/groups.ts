@@ -8,7 +8,9 @@ import type { IProfile } from '../profiles/ProfileManager';
 import type { StateManager } from '../state/StateManager';
 import { BmsVersion } from '../profiles/ProfileManager';
 import { validateWriteBody, validateGenericUpdate } from '../middleware/validateBody';
-const validateLogicalGroupCreate = validateWriteBody(['displayName']);
+// Spec LogicalGroupForCreation (25R2 + 26R1) requires `name`; there is no `displayName`.
+const validateLogicalGroupCreate = validateWriteBody(['name']);
+const LOGICAL_GROUP_SEARCH_FIELDS = ['name', 'comment', 'displayName', 'description'];
 import { resolveEntityData, applyMultiKeywordSearch, applyMultiFieldSort, parsePage, GUID_REGEX } from './utils';
 import { registerReadonlyList } from './factories/readonlyList';
 import { registerGetById } from './factories/getById';
@@ -25,14 +27,14 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
       const sm: StateManager | undefined = app.locals.stateManager;
       if (sm) {
         let data = sm.logicalGroups.getAll() as Record<string, unknown>[];
-        if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['displayName', 'description']); }
+        if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, LOGICAL_GROUP_SEARCH_FIELDS); }
         if (orderBy?.trim()) { data = applyMultiFieldSort(data, orderBy); }
         const pageSize = parseInt(req.query.PageSize as string) || data.length;
         res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
         return;
       }
       const pageSize = parseInt(req.query.PageSize as string) || 0;
-      const resolved = resolveEntityData(profile, 'logicalGroups', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'description'] });
+      const resolved = resolveEntityData(profile, 'logicalGroups', { searchQuery, orderBy, page, pageSize, searchFields: LOGICAL_GROUP_SEARCH_FIELDS });
       if (!resolved) { res.status(200).json({ data: [], pageSize: 0, page: 0, totalItems: 0 }); return; }
       const eff = pageSize > 0 ? pageSize : resolved.data.length;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -61,7 +63,9 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
   app.post('/v2.0/LogicalGroups', validateLogicalGroupCreate, (req: Request, res: Response) => {
     const sm: StateManager | undefined = app.locals.stateManager;
     if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
-    res.status(201).json(sm.logicalGroups.create(req.body as Record<string, unknown>));
+    const body = req.body as Record<string, unknown>;
+    // Fixture groups carry both `name` and `displayName`; mirror so created groups read back the same way.
+    res.status(201).json(sm.logicalGroups.create({ ...body, displayName: body['displayName'] ?? body['name'] }));
   });
 
   app.patch('/v2.0/LogicalGroups/:id', validateGenericUpdate, (req: Request, res: Response) => {
@@ -103,7 +107,7 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
     { childPath: 'MacEndpoints',      childFixture: 'macEndpoints',      childEntityName: 'Mac endpoint',      searchFields: ['displayName', 'hostName', 'primaryIP'] },
     { childPath: 'IosEndpoints',      childFixture: 'iosEndpoints',      childEntityName: 'iOS endpoint',      searchFields: ['displayName', 'primaryIP'] },
     { childPath: 'NetworkEndpoints',  childFixture: 'networkEndpoints',  childEntityName: 'Network endpoint',  searchFields: ['displayName', 'primaryIP'] },
-    { childPath: 'LogicalGroups',     childFixture: 'logicalGroups',     childEntityName: 'Logical group',     searchFields: ['displayName', 'description'] },
+    { childPath: 'LogicalGroups',     childFixture: 'logicalGroups',     childEntityName: 'Logical group',     searchFields: LOGICAL_GROUP_SEARCH_FIELDS },
   ];
 
   for (const sub of endpointSubResources) {

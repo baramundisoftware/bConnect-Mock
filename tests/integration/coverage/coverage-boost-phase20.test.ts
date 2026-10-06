@@ -198,7 +198,7 @@ describe('groups.ts branch coverage', () => {
   });
 
   it('POST /v2.0/LogicalGroups — 403 in read-only', async () => {
-    await request(ro26).post('/v2.0/LogicalGroups').send({ displayName: 'test' }).expect(403);
+    await request(ro26).post('/v2.0/LogicalGroups').send({ name: 'test' }).expect(403);
   });
 
   it('PATCH /v2.0/LogicalGroups/:id — 403 in read-only', async () => {

@@ -56,7 +56,7 @@ describe('LogicalGroups (standard-readonly)', () => {
   it('POST /v2.0/LogicalGroups returns 403 in read-only profile', async () => {
     const res = await request(app)
       .post('/v2.0/LogicalGroups')
-      .send({ displayName: 'Test Group' });
+      .send({ name: 'Test Group' });
     expect(res.status).toBe(403);
   });
 });
@@ -72,26 +72,39 @@ describe('LogicalGroups CRUD (standard-readwrite)', () => {
     await request(app).post('/api/reset');
   });
 
-  it('POST creates a new logical group with HTTP 201', async () => {
+  it('POST creates a new logical group from a spec body (name) with HTTP 201', async () => {
     const res = await request(app)
       .post('/v2.0/LogicalGroups')
-      .send({ displayName: 'Test Group', description: 'Test description' });
+      .send({ name: 'Test Group', comment: 'Test comment' });
     expect(res.status).toBe(201);
     expect(res.body).toHaveProperty('id');
+    expect(res.body.name).toBe('Test Group');
+    expect(res.body.comment).toBe('Test comment');
     expect(res.body.displayName).toBe('Test Group');
+
+    const listRes = await request(app).get('/v2.0/LogicalGroups?SearchQuery=Test Group');
+    expect(listRes.body.data.map((g: { id: string }) => g.id)).toContain(res.body.id);
   });
 
-  it('POST returns 400 when displayName missing', async () => {
+  it('POST returns 400 naming `name` when name missing', async () => {
     const res = await request(app)
       .post('/v2.0/LogicalGroups')
-      .send({ description: 'No name' });
+      .send({ comment: 'No name' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/\bname\b/);
+  });
+
+  it('POST returns 400 when only displayName is sent (not a spec field)', async () => {
+    const res = await request(app)
+      .post('/v2.0/LogicalGroups')
+      .send({ displayName: 'Legacy' });
     expect(res.status).toBe(400);
   });
 
   it('PATCH updates logical group fields', async () => {
     const createRes = await request(app)
       .post('/v2.0/LogicalGroups')
-      .send({ displayName: 'Group to Patch' });
+      .send({ name: 'Group to Patch' });
     const id = createRes.body.id;
 
     const patchRes = await request(app)
@@ -111,7 +124,7 @@ describe('LogicalGroups CRUD (standard-readwrite)', () => {
   it('DELETE removes logical group with HTTP 204', async () => {
     const createRes = await request(app)
       .post('/v2.0/LogicalGroups')
-      .send({ displayName: 'Group to Delete' });
+      .send({ name: 'Group to Delete' });
     const id = createRes.body.id;
 
     expect((await request(app).delete(`/v2.0/LogicalGroups/${id}`)).status).toBe(204);
