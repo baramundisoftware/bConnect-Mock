@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- The request log and `/metrics` missed every response sent before the logging middleware ran: module-routing 404/405 (#49), rate-limit 429 and auth 401. Both are now registered first, and the log shows the path as requested, with its module prefix (`/bconnect/compliance/v2.0/Rules`), instead of the stripped `/v2.0/Rules`
+
 ## [0.4.0] - 2026-10-06
 
 ### Changed
