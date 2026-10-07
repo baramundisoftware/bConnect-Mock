@@ -702,11 +702,50 @@ function largeScaleFixture(
   const cached = cache.get(entityType);
   if (cached) { return cached; }
   const generator = profile.getGenerator(entityType);
-  const data = generator
+  let data = generator
     ? generator.generatePage({ page: 0, pageSize: generator.totalItems })
     : (standard().getFixture(entityType) as unknown[]);
+  const links = WINDOWS_ENDPOINT_LINKS[entityType];
+  if (!generator && links) {
+    data = onGeneratedWindowsEndpoints(data as Record<string, unknown>[], links,
+      standard().getFixture('windowsEndpoints') as Record<string, unknown>[],
+      largeScaleFixture(profile, 'windowsEndpoints', cache, standard) as Record<string, unknown>[]);
+  }
   cache.set(entityType, data);
   return data;
+}
+
+/**
+ * Standard fixtures without a large-scale generator that link to Windows endpoints:
+ * the link field, and the field holding the endpoint's name (if any).
+ */
+const WINDOWS_ENDPOINT_LINKS: Record<string, { id: string; name?: string }> = {
+  microsoftDefenderStates: { id: 'endpointId', name: 'endpointName' },
+  microsoftDefenderThreats: { id: 'windowsEndpointId' },
+};
+
+/**
+ * Move fixture items that link to the n-th standard Windows endpoint onto the n-th generated
+ * one. On large-scale profiles, the Windows endpoints are generated (other IDs), so links to the
+ * standard ones led nowhere: e.g. MicrosoftDefender/WindowsEndpoints/{endpointId}/Threats
+ * answered 404 for every endpoint of the Defender state list.
+ */
+function onGeneratedWindowsEndpoints(
+  items: Record<string, unknown>[],
+  links: { id: string; name?: string },
+  standardEndpoints: Record<string, unknown>[],
+  generatedEndpoints: Record<string, unknown>[],
+): Record<string, unknown>[] {
+  const position = new Map(standardEndpoints.map((e, i) => [e['id'], i]));
+  return items.map((item) => {
+    const target = generatedEndpoints[position.get(item[links.id]) ?? -1];
+    if (!target) { return item; }
+    return {
+      ...item,
+      [links.id]: target['id'],
+      ...(links.name ? { [links.name]: target['hostName'] ?? target['displayName'] } : {}),
+    };
+  });
 }
 
 /**

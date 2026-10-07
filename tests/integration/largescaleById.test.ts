@@ -52,4 +52,16 @@ describe.each([BmsVersion.BMS_25R2, BmsVersion.BMS_26R1])('largescale-readonly b
       expect(res.body.totalItems).toBeGreaterThan(0);
     }
   });
+
+  it('links Defender states and threats to generated Windows endpoints', async () => {
+    const states = await request(app).get('/bconnect/defensecontrol/v2.0/MicrosoftDefender/WindowsEndpoints');
+    expect(states.status).toBe(200);
+    const { endpointId, endpointName } = (states.body.data as Array<{ endpointId: string; endpointName: string }>)[0] ?? {};
+    const endpoint = await request(app).get(`/bconnect/endpoints/v2.0/WindowsEndpoints/${endpointId as string}`);
+    expect(endpoint.status).toBe(200);
+    expect(endpoint.body.hostName).toBe(endpointName);
+    const threats = await request(app).get(`/bconnect/defensecontrol/v2.0/MicrosoftDefender/WindowsEndpoints/${endpointId as string}/Threats`);
+    expect(threats.status).toBe(200);
+    expect(threats.body.totalItems).toBeGreaterThan(0);
+  });
 });
