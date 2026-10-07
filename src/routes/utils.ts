@@ -172,10 +172,8 @@ export function resolveEntityData(
   if (!Array.isArray(fixtureResult)) {
     return null;
   }
+  // An empty list is an empty page (200), as on a live bMS, not a missing resource
   let data = fixtureResult as Record<string, unknown>[];
-  if (data.length === 0) {
-    return null;
-  }
   if (hasFilter && searchQuery) {
     data = applyMultiKeywordSearch(data, searchQuery, searchFields);
   }

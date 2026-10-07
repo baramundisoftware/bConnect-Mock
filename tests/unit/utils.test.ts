@@ -81,10 +81,10 @@ describe('resolveEntityData — static fixture path', () => {
     expect(result).toBeNull();
   });
 
-  it('returns null when fixture array is empty', () => {
+  it('returns an empty page when the fixture array is empty (a live bMS answers 200)', () => {
     const profile = makeStaticProfile([]);
     const result = resolveEntityData(profile, 'whatever', { page: 0, pageSize: 10 });
-    expect(result).toBeNull();
+    expect(result).toEqual({ data: [], totalItems: 0 });
   });
 
   it('returns paginated data for non-empty fixture', () => {

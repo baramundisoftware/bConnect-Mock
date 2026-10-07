@@ -100,3 +100,16 @@ describe.each([
     expect(rw.body.data?.[0]?.id).toBe(ro.body.data?.[0]?.id);
   });
 });
+
+describe.each([ProfileMode.MINIMAL_READONLY, ProfileMode.MINIMAL_READWRITE])('empty lists answer an empty page (%s)', (mode) => {
+  it.each([
+    '/bconnect/endpoints/v2.0/AndroidEndpoints',
+    '/bconnect/servermanagement/v2.0/SecurityGroups',
+    '/bconnect/servermanagement/v2.0/SecurityProfiles',
+    '/bconnect/software/v2.0/InstalledWindowsSoftware',
+    '/bconnect/variables/v2.0/VariableInstances',
+  ])('%s', async (path) => {
+    const res = await request(createApp(mode, BmsVersion.BMS_26R1)).get(path).expect(200);
+    expect(Array.isArray(res.body.data)).toBe(true);
+  });
+});
