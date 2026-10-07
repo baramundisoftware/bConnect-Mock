@@ -84,6 +84,15 @@ describe('strict routing projects answers onto the spec', () => {
     expect(res.body).not.toHaveProperty('guid');
   });
 
+  it('KioskReleases carry exactly the spec\'s KioskRelease fields (#68)', async () => {
+    const res = await request(app).get('/bconnect/jobs/v2.0/KioskReleases');
+    expect(res.status).toBe(200);
+    expect(Object.keys(res.body.data[0] as object).sort()).toEqual([
+      'assignmentTargetId', 'assignmentTargetName', 'assignmentTargetType', 'id', 'jobDefinitionCategory',
+      'jobDefinitionDisplayName', 'jobDefinitionId', 'jobDefinitionName', 'jobDefinitionSupportedPlatforms',
+    ]);
+  });
+
   it('errors are not projected', async () => {
     const res = await request(app).get('/bconnect/endpoints/v2.0/LogicalGroups/00000000-0000-0000-0000-000000000000');
     expect(res.status).toBe(404);

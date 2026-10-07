@@ -5,6 +5,7 @@
  * Routes are grouped by parent collection.
  */
 
+import { KIOSK_SEARCH_FIELDS } from './catalog';
 import type { Express } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
 import { BmsVersion } from '../profiles/ProfileManager';
@@ -31,7 +32,7 @@ export function registerSubResourceRoutes(app: Express, profile: IProfile): void
     parentFixture: 'windowsEndpoints',
     childFixture: 'kioskReleases',
     foreignKey: 'endpointId',
-    searchFields: ['name', 'version', 'status'],
+    searchFields: KIOSK_SEARCH_FIELDS,
     parentEntityName: 'Endpoint',
     childEntityName: 'Kiosk release',
   });
@@ -116,7 +117,7 @@ export function registerSubResourceRoutes(app: Express, profile: IProfile): void
     parentFixture: 'jobs',
     childFixture: 'kioskReleases',
     foreignKey: 'jobDefinitionId',
-    searchFields: ['name', 'version', 'status'],
+    searchFields: KIOSK_SEARCH_FIELDS,
     parentEntityName: 'Job definition',
     childEntityName: 'Kiosk release',
   });
@@ -129,7 +130,7 @@ export function registerSubResourceRoutes(app: Express, profile: IProfile): void
     parentFixture: 'adObjects',
     childFixture: 'kioskReleases',
     foreignKey: 'adObjectId',
-    searchFields: ['name', 'version'],
+    searchFields: KIOSK_SEARCH_FIELDS,
     parentEntityName: 'AD object',
     childEntityName: 'Kiosk release',
   });
@@ -235,7 +236,7 @@ export function registerSubResourceRoutes(app: Express, profile: IProfile): void
     parentFixture: 'logicalGroups',
     childFixture: 'kioskReleases',
     foreignKey: 'logicalGroupId',
-    searchFields: ['name', 'version'],
+    searchFields: KIOSK_SEARCH_FIELDS,
     parentEntityName: 'Logical group',
     childEntityName: 'Kiosk release',
   });

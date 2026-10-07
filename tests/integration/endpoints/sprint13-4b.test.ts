@@ -22,12 +22,19 @@ describe('KioskReleases (standard-readonly)', () => {
     expect(res.body).toHaveProperty('totalItems');
   });
 
-  it('returns items with correct structure', async () => {
+  it('returns items in the spec\'s KioskRelease model (job definition released to a target)', async () => {
     const res = await request(app).get('/v2.0/KioskReleases').expect(200);
-    const item = res.body.data[0];
-    expect(item).toHaveProperty('id');
-    expect(item).toHaveProperty('name');
-    expect(item).toHaveProperty('version');
+    for (const item of res.body.data as Array<Record<string, unknown>>) {
+      expect(item).toMatchObject({
+        id: expect.any(String),
+        assignmentTargetId: expect.any(String),
+        assignmentTargetName: expect.any(String),
+        jobDefinitionId: expect.any(String),
+        jobDefinitionName: expect.any(String),
+        jobDefinitionSupportedPlatforms: expect.any(Array),
+      });
+      expect(['ADObject', 'AndroidEndpoint', 'IosEndpoint', 'LogicalGroup', 'MacEndpoint', 'WindowsEndpoint']).toContain(item['assignmentTargetType']);
+    }
   });
 
   it('GET /v2.0/KioskReleases/:id returns single item', async () => {
@@ -42,9 +49,12 @@ describe('KioskReleases (standard-readonly)', () => {
     expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
-  it('supports SearchQuery filtering', async () => {
-    const res = await request(app).get('/v2.0/KioskReleases?SearchQuery=Kiosk').expect(200);
-    expect(Array.isArray(res.body.data)).toBe(true);
+  it('searches job definition and target names', async () => {
+    const res = await request(app).get('/v2.0/KioskReleases?SearchQuery=Office').expect(200);
+    expect(res.body.data.map((r: { jobDefinitionName: string }) => r.jobDefinitionName)).toEqual(['Deploy Microsoft Office 2021']);
+    // more than one keyword: the target name is searched too
+    const byTarget = await request(app).get('/v2.0/KioskReleases?SearchQuery=PCDE001 Smith').expect(200);
+    expect(byTarget.body.totalItems).toBe(2);
   });
 });
 
@@ -52,13 +62,34 @@ describe('KioskReleases CRUD (standard-readwrite)', () => {
   let app: Express;
   beforeAll(() => { app = createApp(ProfileMode.STANDARD_READWRITE); });
 
-  it('POST /v2.0/KioskReleases creates a new release', async () => {
+  const JOB = 'bb000001-0001-0001-0001-000000000002';
+  const GROUP = 'd1000001-0003-0003-0003-000000000003';
+
+  it('POST /v2.0/KioskReleases releases a job definition to a target (spec body)', async () => {
     const res = await request(app)
       .post('/v2.0/KioskReleases')
-      .send({ name: 'Test Kiosk v1.0', version: '1.0.0', status: 'Active' })
+      .send({ jobDefinitionId: JOB, assignmentTargetId: GROUP })
       .expect(201);
-    expect(res.body).toHaveProperty('id');
-    expect(res.body.name).toBe('Test Kiosk v1.0');
+    expect(res.body).toMatchObject({
+      id: expect.any(String),
+      assignmentTargetId: GROUP,
+      assignmentTargetType: 'LogicalGroup',
+      jobDefinitionId: JOB,
+      jobDefinitionName: 'Windows Update - Critical Patches',
+    });
+    const created = await request(app).get(`/v2.0/KioskReleases/${res.body.id as string}`).expect(200);
+    expect(created.body.assignmentTargetName).toBe(res.body.assignmentTargetName);
+  });
+
+  it('POST answers 400 naming a missing required field', async () => {
+    const res = await request(app).post('/v2.0/KioskReleases').send({ jobDefinitionId: JOB }).expect(400);
+    expect(res.headers['x-bconnect-mock-reason']).toBe('Missing required field: assignmentTargetId');
+  });
+
+  it('POST answers 404 for an unknown job definition or target', async () => {
+    const unknown = '00000000-0000-0000-0000-000000000000';
+    await request(app).post('/v2.0/KioskReleases').send({ jobDefinitionId: unknown, assignmentTargetId: GROUP }).expect(404);
+    await request(app).post('/v2.0/KioskReleases').send({ jobDefinitionId: JOB, assignmentTargetId: unknown }).expect(404);
   });
 
   it('DELETE /v2.0/KioskReleases/:id removes release', async () => {
