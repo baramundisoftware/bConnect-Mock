@@ -58,6 +58,14 @@ const PARAM_LISTS: Record<string, string> = {
  */
 const NO_GUESS = new Set(['folderId', 'deviceId', 'windowsApplicationId', 'windowsJobDefinitionId']);
 
+/**
+ * Routes whose parameter must come from a specific list: rule violations exist only for iOS,
+ * Android and Mac endpoints, so the first item of /v2.0/Endpoints (a Windows endpoint) answers 404.
+ */
+const ROUTE_ID_LISTS: Record<string, string> = {
+  'compliance /v2.0/Endpoints/{endpointId}/DetectedRuleViolations': '/v2.0/DetectedRuleViolations',
+};
+
 /** IDs for entities the specs have no list route for (fixtures/standard-readonly) */
 const FIXTURE_IDS: Record<string, string> = {
   staticGroupId: 'e1000001-0001-0001-0001-000000000001',
@@ -123,7 +131,10 @@ async function findings(app: Express, version: string, dirName: string, profileL
       if (!part.startsWith('{')) { resolved += part; specSoFar += part; continue; }
       const param = part.slice(1, -1);
       const parentSpec = specSoFar.replace(/\/$/, '');
-      let id = await firstId(`/bconnect/${module}${resolved.replace(/\/$/, '')}`, param, routeAt(module, parentSpec));
+      const idList = ROUTE_ID_LISTS[`${module} ${specPath}`];
+      let id = idList
+        ? await firstId(`/bconnect/${module}${idList}`, param, routeAt(module, idList))
+        : await firstId(`/bconnect/${module}${resolved.replace(/\/$/, '')}`, param, routeAt(module, parentSpec));
       const named = paramListPath(param);
       for (const owner of id || !named ? [] : listModules(named)) {
         id = await firstId(`/bconnect/${owner}${named ?? ''}`, undefined, routeAt(owner, named ?? ''));

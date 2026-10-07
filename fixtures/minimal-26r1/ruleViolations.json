@@ -1,7 +1,7 @@
 [
   {
-    "endpointId": "d0000001-0001-0001-0001-000000000001",
-    "endpointName": "PCDE001-NYC",
+    "endpointId": "c5000001-0001-0001-0001-000000000001",
+    "endpointName": "IOS-MOB-00001",
     "ruleId": "c0011111-0000-0000-0000-000000000001",
     "ruleName": "Password Policy Compliance",
     "detected": "2026-01-20T10:00:00Z",

@@ -28,8 +28,8 @@ export interface SubResourceListConfig {
   parentPath: string;
   /** Child sub-resource path segment, e.g. 'WindowsEndpoints' */
   childPath: string;
-  /** Fixture key for parent collection, e.g. 'logicalGroups' */
-  parentFixture: string;
+  /** Fixture key(s) for the parent collection, e.g. 'logicalGroups' (several: any of them) */
+  parentFixture: string | string[];
   /** Fixture key for child collection, e.g. 'windowsEndpoints' */
   childFixture: string;
   /**
@@ -44,6 +44,12 @@ export interface SubResourceListConfig {
   childEntityName?: string;
   /** Human-readable parent entity name for error messages */
   parentEntityName?: string;
+  /**
+   * How an unknown parent is answered, as on a live bMS: 'object' (default) the generic
+   * "Object [id] not found …" 404, 'bare' a 404 titled "Not Found" without message, 'empty' 200
+   * with an empty list (the bMS doesn't check the parent on that route).
+   */
+  unknownParent?: 'object' | 'bare' | 'empty';
 }
 
 /**
@@ -62,7 +68,9 @@ export function registerSubResourceList(
     foreignKey,
     searchFields,
     parentEntityName = 'Parent',
+    unknownParent = 'object',
   } = config;
+  const parentFixtures = Array.isArray(parentFixture) ? parentFixture : [parentFixture];
 
   const foreignKeys = Array.isArray(foreignKey) ? foreignKey : [foreignKey];
 
@@ -76,16 +84,15 @@ export function registerSubResourceList(
       }
 
       // Verify parent exists
-      const parentData = currentRecords(app, profile, parentFixture);
-      if (!parentData) {
-        res.status(404).json({ error: `${parentEntityName} not found` });
-        return;
-      }
-      const parentExists = parentData.some(
+      const parentExists = parentFixtures.some((fixture) => (currentRecords(app, profile, fixture) ?? []).some(
         (p) => p['id'] === parentId || p['guid'] === parentId
-      );
+      ));
       if (!parentExists) {
-        res.status(404).json({ error: `${parentEntityName} not found` });
+        if (unknownParent === 'empty') {
+          res.status(200).json({ data: [], pageSize: parsePageSize(req.query.PageSize), page: parsePage(req.query.Page), totalItems: 0 });
+          return;
+        }
+        res.status(404).json({ error: `${parentEntityName} not found`, ...(unknownParent === 'bare' ? { bareNotFound: true } : {}) });
         return;
       }
 

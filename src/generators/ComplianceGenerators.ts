@@ -16,6 +16,9 @@
  */
 
 import { BaseGenerator } from './BaseGenerator';
+import { IosEndpointGenerator } from './IosEndpointGenerator';
+import { AndroidEndpointGenerator } from './AndroidEndpointGenerator';
+import { MacEndpointGenerator } from './MacEndpointGenerator';
 
 // ---------------------------------------------------------------------------
 // Shared helpers
@@ -198,7 +201,14 @@ export class RulesGenerator extends BaseGenerator<RuleRecord> {
 // RuleViolationsGenerator (5,000 items)
 // ---------------------------------------------------------------------------
 
-const ENDPOINT_NAME_PREFIXES = ['WIN-WS', 'WIN-SRV', 'WIN-LT', 'WIN-DC', 'LIN-SRV', 'MAC-WS'];
+/**
+ * Rule violations exist only for iOS, Android and Mac endpoints (a live bMS answers 404 for the
+ * violations of any other endpoint), so each violation points to a generated endpoint of one of
+ * those types, in turn.
+ */
+const VIOLATION_ENDPOINTS: Array<{ generateItem(i: number): { id: string; displayName: string }; totalItems: number }> = [
+  new IosEndpointGenerator(), new AndroidEndpointGenerator(), new MacEndpointGenerator(),
+];
 
 export interface RuleViolationRecord {
   endpointId: string;
@@ -221,11 +231,11 @@ export class RuleViolationsGenerator extends BaseGenerator<RuleViolationRecord> 
       throw new RangeError(`Index ${index} out of range [0, ${this.totalItems})`);
     }
 
-    // Deterministic endpoint reference (cycles over 70K endpoints via index arithmetic)
-    const endpointIdx = (index * 13) % 70000;
-    const endpointId = indexToGuid(0xe0, endpointIdx);
-    const prefix = pick(ENDPOINT_NAME_PREFIXES, endpointIdx);
-    const endpointName = `${prefix}-${zeroPad((endpointIdx % 10000) + 1, 5)}`;
+    // Deterministic endpoint reference: iOS, Android, Mac in turn
+    const endpoints = VIOLATION_ENDPOINTS[index % VIOLATION_ENDPOINTS.length] as (typeof VIOLATION_ENDPOINTS)[number];
+    const endpoint = endpoints.generateItem((index * 13) % endpoints.totalItems);
+    const endpointId = endpoint.id;
+    const endpointName = endpoint.displayName;
 
     // Deterministic rule reference
     const ruleIdx = index % this._rulesGen.totalItems;
