@@ -7,15 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-07
+
 ### Added
-- `BCONNECT_MANAGEMENT_SERVER_VERSION` overrides the version `GET /v2.0/ManagementServer` reports, to test how clients handle an unknown or malformed version
+- `BCONNECT_MANAGEMENT_SERVER_VERSION` overrides the version `GET /v2.0/ManagementServer` reports, to test how clients handle an unknown or malformed version (#61)
 
 ### Changed
-- `GET /v2.0/ManagementServer` returns only the spec's fields: `name`, `version`, `state`, `plannedServerRestartTimes`. The mock-only fields `id`, `type`, `hostname`, `port`, `databaseVersion`, `isLicensed`, `licenseExpiresAt` and `installedAt` are gone
+- `GET /v2.0/ManagementServer` returns only the spec's fields: `name`, `version`, `state`, `plannedServerRestartTimes`. The mock-only fields `id`, `type`, `hostname`, `port`, `databaseVersion`, `isLicensed`, `licenseExpiresAt` and `installedAt` are gone (#61)
 
 ### Fixed
-- `GET /v2.0/ManagementServer` reported `26.1.0.5678` for every bMS version, so clients couldn't detect 25R2 (bConnect-MCP#159). It now reports `25.2.0.0` for 25R2 and `26.1.161.0` for 26R1, the format a live 26R1 returns. The large-scale profiles answered 404; they now return a management server too
-- Strict module routing let `DELETE /assets/v2.0/AssetTypes/Folders` through, treating `Folders` as the `{id}` of `AssetTypes/{id}`. A literal segment now wins over a path parameter, as in ASP.NET routing, so the guard answers 405 (`Allow: GET, POST`). It's the only such overlap in the 25R2 and 26R1 specs
+- `GET /v2.0/ManagementServer` reported `26.1.0.5678` for every bMS version, so clients couldn't detect 25R2 (bConnect-MCP#159). It now reports `25.2.0.0` for 25R2 and `26.1.161.0` for 26R1, the format a live 26R1 returns. The large-scale profiles answered 404; they now return a management server too (#61)
+- Strict module routing let `DELETE /assets/v2.0/AssetTypes/Folders` through, treating `Folders` as the `{id}` of `AssetTypes/{id}`. A literal segment now wins over a path parameter, as in ASP.NET routing, so the guard answers 405 (`Allow: GET, POST`). It's the only such overlap in the 25R2 and 26R1 specs (#60)
 
 ## [0.4.1] - 2026-10-07
 
