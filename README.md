@@ -193,12 +193,20 @@ bConnect spec of the selected version: `/bconnect/<module>/v2.0/...`, for exampl
 `/bconnect/endpoints/v2.0/WindowsEndpoints` or `/bconnect/compliance/v2.0/Rules`
 (`/bconnect` itself is optional).
 
+Rejected requests get the same status, content type and body as from a live bMS (26R1,
+checked 2026-10-07):
+
 | Request | Result |
 |---|---|
 | `/bconnect/endpoints/v2.0/WindowsEndpoints` | 200 |
-| `/v2.0/WindowsEndpoints` or `/bconnect/v2.0/WindowsEndpoints` (no module) | 404 |
-| `/bconnect/jobs/v2.0/WindowsEndpoints` (module doesn't own the route) | 404 |
-| A route or method the spec doesn't declare | 404, or 405 with `Allow` |
+| `/v2.0/WindowsEndpoints` or `/bconnect/v2.0/WindowsEndpoints` (no module) | 404 `application/json`: `{"Message":"No HTTP resource was found that matches the request URI '…'."}` |
+| `/bconnect/nonsense/v2.0/Endpoints` (unknown module) | 400 `text/plain`: "The request URI is invalid. Route data could not be determined. …" |
+| `/bconnect/jobs/v2.0/WindowsEndpoints` (module doesn't own the route), or a route the spec doesn't declare | 404 `application/problem+json`: `{"type":"https://httpstatuses.io/404","title":"Not Found","status":404,"traceId":"…"}` |
+| A method the spec doesn't declare | 405 `application/problem+json`, with `Allow` |
+
+A live bMS explains none of these. The mock puts its explanation in the
+`X-BConnect-Mock-Reason` response header and in its request log, e.g.
+`unknown module "nonsense" for bMS 26r1`.
 
 Set `BCONNECT_MODULE_ROUTING=lenient` to accept any module prefix, or none, as in 0.3.x.
 

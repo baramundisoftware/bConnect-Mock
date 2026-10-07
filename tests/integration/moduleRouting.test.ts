@@ -12,11 +12,14 @@ import { execFileSync } from 'child_process';
 import path from 'path';
 import { createApp } from '../../src/app';
 import { ProfileMode, BmsVersion } from '../../src/profiles/ProfileManager';
-import { getModuleRoutingMode } from '../../src/middleware/moduleRouting';
+import { getModuleRoutingMode, UNKNOWN_MODULE_TEXT } from '../../src/middleware/moduleRouting';
 import { MODULE_ROUTES } from '../../src/generated/moduleRoutes';
 import type { Express } from 'express';
 
 const ROUTING_ENV = 'BCONNECT_MODULE_ROUTING';
+const REASON = 'x-bconnect-mock-reason';
+const PROBLEM = { type: 'https://httpstatuses.io/404', title: 'Not Found', status: 404 };
+const TRACE_ID = /^00-[0-9a-f]{32}-[0-9a-f]{16}-00$/;
 
 function setRoutingEnv(value: string | undefined): void {
   if (value === undefined) { delete process.env[ROUTING_ENV]; } else { process.env[ROUTING_ENV] = value; }
@@ -39,13 +42,13 @@ describe('Module routing — strict (26R1)', () => {
     await request(app).post('/api/reset');
   });
 
-  // The table from the issue
+  // The table from the issue, with the statuses a live 26R1 bMS answered (2026-10-07)
   it.each([
     ['/bconnect/endpoints/v2.0/WindowsEndpoints', 200],
     ['/bconnect/v2.0/WindowsEndpoints', 404],
     ['/bconnect/compliance/v2.0/WindowsEndpoints', 404],
     ['/bconnect/jobs/v2.0/Endpoints', 404],
-    ['/bconnect/nonsense/v2.0/Endpoints', 404],
+    ['/bconnect/nonsense/v2.0/Endpoints', 400],
   ])('GET %s?PageSize=1 → %i', async (url, status) => {
     const res = await request(app).get(`${url}?PageSize=1`);
     expect(res.status).toBe(status);
@@ -55,15 +58,39 @@ describe('Module routing — strict (26R1)', () => {
     expect((await request(app).get('/endpoints/v2.0/WindowsEndpoints')).status).toBe(200);
   });
 
+  it('answers a path without module like a live bMS: 404 JSON with the request URI', async () => {
+    const res = await request(app).get('/bconnect/v2.0/WindowsEndpoints?PageSize=1');
+    expect(res.status).toBe(404);
+    expect(res.headers['content-type']).toMatch(/^application\/json/);
+    expect(res.body).toEqual({
+      Message: expect.stringMatching(/^No HTTP resource was found that matches the request URI 'http:\/\/[^/]+\/bconnect\/v2\.0\/WindowsEndpoints\?PageSize=1'\.$/),
+    });
+    expect(res.headers[REASON]).toMatch(/no module prefix/);
+  });
+
   it('rejects unprefixed root paths', async () => {
     const res = await request(app).get('/v2.0/WindowsEndpoints');
     expect(res.status).toBe(404);
-    expect(res.body.error).toMatch(/no module prefix/);
+    expect(res.headers[REASON]).toMatch(/no module prefix/);
   });
 
-  it('names the unknown module in the 404', async () => {
+  it('answers an unknown module like a live bMS: 400 text/plain', async () => {
     const res = await request(app).get('/bconnect/nonsense/v2.0/Endpoints');
-    expect(res.body.error).toMatch(/unknown module "nonsense"/);
+    expect(res.status).toBe(400);
+    expect(res.headers['content-type']).toMatch(/^text\/plain/);
+    expect(res.text).toBe(UNKNOWN_MODULE_TEXT);
+    expect(res.headers[REASON]).toMatch(/unknown module "nonsense"/);
+  });
+
+  it('answers a route the module lacks like a live bMS: 404 problem details', async () => {
+    const res = await request(app).get('/bconnect/jobs/v2.0/Endpoints');
+    expect(res.status).toBe(404);
+    expect(res.headers['content-type']).toMatch(/^application\/problem\+json/);
+    const body = JSON.parse(res.text) as Record<string, unknown>;
+    expect(body).toMatchObject(PROBLEM);
+    expect(body['traceId']).toMatch(TRACE_ID);
+    expect(Object.keys(body).sort()).toEqual(['status', 'title', 'traceId', 'type']);
+    expect(res.headers[REASON]).toMatch(/not a route of module "jobs"/);
   });
 
   it('answers a route under its own module', async () => {
@@ -103,6 +130,8 @@ describe('Module routing — strict (26R1)', () => {
       .send({ displayName: 'x' });
     expect(res.status).toBe(405);
     expect(res.headers['allow']).toBe('DELETE, GET, PATCH');
+    expect(res.headers['content-type']).toMatch(/^application\/problem\+json/);
+    expect(JSON.parse(res.text)).toMatchObject({ type: 'https://httpstatuses.io/405', title: 'Method Not Allowed', status: 405 });
   });
 
   it('lets declared write routes through', async () => {
@@ -138,8 +167,8 @@ describe('Module routing — strict (25R2)', () => {
 
   it('rejects the compliance module, which 25R2 does not have', async () => {
     const res = await request(app).get('/bconnect/compliance/v2.0/Rules');
-    expect(res.status).toBe(404);
-    expect(res.body.error).toMatch(/unknown module "compliance" for bMS 25r2/);
+    expect(res.status).toBe(400);
+    expect(res.headers[REASON]).toMatch(/unknown module "compliance" for bMS 25r2/);
   });
 });
 
@@ -189,7 +218,7 @@ describe.each([BmsVersion.BMS_25R2, BmsVersion.BMS_26R1])('Module routing — ev
       for (const method of methods) {
         const res = await send(app, method, url);
         const noHandler = res.status === 404 && /text\/html/.test(res.headers['content-type'] ?? '');
-        const rejected = res.status === 405 || (res.status === 404 && /is not a route|unknown module/.test(String(res.body?.error)));
+        const rejected = res.headers[REASON] !== undefined;
         if (noHandler || rejected) { unserved.push(`${res.status} ${method} ${url}`); }
       }
     }

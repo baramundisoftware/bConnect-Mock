@@ -83,9 +83,9 @@ BCONNECT_PROFILE=minimal-readonly npm start
    curl http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints | jq '.data[0].id'
    ```
 
-4. **Missing or wrong module prefix.** Like a real bMS, the mock answers each route only under the module that owns it in the bConnect spec, e.g. `/bconnect/endpoints/v2.0/WindowsEndpoints` or `/bconnect/compliance/v2.0/Rules`. `/v2.0/WindowsEndpoints`, `/bconnect/v2.0/WindowsEndpoints` and `/bconnect/jobs/v2.0/WindowsEndpoints` return 404; the error message names the problem. The `/bconnect` part is optional (`/endpoints/v2.0/...` works too).
+4. **Missing or wrong module prefix.** Like a real bMS, the mock answers each route only under the module that owns it in the bConnect spec, e.g. `/bconnect/endpoints/v2.0/WindowsEndpoints` or `/bconnect/compliance/v2.0/Rules`. `/v2.0/WindowsEndpoints`, `/bconnect/v2.0/WindowsEndpoints` and `/bconnect/jobs/v2.0/WindowsEndpoints` return 404, and an unknown module such as `/bconnect/nonsense/…` returns 400 with a plain-text body, as on a live bMS. The `X-BConnect-Mock-Reason` response header and the request log name the problem. The `/bconnect` part is optional (`/endpoints/v2.0/...` works too).
 
-5. **Route not in the spec of the selected version.** In strict mode, routes the bConnect spec doesn't declare return 404 (e.g. `StaticGroups`, `Variables`, or `IndustrialEndpoints` on 26R1), and a method the spec doesn't declare returns 405 with an `Allow` header.
+5. **Route not in the spec of the selected version.** In strict mode, routes the bConnect spec doesn't declare return 404 (e.g. `StaticGroups`, `Variables`, or `IndustrialEndpoints` on 26R1), and a method the spec doesn't declare returns 405 with an `Allow` header. Both come as `application/problem+json`, as on a live bMS.
 
    **Fix for 4 and 5:** use the module prefix from the spec. To get the old behaviour back (any prefix, or none), start the mock with:
    ```bash

@@ -12,19 +12,46 @@
  * the specs (src/generated/moduleRoutes.ts).
  *
  * Modes (environment variable BCONNECT_MODULE_ROUTING):
- *   strict  (default) — 404 for a missing, unknown or wrong module, or a route the
- *                       selected bMS version's spec does not declare; 405 when the
- *                       module declares the path but not the method
+ *   strict  (default) — rejects what a live bMS rejects, with the same answer:
+ *                       no module             → 404 application/json {"Message": …}
+ *                       unknown module        → 400 text/plain "The request URI is invalid. …"
+ *                       route not in module   → 404 application/problem+json
+ *                       method not declared   → 405 application/problem+json, with Allow
  *   lenient           — previous behaviour: any module prefix, or none, is accepted
  *
  * Non-API paths (/health, /metrics, /api/reset, /api-docs) are never affected.
  */
 
+import { randomBytes } from 'crypto';
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import type { BmsVersion } from '../profiles/ProfileManager';
 import { MODULE_ROUTES } from '../generated/moduleRoutes';
 
 export type ModuleRoutingMode = 'strict' | 'lenient';
+
+/**
+ * Response header with the mock's explanation of a rejection. The bodies copy a live bMS
+ * (26R1, checked 2026-10-07), which explains nothing, so the reason travels here and in
+ * the request log.
+ */
+export const MOCK_REASON_HEADER = 'X-BConnect-Mock-Reason';
+
+/** The text/plain body a live bMS sends for a path whose module it doesn't know */
+export const UNKNOWN_MODULE_TEXT =
+  'The request URI is invalid. Route data could not be determined. Maybe you entered a wrong URI format or bConnect version?';
+
+/** A W3C trace id, as the bMS puts into its problem details */
+function traceId(): string {
+  return `00-${randomBytes(16).toString('hex')}-${randomBytes(8).toString('hex')}-00`;
+}
+
+/** RFC 7807 problem details, as a live bMS answers an unknown route (404) or method (405) */
+function sendProblem(res: Response, status: 404 | 405, reason: string): void {
+  const title = status === 404 ? 'Not Found' : 'Method Not Allowed';
+  res.setHeader(MOCK_REASON_HEADER, reason);
+  res.status(status).type('application/problem+json')
+    .send(JSON.stringify({ type: `https://httpstatuses.io/${status}`, title, status, traceId: traceId() }));
+}
 
 /**
  * Returns the configured routing mode. Unset or empty means strict;
@@ -83,15 +110,15 @@ export function createModuleRoutingGuard(
     const apiPath = rawApiPath.length > 1 ? rawApiPath.replace(/\/+$/, '') : rawApiPath;
 
     if (!moduleSegment) {
-      res.status(404).json({
-        error: `Not found: ${req.path} has no module prefix (e.g. /bconnect/endpoints${apiPath})`,
-      });
+      res.setHeader(MOCK_REASON_HEADER, `${req.path} has no module prefix (e.g. /bconnect/endpoints${apiPath})`);
+      res.status(404).json({ Message: `No HTTP resource was found that matches the request URI '${req.protocol}://${req.get('host') ?? ''}${req.originalUrl}'.` });
       return;
     }
 
     const routes = modules.get(moduleSegment.toLowerCase());
     if (!routes) {
-      res.status(404).json({ error: `Not found: unknown module "${moduleSegment}" for bMS ${bmsVersion}` });
+      res.setHeader(MOCK_REASON_HEADER, `unknown module "${moduleSegment}" for bMS ${bmsVersion}`);
+      res.status(400).type('text/plain').send(UNKNOWN_MODULE_TEXT);
       return;
     }
 
@@ -101,9 +128,7 @@ export function createModuleRoutingGuard(
     const fewestParams = Math.min(...matches.map((r) => r.params));
     const pathMatches = matches.filter((r) => r.params === fewestParams);
     if (pathMatches.length === 0) {
-      res.status(404).json({
-        error: `Not found: ${apiPath} is not a route of module "${moduleSegment}" in bMS ${bmsVersion}`,
-      });
+      sendProblem(res, 404, `${apiPath} is not a route of module "${moduleSegment}" in bMS ${bmsVersion}`);
       return;
     }
 
@@ -111,9 +136,7 @@ export function createModuleRoutingGuard(
     if (!pathMatches.some((r) => r.method === method)) {
       const allowed = [...new Set(pathMatches.map((r) => r.method))].sort();
       res.setHeader('Allow', allowed.join(', '));
-      res.status(405).json({
-        error: `Method not allowed: ${req.method} ${apiPath} in module "${moduleSegment}" (allowed: ${allowed.join(', ')})`,
-      });
+      sendProblem(res, 405, `${req.method} ${apiPath} is not a method of module "${moduleSegment}" (allowed: ${allowed.join(', ')})`);
       return;
     }
 
