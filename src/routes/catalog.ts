@@ -8,6 +8,7 @@ import type { IProfile } from '../profiles/ProfileManager';
 import type { StateManager } from '../state/StateManager';
 import { GUID_REGEX, parsePage, applyMultiKeywordSearch, parsePageSize } from './utils';
 import { registerGetById } from './factories/getById';
+import { currentRecords } from './factories/currentRecords';
 import { registerCrudRoutes } from './factories/crudRoutes';
 import { validateGenericUpdate, validateWriteBody } from '../middleware/validateBody';
 
@@ -28,21 +29,7 @@ const ASSIGNMENT_TARGETS = [
 export function registerCatalogRoutes(app: Express, profile: IProfile): void {
 
   /** Current records of an entity type: the state store in read-write profiles, else the fixture */
-  const records = (fixture: string): Record<string, unknown>[] => {
-    const sm = app.locals.stateManager as StateManager | undefined;
-    const stores: Record<string, () => Record<string, unknown>[]> = sm ? {
-      windowsEndpoints: () => sm.windowsEndpoints.getAll() as unknown as Record<string, unknown>[],
-      androidEndpoints: () => sm.androidEndpoints.getAll(),
-      iosEndpoints: () => sm.iosEndpoints.getAll(),
-      macEndpoints: () => sm.macEndpoints.getAll(),
-      logicalGroups: () => sm.logicalGroups.getAll(),
-      jobs: () => sm.jobs.getAll(),
-    } : {};
-    const fromStore = stores[fixture];
-    if (fromStore) { return fromStore(); }
-    const data = profile.getFixture(fixture);
-    return Array.isArray(data) ? (data as Record<string, unknown>[]) : [];
-  };
+  const records = (fixture: string): Record<string, unknown>[] => currentRecords(app, profile, fixture) ?? [];
 
   // ─── KioskReleases (P13.4.5) ──────────────────────────────────────────────
   // GET /v2.0/KioskReleases

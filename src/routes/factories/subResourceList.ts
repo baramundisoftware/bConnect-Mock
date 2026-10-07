@@ -3,7 +3,7 @@
  *
  * Registers a GET /:parentId/ChildCollection route that:
  * 1. Validates the parent ID (GUID format)
- * 2. Checks the parent exists in its fixture/store
+ * 2. Checks the parent exists in its store (read-write profiles) or fixture
  * 3. Filters the child collection by a foreign key matching the parent ID
  * 4. Applies SearchQuery, OrderBy, and pagination
  *
@@ -20,6 +20,7 @@
 
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../../profiles/ProfileManager';
+import { currentRecords } from './currentRecords';
 import { GUID_REGEX, applyMultiKeywordSearch, applyMultiFieldSort, parsePage, parsePageSize } from '../utils';
 
 export interface SubResourceListConfig {
@@ -75,12 +76,12 @@ export function registerSubResourceList(
       }
 
       // Verify parent exists
-      const parentData = profile.getFixture(parentFixture);
-      if (!Array.isArray(parentData)) {
+      const parentData = currentRecords(app, profile, parentFixture);
+      if (!parentData) {
         res.status(404).json({ error: `${parentEntityName} not found` });
         return;
       }
-      const parentExists = (parentData as Record<string, unknown>[]).some(
+      const parentExists = parentData.some(
         (p) => p['id'] === parentId || p['guid'] === parentId
       );
       if (!parentExists) {
@@ -89,10 +90,7 @@ export function registerSubResourceList(
       }
 
       // Load child collection and filter by foreign key
-      const childData = profile.getFixture(childFixture);
-      let children: Record<string, unknown>[] = Array.isArray(childData)
-        ? (childData as Record<string, unknown>[])
-        : [];
+      let children = currentRecords(app, profile, childFixture) ?? [];
 
       children = children.filter((child) =>
         foreignKeys.some((fk) => {
