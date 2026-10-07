@@ -10,6 +10,7 @@
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../../profiles/ProfileManager';
 import { GUID_REGEX } from '../utils';
+import { currentRecords } from './currentRecords';
 
 export interface GetByIdConfig {
   /** Base path (without /:id), e.g. '/v2.0/LinuxEndpoints' */
@@ -50,27 +51,13 @@ export function registerGetById(
         return;
       }
 
-      // Prefer StateManager (dynamic write operations) over static fixture
-      const sm = app.locals.stateManager;
-      let item: Record<string, unknown> | undefined;
-      if (sm) {
-        const store = sm.getStore(entityType);
-        if (store) {
-          item = (store.getAll() as Record<string, unknown>[]).find(
-            (r) => r['id'] === id || r['guid'] === id
-          );
-        }
+      // The store in read-write profiles (created and deleted items), else the fixture
+      const data = currentRecords(app, profile, entityType);
+      if (!data) {
+        res.status(404).json({ error: `${entityName} not found` });
+        return;
       }
-      if (!item) {
-        const data = profile.getFixture(entityType);
-        if (!Array.isArray(data)) {
-          res.status(404).json({ error: `${entityName} not found` });
-          return;
-        }
-        item = (data as Record<string, unknown>[]).find(
-          (r) => r['id'] === id || r['guid'] === id
-        );
-      }
+      const item = data.find((r) => r['id'] === id || r['guid'] === id);
 
       if (!item) {
         res.status(404).json({ error: `${entityName} not found` });
