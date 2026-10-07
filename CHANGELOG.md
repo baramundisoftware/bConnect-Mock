@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `tests/conformance`: every GET answer of both specs is validated against the spec schemas (types, enums, formats, required and undefined fields). Known differences are kept in a baseline that can only shrink (`npm run spec-conformance:update`); it starts at 1811 lines, mostly fields the spec doesn't define
+
 ### Changed
+- `PageSize` behaves as on a live bMS (26R1, checked 2026-10-07): **20** when it's missing, `0` or invalid, and at most **1000**; larger values are capped. None of these is an error any more (before: no `PageSize` returned the whole list, `0` too, and values above 10,000 or below 0 got 400). The parameter name is matched case-insensitively
 - Error answers have the live bMS's shape (26R1, checked 2026-10-07) instead of the mock's `{"error": …}`; the mock's message moved to the `X-BConnect-Mock-Reason` header and the request log:
   - unknown ID: 404 `application/problem+json`, title "Object [<id>] not found or not visible due to missing rights."
   - 400s: `application/json` with `"title":"One or more validation errors occurred."` and `errors` per field
@@ -17,7 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - A request body that isn't valid JSON answered 500; it now gets 400 with `errors`, naming the body parameter (e.g. `logicalGroup`)
 - 44 fixture IDs weren't valid GUIDs (e.g. BitLocker `bl000001-…`, API keys `ak011111-…`, download jobs `dj011111-…`), so they couldn't be fetched by ID in strict routing; their letters outside 0-9a-f were replaced (`b1000001-…`, `ac011111-…`, `d7011111-…`). A test now checks every fixture ID
-- `PageSize` behaves as on a live bMS (26R1, checked 2026-10-07): **20** when it's missing, `0` or invalid, and at most **1000**; larger values are capped. None of these is an error any more (before: no `PageSize` returned the whole list, `0` too, and values above 10,000 or below 0 got 400). The parameter name is matched case-insensitively
 
 ## [0.7.0] - 2026-10-07
 
