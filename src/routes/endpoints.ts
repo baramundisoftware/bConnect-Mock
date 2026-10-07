@@ -18,6 +18,7 @@ import {
   applyMultiFieldSort,
   parsePage,
   parsePageSize,
+  withReleaseEndpointType,
 } from './utils';
 import { registerGetById } from './factories/getById';
 import { registerReadonlyList } from './factories/readonlyList';
@@ -220,7 +221,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
       if (orderBy?.trim()) { combined = applyMultiFieldSort(combined, orderBy); }
       const totalItems = combined.length;
       const eff = pageSize;
-      const data = eff > 0 ? combined.slice(page * eff, page * eff + eff) : combined;
+      const data = (eff > 0 ? combined.slice(page * eff, page * eff + eff) : combined).map((ep) => withReleaseEndpointType(ep, profile.bmsVersion));
       res.status(200).json({ data, pageSize: eff, page, totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });

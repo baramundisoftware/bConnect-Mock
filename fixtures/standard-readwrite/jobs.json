@@ -3,7 +3,7 @@
     {
       "id": "bb000001-0001-0001-0001-000000000001",
       "name": "Deploy Microsoft Office 2021",
-      "type": "SoftwareDeployment",
+      "type": "WindowsJobDefinition",
       "status": "Completed",
       "targetGroup": "All Windows Endpoints",
       "createdDate": "2026-03-15T10:00:00Z",
@@ -14,7 +14,7 @@
     {
       "id": "bb000001-0001-0001-0001-000000000002",
       "name": "Windows Update - Critical Patches",
-      "type": "UpdateDeployment",
+      "type": "WindowsJobDefinition",
       "status": "Running",
       "targetGroup": "All Endpoints",
       "createdDate": "2026-03-25T08:00:00Z",
@@ -25,7 +25,7 @@
     {
       "id": "bb000001-0001-0001-0001-000000000003",
       "name": "Hardware Inventory Scan",
-      "type": "InventoryScan",
+      "type": "WindowsJobDefinition",
       "status": "Scheduled",
       "targetGroup": "All Endpoints",
       "createdDate": "2026-03-10T12:00:00Z",
@@ -36,7 +36,7 @@
     {
       "id": "bb000001-0001-0001-0001-000000000004",
       "name": "Remove Deprecated Java 7",
-      "type": "SoftwareUninstall",
+      "type": "WindowsJobDefinition",
       "status": "Completed",
       "targetGroup": "Development Workstations",
       "createdDate": "2026-03-01T09:00:00Z",
@@ -47,7 +47,7 @@
     {
       "id": "bb000001-0001-0001-0001-000000000005",
       "name": "Security Compliance Check",
-      "type": "ComplianceScan",
+      "type": "WindowsJobDefinition",
       "status": "Failed",
       "targetGroup": "All Windows Endpoints",
       "createdDate": "2026-03-22T11:00:00Z",

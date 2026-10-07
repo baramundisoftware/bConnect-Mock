@@ -35,8 +35,8 @@ describe('BundlesGenerator', () => {
     expect(gen.generateItem(99).id).toMatch(GUID_REGEX);
   });
 
-  it('type is a valid bundle type', () => {
-    const valid = new Set(['ApplicationBundle', 'SoftwarePackage', 'PatchBundle', 'DriverBundle']);
+  it('type is a valid bundle type (spec SoftwareBundleType)', () => {
+    const valid = new Set(['Install', 'Uninstall']);
     for (let i = 0; i < 20; i++) {
       expect(valid.has(gen.generateItem(i).type)).toBe(true);
     }
@@ -143,16 +143,21 @@ describe('DownloadJobsGenerator', () => {
     expect(gen.generateItem(100).lastExecution).toMatch(ISO_REGEX);
   });
 
-  it('stateValue is a known state', () => {
-    const valid = new Set(['Succeeded', 'Failed', 'Running', 'Queued']);
+  it('stateValue is a known state (spec DownloadJobStatusValue)', () => {
+    const valid = new Set(['Unknown', 'Running', 'Success', 'Error', 'RescheduledSuccess', 'RescheduledError']);
     for (let i = 0; i < 20; i++) {
       expect(valid.has(gen.generateItem(i).stateValue)).toBe(true);
     }
   });
 
-  it('interval is a positive integer', () => {
+  it('interval is a list of Daily/Weekly repetitions (spec DownloadJob.interval)', () => {
     for (let i = 0; i < 20; i++) {
-      expect(gen.generateItem(i).interval).toBeGreaterThan(0);
+      const interval = gen.generateItem(i).interval;
+      expect(interval.length).toBeGreaterThan(0);
+      for (const r of interval) {
+        expect(['Daily', 'Weekly']).toContain(r.type);
+        expect(r.time).toMatch(/^\d{2}:\d{2}:\d{2}$/);
+      }
     }
   });
 

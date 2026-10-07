@@ -51,7 +51,8 @@ function isoDate(index: number, rangeMs = 90 * 24 * 60 * 60 * 1000): string {
 // BundlesGenerator (100 items)
 // ---------------------------------------------------------------------------
 
-const BUNDLE_TYPES = ['ApplicationBundle', 'SoftwarePackage', 'PatchBundle', 'DriverBundle'] as const;
+// spec SoftwareBundleType
+const BUNDLE_TYPES = ['Install', 'Install', 'Install', 'Uninstall'] as const;
 
 const BUNDLE_FOLDERS: Array<{ parentName: string }> = [
   { parentName: 'Productivity' },
@@ -201,14 +202,25 @@ const DJ_URLS = [
   'https://updates.company.com/apps',
 ];
 
-const DJ_STATES = ['Succeeded', 'Succeeded', 'Succeeded', 'Failed', 'Running', 'Queued'] as const;
+// spec DownloadJobStatusValue
+const DJ_STATES = ['Success', 'Success', 'Success', 'Error', 'Running', 'RescheduledSuccess'] as const;
+
+/** spec DownloadJob.interval: a list of Daily/Weekly repetitions */
+export type DownloadJobRepetition = { type: 'Daily'; time: string } | { type: 'Weekly'; time: string; weekdays: string[] };
+const DJ_INTERVALS: readonly DownloadJobRepetition[][] = [
+  [{ type: 'Daily', time: '02:00:00' }, { type: 'Daily', time: '14:00:00' }],
+  [{ type: 'Daily', time: '02:00:00' }],
+  [{ type: 'Daily', time: '00:00:00' }, { type: 'Daily', time: '06:00:00' }, { type: 'Daily', time: '12:00:00' }, { type: 'Daily', time: '18:00:00' }],
+  [{ type: 'Weekly', time: '03:00:00', weekdays: ['Sunday', 'Wednesday'] }],
+  [{ type: 'Weekly', time: '01:00:00', weekdays: ['Saturday'] }],
+];
 
 const DJ_PATHS_BASE = 'C:\\bConnect\\Downloads';
 
 export interface DownloadJobRecord {
   id: string;
   name: string;
-  interval: number;
+  interval: DownloadJobRepetition[];
   lastExecution: string;
   lastUpdate: string;
   stateValue: string;
@@ -230,14 +242,13 @@ export class DownloadJobsGenerator extends BaseGenerator<DownloadJobRecord> {
     const cycle = Math.floor(index / DJ_NAME_TEMPLATES.length);
     const name = cycle > 0 ? `${nameTpl} ${zeroPad(cycle + 1, 2)}` : `${nameTpl}`;
     const state = pick(DJ_STATES, index);
-    const intervals = [720, 1440, 360, 2880, 60] as const;
-    const interval = pick(intervals, index);
+    const interval = pick(DJ_INTERVALS, index);
     const lastExec = isoDate(index * 7);
     const lastUpdate = isoDate(index * 7 + 45 * 60 * 1000); // ~45min after execution
 
-    const stateMessage = state === 'Succeeded'
+    const stateMessage = state === 'Success'
       ? `Downloaded ${(index % 20) + 1} items successfully`
-      : state === 'Failed'
+      : state === 'Error'
       ? `Connection timeout after ${(index % 5) + 1} retries`
       : `In progress: ${(index % 100)}% complete`;
 

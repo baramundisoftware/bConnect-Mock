@@ -11,7 +11,7 @@ import { validateWriteBody, validateGenericUpdate } from '../middleware/validate
 // Spec LogicalGroupForCreation (25R2 + 26R1) requires `name`; there is no `displayName`.
 const validateLogicalGroupCreate = validateWriteBody(['name']);
 const LOGICAL_GROUP_SEARCH_FIELDS = ['name', 'comment', 'displayName', 'description'];
-import { resolveEntityData, applyMultiKeywordSearch, applyMultiFieldSort, parsePage, GUID_REGEX, parsePageSize } from './utils';
+import { resolveEntityData, applyMultiKeywordSearch, applyMultiFieldSort, parsePage, GUID_REGEX, parsePageSize, withReleaseEndpointType } from './utils';
 import { registerReadonlyList } from './factories/readonlyList';
 import { registerGetById } from './factories/getById';
 import { registerSubResourceList } from './factories/subResourceList';
@@ -150,7 +150,7 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
       if (orderBy?.trim()) { combined = applyMultiFieldSort(combined, orderBy); }
       const totalItems = combined.length;
       const eff = pageSize;
-      const data = eff > 0 ? combined.slice(page * eff, page * eff + eff) : combined;
+      const data = (eff > 0 ? combined.slice(page * eff, page * eff + eff) : combined).map((ep) => withReleaseEndpointType(ep, profile.bmsVersion));
       res.status(200).json({ data, pageSize: eff, page, totalItems });
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));

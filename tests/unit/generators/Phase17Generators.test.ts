@@ -177,9 +177,9 @@ describe('ADUserGenerator — field shape', () => {
     expect(gen.generateItem(10).id).toMatch(GUID_RE);
   });
 
-  it('type is always "ADUser"', () => {
+  it('type is always "User" (spec ADObjectType)', () => {
     for (let i = 0; i < 20; i++) {
-      expect(gen.generateItem(i).type).toBe('ADUser');
+      expect(gen.generateItem(i).type).toBe('User');
     }
   });
 
@@ -282,9 +282,9 @@ describe('AssetGenerator — field shape', () => {
     }
   });
 
-  it('purchaseDate is a valid date string (YYYY-MM-DD)', () => {
+  it('purchaseDate is a valid date-time string (spec format date-time)', () => {
     for (let i = 0; i < 10; i++) {
-      expect(gen.generateItem(i).purchaseDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(gen.generateItem(i).purchaseDate).toMatch(/^\d{4}-\d{2}-\d{2}T00:00:00Z$/);
     }
   });
 

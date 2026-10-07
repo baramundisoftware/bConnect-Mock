@@ -875,9 +875,9 @@ describe('Singleton factory edge cases (singleton.ts)', () => {
     expect(res.body).toHaveProperty('id');
   });
 
-  it('GET /v2.0/Dips returns singleton', async () => {
+  it('GET /v2.0/Dips returns a plain array', async () => {
     const res = await request(app).get('/v2.0/Dips').expect(200);
-    expect(res.body).toHaveProperty('id');
+    expect(Array.isArray(res.body)).toBe(true);
   });
 });
 

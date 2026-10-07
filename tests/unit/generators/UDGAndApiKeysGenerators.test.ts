@@ -86,8 +86,8 @@ describe('ApiKeysGenerator', () => {
     expect(gen.generateItem(49).id).toMatch(GUID_REGEX);
   });
 
-  it('expirationDate is a valid ISO date string', () => {
-    const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+  it('expirationDate is a date without time (spec: format date)', () => {
+    const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
     for (let i = 0; i < 10; i++) {
       expect(gen.generateItem(i).expirationDate).toMatch(isoDateRegex);
     }

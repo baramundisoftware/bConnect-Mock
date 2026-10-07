@@ -3,7 +3,7 @@
     "id": "cc000001-0001-0001-0001-000000000001",
     "type": "CloudConnector",
     "name": "Cloud Connector Primary",
-    "state": "Connected",
+    "state": "Running",
     "region": "eu-west-1",
     "endpoint": "https://cloud.bms.corp.test",
     "isActive": true,

@@ -2,7 +2,7 @@
   {
     "id": "bb000001-0001-0001-0001-000000000001",
     "name": "Deploy Test Agent",
-    "type": "SoftwareDeployment",
+    "type": "WindowsJobDefinition",
     "status": "Completed",
     "targetGroup": "Default Group",
     "createdDate": "2026-01-15T10:00:00Z",

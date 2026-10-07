@@ -40,10 +40,11 @@ describe('Server Management Singletons (P13.7.2)', () => {
     expect(res.body).toHaveProperty('state');
   });
 
-  it('GET /v2.0/Dips returns 200 with singleton data', async () => {
+  it('GET /v2.0/Dips returns 200 with the DIPs as a plain array (spec: DipInfo[])', async () => {
     const res = await request(app).get('/v2.0/Dips').expect(200);
-    expect(res.body).toHaveProperty('id');
-    expect(res.body).toHaveProperty('state');
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body[0]).toHaveProperty('hostName');
+    expect(res.body[0]).toHaveProperty('state');
   });
 });
 
@@ -56,39 +57,39 @@ describe('CloudConnectors and PxeRelays (P13.7.3)', () => {
     app = createApp(ProfileMode.STANDARD_READONLY);
   });
 
-  it('GET /v2.0/CloudConnectors returns 200 with data array', async () => {
+  // The spec answers CloudConnectors and PxeRelays as plain arrays, without paging or search
+  it('GET /v2.0/CloudConnectors returns 200 with a plain array', async () => {
     const res = await request(app).get('/v2.0/CloudConnectors').expect(200);
-    expect(Array.isArray(res.body.data)).toBe(true);
-    expect(res.body.data.length).toBeGreaterThan(0);
-    expect(res.body).toHaveProperty('totalItems');
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThan(0);
   });
 
   it('CloudConnectors have correct structure', async () => {
     const res = await request(app).get('/v2.0/CloudConnectors').expect(200);
-    const item = res.body.data[0];
+    const item = res.body[0];
     expect(item).toHaveProperty('id');
     expect(item).toHaveProperty('name');
     expect(item).toHaveProperty('state');
   });
 
-  it('GET /v2.0/PxeRelays returns 200 with data array', async () => {
+  it('GET /v2.0/PxeRelays returns 200 with a plain array', async () => {
     const res = await request(app).get('/v2.0/PxeRelays').expect(200);
-    expect(Array.isArray(res.body.data)).toBe(true);
-    expect(res.body.data.length).toBeGreaterThan(0);
-    expect(res.body).toHaveProperty('totalItems');
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThan(0);
   });
 
   it('PxeRelays have correct structure', async () => {
     const res = await request(app).get('/v2.0/PxeRelays').expect(200);
-    const item = res.body.data[0];
+    const item = res.body[0];
     expect(item).toHaveProperty('id');
     expect(item).toHaveProperty('name');
     expect(item).toHaveProperty('ipAddress');
   });
 
-  it('supports SearchQuery filtering on CloudConnectors', async () => {
+  it('ignores SearchQuery on CloudConnectors (the spec has no parameters)', async () => {
+    const all = await request(app).get('/v2.0/CloudConnectors').expect(200);
     const res = await request(app).get('/v2.0/CloudConnectors?SearchQuery=Primary').expect(200);
-    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body).toEqual(all.body);
   });
 });
 

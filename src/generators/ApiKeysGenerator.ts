@@ -39,13 +39,19 @@ const KEY_NAMES = [
   'External API Gateway Key',
 ];
 
+// Security profiles are referenced by ID (spec: securityProfiles items are GUIDs),
+// using the IDs of fixtures/standard-readonly/securityProfiles.json
+const ADMINISTRATORS = 'e0000001-0002-0002-0002-000000000002';
+const OPERATORS = 'e0000001-0001-0001-0001-000000000001';
+const READ_ONLY = 'e0000001-0003-0003-0003-000000000003';
+
 const SECURITY_PROFILE_POOLS: string[][] = [
-  ['Administrators'],
-  ['Operators'],
-  ['Administrators', 'Operators'],
+  [ADMINISTRATORS],
+  [OPERATORS],
+  [ADMINISTRATORS, OPERATORS],
   [],
-  ['ReadOnly'],
-  ['Administrators', 'ReadOnly'],
+  [READ_ONLY],
+  [ADMINISTRATORS, READ_ONLY],
 ];
 
 const EXPIRY_YEARS = [2026, 2027, 2028, 2029] as const;
@@ -74,7 +80,7 @@ export class ApiKeysGenerator extends BaseGenerator<ApiKeyRecord> {
     const name = cycle > 0 ? `${nameTpl} ${cycle + 1}` : nameTpl;
     const year = pick(EXPIRY_YEARS, index);
     const month = String((index % 12) + 1).padStart(2, '0');
-    const expirationDate = `${year}-${month}-01T00:00:00Z`;
+    const expirationDate = `${year}-${month}-01`; // spec: format date
     const isActive = (index % 7) !== 0; // ~86% active
     const isAvailableViaGateway = (index % 3) === 0;
 

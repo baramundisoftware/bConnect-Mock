@@ -7,7 +7,7 @@
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
 import { BmsVersion } from '../profiles/ProfileManager';
-import { resolveEntityData, applyMultiKeywordSearch, parsePage, parsePageSize } from './utils';
+import { resolveEntityData, parsePage, parsePageSize } from './utils';
 import { registerSingleton } from './factories/singleton';
 
 /**
@@ -32,20 +32,23 @@ export function managementServerVersion(bmsVersion: BmsVersion): string {
   return override ? override : MANAGEMENT_SERVER_VERSIONS[bmsVersion];
 }
 
-export function registerServerManagementRoutes(app: Express, profile: IProfile): void {
-
-  // GET /v2.0/Microservices
-  app.get('/v2.0/Microservices', (req: Request, res: Response) => {
+/**
+ * A list the spec answers as a plain array (CloudConnectors, Dips, Microservices, PxeRelays,
+ * ApiKeys): the whole list, without the paged envelope, paging or search.
+ */
+function registerPlainList(app: Express, profile: IProfile, path: string, entityType: string): void {
+  app.get(path, (_req: Request, res: Response) => {
     try {
-      let data = profile.getFixture('microservices') as Record<string, unknown>[];
-      const searchQuery = req.query.SearchQuery as string | undefined;
-      if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'state', 'message']); }
-      const pageSize = parsePageSize(req.query.PageSize);
-      const page = parsePage(req.query.Page);
-      const startIndex = page * pageSize;
-      res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
+      const resolved = resolveEntityData(profile, entityType, { page: 0, pageSize: 0 });
+      res.status(200).json(resolved ? resolved.data : []);
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
+}
+
+export function registerServerManagementRoutes(app: Express, profile: IProfile): void {
+
+  // GET /v2.0/Microservices — a plain array in the spec (no paging, no search)
+  registerPlainList(app, profile, '/v2.0/Microservices', 'microservices');
 
   // GET /v2.0/Microservices/:id
   app.get('/v2.0/Microservices/:id', (req: Request, res: Response) => {
@@ -105,32 +108,12 @@ export function registerServerManagementRoutes(app: Express, profile: IProfile):
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
   registerSingleton(app, profile, { path: '/v2.0/VpnAppliance',     fixtureKey: 'vpnAppliance',     entityName: 'VpnAppliance' });
-  registerSingleton(app, profile, { path: '/v2.0/Dips',             fixtureKey: 'dips',             entityName: 'Dips' });
 
-  // P13.7.3 — List routes: CloudConnectors, PxeRelays
-  app.get('/v2.0/CloudConnectors', (req: Request, res: Response) => {
-    try {
-      let data = profile.getFixture('cloudConnectors') as Record<string, unknown>[];
-      const searchQuery = req.query.SearchQuery as string | undefined;
-      if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'state', 'region']); }
-      const pageSize = parsePageSize(req.query.PageSize);
-      const page = parsePage(req.query.Page);
-      const startIndex = page * pageSize;
-      res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
-    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
-  });
+  // P13.7.3 — CloudConnectors, PxeRelays, Dips: plain arrays in the spec (no paging, no search)
+  registerPlainList(app, profile, '/v2.0/CloudConnectors', 'cloudConnectors');
+  registerPlainList(app, profile, '/v2.0/Dips', 'dips');
+  registerPlainList(app, profile, '/v2.0/PxeRelays', 'pxeRelays');
 
-  app.get('/v2.0/PxeRelays', (req: Request, res: Response) => {
-    try {
-      let data = profile.getFixture('pxeRelays') as Record<string, unknown>[];
-      const searchQuery = req.query.SearchQuery as string | undefined;
-      if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'state', 'ipAddress']); }
-      const pageSize = parsePageSize(req.query.PageSize);
-      const page = parsePage(req.query.Page);
-      const startIndex = page * pageSize;
-      res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
-    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
-  });
 
   // P13.7.4 — Objects/{id} PATCH + Objects/{id}/Rights GET
   app.patch('/v2.0/Objects/:id', (req: Request, res: Response) => {
@@ -159,18 +142,8 @@ export function registerServerManagementRoutes(app: Express, profile: IProfile):
 
 export function registerServerManagement26R1Routes(app: Express, profile: IProfile): void {
 
-  // GET /v2.0/ApiKeys
-  app.get('/v2.0/ApiKeys', (req: Request, res: Response) => {
-    try {
-      const searchQuery = req.query.SearchQuery as string | undefined;
-      const pageSize = parsePageSize(req.query.PageSize);
-      const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'apiKeys', { searchQuery, page, pageSize, searchFields: ['name', 'comment'] });
-      if (!resolved) { res.status(404).json({ error: 'ApiKeys not available' }); return; }
-      const eff = pageSize;
-      res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
-    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
-  });
+  // GET /v2.0/ApiKeys — a plain array in the spec (no paging, no search)
+  registerPlainList(app, profile, '/v2.0/ApiKeys', 'apiKeys');
 
   // GET /v2.0/DownloadJobs
   app.get('/v2.0/DownloadJobs', (req: Request, res: Response) => {
