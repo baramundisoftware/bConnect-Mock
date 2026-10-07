@@ -7,6 +7,7 @@
 
 import { effectivePageSize } from '../middleware/pagedList';
 import { BmsVersion, type IProfile } from '../profiles/ProfileManager';
+import type { StateManager } from '../state/StateManager';
 
 /** Shared GUID format regex */
 export const GUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -124,6 +125,9 @@ export function parsePage(raw: unknown): number {
 /**
  * Resolve entity data for a given entity type from the profile.
  * Implements ADR-007: Generator-Aware Routing.
+ *
+ * In read-write profiles, pass the StateManager: once the entity type has a store, its current
+ * items (created ones included, deleted ones gone) are the data, not the generator or fixture.
  */
 export function resolveEntityData(
   profile: IProfile,
@@ -134,13 +138,15 @@ export function resolveEntityData(
     page: number;
     pageSize: number;
     searchFields?: string[];
-  }
+  },
+  stateManager?: StateManager,
 ): ResolvedEntityData | null {
   const { searchQuery, orderBy, page, pageSize, searchFields = [] } = options;
   const hasFilter = searchQuery && searchQuery.trim() !== '';
   const hasSort = orderBy && orderBy.trim() !== '';
 
-  const generator = profile.getGenerator?.(entityType) ?? null;
+  const store = stateManager?.getStore(entityType);
+  const generator = store ? null : (profile.getGenerator?.(entityType) ?? null);
 
   if (generator) {
     if (hasFilter || hasSort) {
@@ -162,7 +168,7 @@ export function resolveEntityData(
     }
   }
 
-  const fixtureResult = profile.getFixture(entityType);
+  const fixtureResult = store ? store.getAll() : profile.getFixture(entityType);
   if (!Array.isArray(fixtureResult)) {
     return null;
   }

@@ -95,7 +95,7 @@ export function registerCrudRoutes(
         page,
         pageSize,
         searchFields,
-      });
+      }, app.locals.stateManager);
       if (!resolved) {
         res.status(404).json({ error: `${entityName} not available` });
         return;

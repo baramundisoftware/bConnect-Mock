@@ -7,6 +7,7 @@ import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
 import type { StateManager } from '../state/StateManager';
 import { resolveEntityData, applyMultiKeywordSearch, parsePage, GUID_REGEX, parsePageSize } from './utils';
+import { currentRecords } from './factories/currentRecords';
 import { validateWriteBody, validateGenericUpdate } from '../middleware/validateBody';
 
 export function registerSoftwareRoutes(app: Express, profile: IProfile): void {
@@ -18,7 +19,7 @@ export function registerSoftwareRoutes(app: Express, profile: IProfile): void {
       const orderBy = req.query.OrderBy as string | undefined;
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'software', { searchQuery, orderBy, page, pageSize, searchFields: ['name', 'vendor', 'category'] });
+      const resolved = resolveEntityData(profile, 'software', { searchQuery, orderBy, page, pageSize, searchFields: ['name', 'vendor', 'category'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'Software not available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -32,7 +33,7 @@ export function registerSoftwareRoutes(app: Express, profile: IProfile): void {
       const orderBy = req.query.OrderBy as string | undefined;
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'windowsUpdates', { searchQuery, orderBy, page, pageSize, searchFields: ['kbArticle', 'title', 'severity', 'classification'] });
+      const resolved = resolveEntityData(profile, 'windowsUpdates', { searchQuery, orderBy, page, pageSize, searchFields: ['kbArticle', 'title', 'severity', 'classification'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'WindowsUpdates not available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -49,7 +50,7 @@ export function registerSoftware26R1Routes(app: Express, profile: IProfile): voi
       const orderBy = req.query.OrderBy as string | undefined;
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'bundles', { searchQuery, orderBy, page, pageSize, searchFields: ['name', 'type', 'comment'] });
+      const resolved = resolveEntityData(profile, 'bundles', { searchQuery, orderBy, page, pageSize, searchFields: ['name', 'type', 'comment'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'Bundles not available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -59,8 +60,7 @@ export function registerSoftware26R1Routes(app: Express, profile: IProfile): voi
   // GET /v2.0/Bundles/:id
   app.get('/v2.0/Bundles/:id', (req: Request, res: Response) => {
     try {
-      const data = profile.getFixture('bundles') as Record<string, unknown>[];
-      const item = data.find((b) => b['id'] === req.params.id);
+      const item = (currentRecords(app, profile, 'bundles') ?? []).find((b) => b['id'] === req.params.id);
       if (!item) { res.status(404).json({ error: 'Bundle not found' }); return; }
       res.status(200).json(item);
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
@@ -72,7 +72,7 @@ export function registerSoftware26R1Routes(app: Express, profile: IProfile): voi
       const searchQuery = req.query.SearchQuery as string | undefined;
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'bundleApplications', { searchQuery, page, pageSize, searchFields: ['applicationName', 'applicationVendor', 'bundleName'] });
+      const resolved = resolveEntityData(profile, 'bundleApplications', { searchQuery, page, pageSize, searchFields: ['applicationName', 'applicationVendor', 'bundleName'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'BundleApplications not available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -82,8 +82,7 @@ export function registerSoftware26R1Routes(app: Express, profile: IProfile): voi
   // GET /v2.0/BundleApplications/:id
   app.get('/v2.0/BundleApplications/:id', (req: Request, res: Response) => {
     try {
-      const data = profile.getFixture('bundleApplications') as Record<string, unknown>[];
-      const item = data.find((a) => a['id'] === req.params.id);
+      const item = (currentRecords(app, profile, 'bundleApplications') ?? []).find((a) => a['id'] === req.params.id);
       if (!item) { res.status(404).json({ error: 'BundleApplication not found' }); return; }
       res.status(200).json(item);
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
@@ -92,7 +91,7 @@ export function registerSoftware26R1Routes(app: Express, profile: IProfile): voi
   // GET /v2.0/Bundle/Folders
   app.get('/v2.0/Bundle/Folders', (req: Request, res: Response) => {
     try {
-      let data = profile.getFixture('bundleFolders') as Record<string, unknown>[];
+      let data = currentRecords(app, profile, 'bundleFolders') ?? [];
       const searchQuery = req.query.SearchQuery as string | undefined;
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'comment']); }
       const pageSize = parsePageSize(req.query.PageSize);
@@ -104,8 +103,7 @@ export function registerSoftware26R1Routes(app: Express, profile: IProfile): voi
   // GET /v2.0/Bundle/Folders/:id
   app.get('/v2.0/Bundle/Folders/:id', (req: Request, res: Response) => {
     try {
-      const data = profile.getFixture('bundleFolders') as Record<string, unknown>[];
-      const item = data.find((f) => f['id'] === req.params.id);
+      const item = (currentRecords(app, profile, 'bundleFolders') ?? []).find((f) => f['id'] === req.params.id);
       if (!item) { res.status(404).json({ error: 'BundleFolder not found' }); return; }
       res.status(200).json(item);
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }

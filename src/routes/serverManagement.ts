@@ -39,7 +39,7 @@ export function managementServerVersion(bmsVersion: BmsVersion): string {
 function registerPlainList(app: Express, profile: IProfile, path: string, entityType: string): void {
   app.get(path, (_req: Request, res: Response) => {
     try {
-      const resolved = resolveEntityData(profile, entityType, { page: 0, pageSize: 0 });
+      const resolved = resolveEntityData(profile, entityType, { page: 0, pageSize: 0 }, app.locals.stateManager);
       res.status(200).json(resolved ? resolved.data : []);
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
@@ -151,7 +151,7 @@ export function registerServerManagement26R1Routes(app: Express, profile: IProfi
       const searchQuery = req.query.SearchQuery as string | undefined;
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'downloadJobs', { searchQuery, page, pageSize, searchFields: ['name', 'stateValue', 'stateMessage'] });
+      const resolved = resolveEntityData(profile, 'downloadJobs', { searchQuery, page, pageSize, searchFields: ['name', 'stateValue', 'stateMessage'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'DownloadJobs not available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });

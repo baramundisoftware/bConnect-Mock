@@ -29,7 +29,7 @@ export function registerJobRoutes(app: Express, profile: IProfile): void {
         const eff = pageSize;
         res.status(200).json({ data: data.slice(page * eff, page * eff + eff), pageSize: eff, page, totalItems: data.length });
       } else {
-        const resolved = resolveEntityData(profile, 'jobs', { searchQuery, orderBy, page, pageSize, searchFields: ['name', 'type'] });
+        const resolved = resolveEntityData(profile, 'jobs', { searchQuery, orderBy, page, pageSize, searchFields: ['name', 'type'] }, app.locals.stateManager);
         const data = resolved?.data ?? [];
         const totalItems = resolved?.totalItems ?? 0;
         const eff = pageSize;
@@ -113,7 +113,7 @@ export function registerJobRoutes(app: Express, profile: IProfile): void {
         return;
       }
       const pageSize = parsePageSize(req.query.PageSize);
-      const resolved = resolveEntityData(profile, 'jobInstances', { searchQuery, orderBy, page, pageSize, searchFields: ['jobDefinitionName', 'endpointName', 'state'] });
+      const resolved = resolveEntityData(profile, 'jobInstances', { searchQuery, orderBy, page, pageSize, searchFields: ['jobDefinitionName', 'endpointName', 'state'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'No job instances available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });

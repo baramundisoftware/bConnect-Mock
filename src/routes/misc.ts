@@ -46,7 +46,7 @@ export function registerMiscRoutes(app: Express, profile: IProfile): void {
       try {
         const page = parsePage(req.query.Page);
         const pageSize = parsePageSize(req.query.PageSize);
-        const resolved = resolveEntityData(profile, 'entraIdData', { page, pageSize, searchFields: [] });
+        const resolved = resolveEntityData(profile, 'entraIdData', { page, pageSize, searchFields: [] }, app.locals.stateManager);
         if (!resolved) { res.status(200).json({ data: [], pageSize: 0, page: 0, totalItems: 0 }); return; }
         const eff = pageSize;
         res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });

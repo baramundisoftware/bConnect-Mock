@@ -34,7 +34,7 @@ export function registerAssetRoutes(app: Express, profile: IProfile): void {
         const eff = pageSize;
         res.status(200).json({ data: data.slice(page * eff, page * eff + eff), pageSize: eff, page, totalItems: data.length });
       } else {
-        const resolved = resolveEntityData(profile, 'assets', { searchQuery, orderBy, page, pageSize, searchFields: ['assetTag', 'department', 'location'] });
+        const resolved = resolveEntityData(profile, 'assets', { searchQuery, orderBy, page, pageSize, searchFields: ['assetTag', 'department', 'location'] }, app.locals.stateManager);
         const data = resolved?.data ?? [];
         const totalItems = resolved?.totalItems ?? 0;
         const eff = pageSize;

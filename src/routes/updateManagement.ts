@@ -77,7 +77,7 @@ export function registerUpdateManagementRoutes(app: Express, profile: IProfile):
       const orderBy = req.query.OrderBy as string | undefined;
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'windowsEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'hostName'] });
+      const resolved = resolveEntityData(profile, 'windowsEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'hostName'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'Windows endpoints not available' }); return; }
       const projections = (resolved.data as Record<string, unknown>[]).map(toUpdateProjection);
       const eff = pageSize;
@@ -90,7 +90,7 @@ export function registerUpdateManagementRoutes(app: Express, profile: IProfile):
     try {
       const id = req.params['id'] as string;
       if (!GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid endpoint ID format' }); return; }
-      const resolved = resolveEntityData(profile, 'windowsEndpoints', { page: 0, pageSize: 0 });
+      const resolved = resolveEntityData(profile, 'windowsEndpoints', { page: 0, pageSize: 0 }, app.locals.stateManager);
       const data = resolved ? (resolved.data as Record<string, unknown>[]) : [];
       const ep = data.find((e) => e['id'] === id || e['guid'] === id);
       if (!ep) { res.status(404).json({ error: 'Windows endpoint not found' }); return; }
@@ -103,7 +103,7 @@ export function registerUpdateManagementRoutes(app: Express, profile: IProfile):
     try {
       const id = req.params['id'] as string;
       if (!GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid endpoint ID format' }); return; }
-      const resolved = resolveEntityData(profile, 'windowsEndpoints', { page: 0, pageSize: 0 });
+      const resolved = resolveEntityData(profile, 'windowsEndpoints', { page: 0, pageSize: 0 }, app.locals.stateManager);
       const data = resolved ? (resolved.data as Record<string, unknown>[]) : [];
       const ep = data.find((e) => e['id'] === id || e['guid'] === id);
       if (!ep) { res.status(404).json({ error: 'Windows endpoint not found' }); return; }

@@ -9,7 +9,7 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import { BmsVersion, ProfileMode, ProfileManager, type IProfile } from './profiles/ProfileManager';
-import { StateManager, type StateManagerFixtures } from './state/StateManager';
+import { StateManager } from './state/StateManager';
 import { openApiSpec } from './openapi';
 import { runAndLogFixtureIntegrity } from './validateFixtureIntegrity';
 import { apiKeyGuard } from './middleware/apiKeyGuard';
@@ -18,22 +18,6 @@ import { createModuleRoutingGuard } from './middleware/moduleRouting';
 import { bmsErrorBodies, bodyErrors, MOCK_REASON_HEADER, ROUTE_LOCAL, sendProblem, sendValidationProblem, type MatchedRoute } from './middleware/bmsErrors';
 import { pagedListEnvelope, pageSizeDefaults } from './middleware/pagedList';
 import { specProjection } from './middleware/specProjection';
-
-/**
- * Windows endpoint interface (used for StateManager initialization)
- */
-interface WindowsEndpoint {
-  id: string;
-  guid: string;
-  type: string;
-  displayName: string;
-  [key: string]: unknown;
-}
-
-function loadWindowsEndpointFixture(profile: IProfile): WindowsEndpoint[] {
-  const fixtures = profile.getFixture('windowsEndpoints');
-  return Array.isArray(fixtures) ? (fixtures as WindowsEndpoint[]) : [];
-}
 
 /**
  * Paths whose module serves its own data under a path other modules share, so the module
@@ -281,26 +265,8 @@ export function createApp(
 
   // Initialize StateManager for readwrite profiles
   if (profileMode === ProfileMode.MINIMAL_READWRITE || profileMode === ProfileMode.STANDARD_READWRITE || profileMode === ProfileMode.LARGESCALE_READWRITE) {
-    if (profileMode === ProfileMode.STANDARD_READWRITE) {
-      const fixtures: StateManagerFixtures = {
-        windowsEndpoints: profile.getFixture('windowsEndpoints') as WindowsEndpoint[],
-        androidEndpoints: profile.getFixture('androidEndpoints') as Record<string, unknown>[],
-        linuxEndpoints: profile.getFixture('linuxEndpoints') as Record<string, unknown>[],
-        macEndpoints: profile.getFixture('macEndpoints') as Record<string, unknown>[],
-        iosEndpoints: profile.getFixture('iosEndpoints') as Record<string, unknown>[],
-        networkEndpoints: profile.getFixture('networkEndpoints') as Record<string, unknown>[],
-        industrialEndpoints: profile.getFixture('industrialEndpoints') as Record<string, unknown>[],
-        jobs: profile.getFixture('jobs') as Record<string, unknown>[],
-        jobInstances: profile.getFixture('jobInstances') as Record<string, unknown>[],
-        assets: profile.getFixture('assets') as Record<string, unknown>[],
-        variables: profile.getFixture('variables') as Record<string, unknown>[],
-        logicalGroups: profile.getFixture('logicalGroups') as Record<string, unknown>[],
-      };
-      app.locals.stateManager = new StateManager(fixtures);
-    } else {
-      const initialEndpoints = loadWindowsEndpointFixture(profile);
-      app.locals.stateManager = new StateManager(initialEndpoints);
-    }
+    // Each store starts from the profile's data for its entity type, on first use
+    app.locals.stateManager = new StateManager((entityType) => profile.getFixture(entityType));
   }
 
   // P10.15 — Startup fixture integrity validation

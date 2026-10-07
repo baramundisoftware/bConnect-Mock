@@ -120,50 +120,71 @@ export class EntityStore<T extends Entity> {
   }
 }
 
-export class StateManager {
-  readonly windowsEndpoints: EntityStore<WindowsEndpoint>;
-  readonly androidEndpoints: EntityStore<Entity>;
-  readonly linuxEndpoints: EntityStore<Entity>;
-  readonly macEndpoints: EntityStore<Entity>;
-  readonly iosEndpoints: EntityStore<Entity>;
-  readonly networkEndpoints: EntityStore<Entity>;
-  readonly industrialEndpoints: EntityStore<Entity>;
-  readonly logicalGroups: EntityStore<Entity>;
-  readonly jobs: EntityStore<Entity>;
-  readonly jobInstances: EntityStore<Entity>;
-  readonly assets: EntityStore<Entity>;
-  readonly variables: EntityStore<Entity>;
+/** Reads an entity type's initial data, e.g. profile.getFixture */
+export type FixtureLoader = (entityType: string) => unknown;
 
-  constructor(fixtures: StateManagerFixtures | WindowsEndpoint[] = []) {
-    // Support legacy array constructor (minimal-readwrite) and new fixtures object
-    if (Array.isArray(fixtures)) {
-      this.windowsEndpoints = new EntityStore<WindowsEndpoint>(fixtures, 'WindowsEndpoint');
-      this.androidEndpoints = new EntityStore<Entity>([], 'AndroidEndpoint');
-      this.linuxEndpoints = new EntityStore<Entity>([], 'LinuxEndpoint');
-      this.macEndpoints = new EntityStore<Entity>([], 'MacEndpoint');
-      this.iosEndpoints = new EntityStore<Entity>([], 'IOSEndpoint');
-      this.networkEndpoints = new EntityStore<Entity>([], 'NetworkEndpoint');
-      this.industrialEndpoints = new EntityStore<Entity>([], 'IndustrialEndpoint');
-      this.logicalGroups = new EntityStore<Entity>([], 'LogicalGroup');
-      this.jobs = new EntityStore<Entity>([], 'JobDefinition');
-      this.jobInstances = new EntityStore<Entity>([], 'JobInstance');
-      this.assets = new EntityStore<Entity>([], 'Asset');
-      this.variables = new EntityStore<Entity>([], 'Variable');
+/** The named stores and the type each new item gets */
+const NAMED_STORES = {
+  windowsEndpoints: 'WindowsEndpoint',
+  androidEndpoints: 'AndroidEndpoint',
+  linuxEndpoints: 'LinuxEndpoint',
+  macEndpoints: 'MacEndpoint',
+  iosEndpoints: 'IOSEndpoint',
+  networkEndpoints: 'NetworkEndpoint',
+  industrialEndpoints: 'IndustrialEndpoint',
+  logicalGroups: 'LogicalGroup',
+  jobs: 'JobDefinition',
+  jobInstances: 'JobInstance',
+  assets: 'Asset',
+  variables: 'Variable',
+} as const;
+
+type NamedStore = keyof typeof NAMED_STORES;
+
+export class StateManager {
+  /**
+   * Every store is created on first use, from the profile's data for its entity type. So all
+   * read-write profiles start with the same data as their read-only twin, and a large-scale
+   * profile builds only the generated lists a request actually touches. (Before, only
+   * standard-readwrite seeded its stores; minimal- and largescale-readwrite started with
+   * Windows endpoints only, and every other list was empty.)
+   */
+  private readonly load: FixtureLoader;
+  private readonly namedStores = new Map<NamedStore, EntityStore<Entity>>();
+
+  constructor(source: FixtureLoader | StateManagerFixtures | WindowsEndpoint[] = []) {
+    if (typeof source === 'function') {
+      this.load = source;
+    } else if (Array.isArray(source)) {
+      // Legacy: Windows endpoints only
+      this.load = (key) => (key === 'windowsEndpoints' ? source : []);
     } else {
-      this.windowsEndpoints = new EntityStore<WindowsEndpoint>(fixtures.windowsEndpoints ?? [], 'WindowsEndpoint');
-      this.androidEndpoints = new EntityStore<Entity>(fixtures.androidEndpoints ?? [], 'AndroidEndpoint');
-      this.linuxEndpoints = new EntityStore<Entity>(fixtures.linuxEndpoints ?? [], 'LinuxEndpoint');
-      this.macEndpoints = new EntityStore<Entity>(fixtures.macEndpoints ?? [], 'MacEndpoint');
-      this.iosEndpoints = new EntityStore<Entity>(fixtures.iosEndpoints ?? [], 'IOSEndpoint');
-      this.networkEndpoints = new EntityStore<Entity>(fixtures.networkEndpoints ?? [], 'NetworkEndpoint');
-      this.industrialEndpoints = new EntityStore<Entity>(fixtures.industrialEndpoints ?? [], 'IndustrialEndpoint');
-      this.logicalGroups = new EntityStore<Entity>(fixtures.logicalGroups ?? [], 'LogicalGroup');
-      this.jobs = new EntityStore<Entity>(fixtures.jobs ?? [], 'JobDefinition');
-      this.jobInstances = new EntityStore<Entity>(fixtures.jobInstances ?? [], 'JobInstance');
-      this.assets = new EntityStore<Entity>(fixtures.assets ?? [], 'Asset');
-      this.variables = new EntityStore<Entity>(fixtures.variables ?? [], 'Variable');
+      this.load = (key) => source[key as keyof StateManagerFixtures] ?? [];
     }
   }
+
+  private named(key: NamedStore): EntityStore<Entity> {
+    let store = this.namedStores.get(key);
+    if (!store) {
+      const data = this.load(key);
+      store = new EntityStore<Entity>(Array.isArray(data) ? (data as Entity[]) : [], NAMED_STORES[key]);
+      this.namedStores.set(key, store);
+    }
+    return store;
+  }
+
+  get windowsEndpoints(): EntityStore<WindowsEndpoint> { return this.named('windowsEndpoints') as EntityStore<WindowsEndpoint>; }
+  get androidEndpoints(): EntityStore<Entity> { return this.named('androidEndpoints'); }
+  get linuxEndpoints(): EntityStore<Entity> { return this.named('linuxEndpoints'); }
+  get macEndpoints(): EntityStore<Entity> { return this.named('macEndpoints'); }
+  get iosEndpoints(): EntityStore<Entity> { return this.named('iosEndpoints'); }
+  get networkEndpoints(): EntityStore<Entity> { return this.named('networkEndpoints'); }
+  get industrialEndpoints(): EntityStore<Entity> { return this.named('industrialEndpoints'); }
+  get logicalGroups(): EntityStore<Entity> { return this.named('logicalGroups'); }
+  get jobs(): EntityStore<Entity> { return this.named('jobs'); }
+  get jobInstances(): EntityStore<Entity> { return this.named('jobInstances'); }
+  get assets(): EntityStore<Entity> { return this.named('assets'); }
+  get variables(): EntityStore<Entity> { return this.named('variables'); }
 
   // --- Legacy API for backwards compatibility (WindowsEndpoints only) ---
 
@@ -210,6 +231,7 @@ export class StateManager {
    * @param defaultType - Optional type discriminator
    */
   addStore(key: string, items: Entity[] = [], defaultType?: string): EntityStore<Entity> {
+    if (key in NAMED_STORES) { return this.named(key as NamedStore); }
     if (!this.dynamicStores.has(key)) {
       this.dynamicStores.set(key, new EntityStore<Entity>(items, defaultType));
     }
@@ -224,40 +246,15 @@ export class StateManager {
    * Returns undefined if not found in either location.
    */
   getStore(key: string): EntityStore<Entity> | undefined {
-    // Named stores (initialized from fixtures in constructor)
-    const named: Record<string, EntityStore<Entity>> = {
-      windowsEndpoints: this.windowsEndpoints,
-      androidEndpoints: this.androidEndpoints,
-      linuxEndpoints: this.linuxEndpoints,
-      macEndpoints: this.macEndpoints,
-      iosEndpoints: this.iosEndpoints,
-      networkEndpoints: this.networkEndpoints,
-      industrialEndpoints: this.industrialEndpoints,
-      logicalGroups: this.logicalGroups,
-      jobs: this.jobs,
-      jobInstances: this.jobInstances,
-      assets: this.assets,
-      variables: this.variables,
-    };
-    return named[key] ?? this.dynamicStores.get(key);
+    if (key in NAMED_STORES) { return this.named(key as NamedStore); }
+    return this.dynamicStores.get(key);
   }
 
   /**
    * Reset ALL entity stores to initial fixtures (for POST /api/reset)
    */
   reset(): void {
-    this.windowsEndpoints.reset();
-    this.androidEndpoints.reset();
-    this.linuxEndpoints.reset();
-    this.macEndpoints.reset();
-    this.iosEndpoints.reset();
-    this.networkEndpoints.reset();
-    this.industrialEndpoints.reset();
-    this.logicalGroups.reset();
-    this.jobs.reset();
-    this.jobInstances.reset();
-    this.assets.reset();
-    this.variables.reset();
+    this.namedStores.forEach((store) => store.reset());
     this.dynamicStores.forEach((store) => store.reset());
   }
 }
