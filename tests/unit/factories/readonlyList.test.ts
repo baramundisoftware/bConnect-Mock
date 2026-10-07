@@ -32,11 +32,11 @@ function makeReadonlyApp(fixtureValue: unknown, throws = false): express.Express
 }
 
 describe('registerReadonlyList', () => {
-  it('returns 404 when resolved data is null (empty fixture array)', async () => {
+  it('returns an empty page for an empty fixture array, as a live bMS does', async () => {
     const app = makeReadonlyApp([]);
     const res = await request(app).get('/v2.0/Items');
-    expect(res.status).toBe(404);
-    expect(res.body.error).toMatch(/not available/i);
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ data: [], totalItems: 0 });
   });
 
   it('returns 404 when fixture is not an array', async () => {
