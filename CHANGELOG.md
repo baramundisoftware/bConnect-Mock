@@ -7,11 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-07
+
 ### Fixed
-- `Page` was read as 1-based, so `Page=1` returned the first page again on every list route, and paging through a list never reached its second page. `Page` is zero-indexed, as the spec says ("the zero-indexed number of the first page") and the README documented: `Page=0` is the first page, `Page=1` the second
+- `Page` was read as 1-based, so `Page=1` returned the first page again on every list route, and paging through a list never reached its second page. `Page` is zero-indexed, as the spec says ("the zero-indexed number of the first page") and the README documented: `Page=0` is the first page, `Page=1` the second (#69)
 
 ### Changed
-- Lists answer with the spec's PagedList envelope, as a live bMS does: `currentPage`, `pageSize`, `totalPages`, `totalItems`, `hasPreviousPage`, `hasNextPage`, `data`. The mock-only `page` field is replaced by `currentPage`; `totalPages`, `hasPreviousPage` and `hasNextPage` are new
+- Lists answer with the spec's PagedList envelope, as a live bMS does: `currentPage`, `pageSize`, `totalPages`, `totalItems`, `hasPreviousPage`, `hasNextPage`, `data`. The mock-only `page` field is replaced by `currentPage`; `totalPages`, `hasPreviousPage` and `hasNextPage` are new (#69)
 
 ## [0.6.0] - 2026-10-07
 
