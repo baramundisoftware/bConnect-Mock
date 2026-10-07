@@ -11,7 +11,38 @@ import { registerGetById } from './factories/getById';
 import { registerCrudRoutes } from './factories/crudRoutes';
 import { validateGenericUpdate, validateWriteBody } from '../middleware/validateBody';
 
+/** Kiosk release search fields (spec KioskRelease) */
+export const KIOSK_SEARCH_FIELDS = ['jobDefinitionName', 'jobDefinitionDisplayName', 'assignmentTargetName'];
+
+/** Where an assignment target can live, and the spec's assignmentTargetType for it */
+const ASSIGNMENT_TARGETS = [
+  { fixture: 'windowsEndpoints', type: 'WindowsEndpoint', key: 'endpointId' },
+  { fixture: 'androidEndpoints', type: 'AndroidEndpoint', key: 'endpointId' },
+  { fixture: 'iosEndpoints', type: 'IosEndpoint', key: 'endpointId' },
+  { fixture: 'macEndpoints', type: 'MacEndpoint', key: 'endpointId' },
+  { fixture: 'logicalGroups', type: 'LogicalGroup', key: 'logicalGroupId' },
+  { fixture: 'adObjects', type: 'ADObject', key: 'adObjectId' },
+] as const;
+
+
 export function registerCatalogRoutes(app: Express, profile: IProfile): void {
+
+  /** Current records of an entity type: the state store in read-write profiles, else the fixture */
+  const records = (fixture: string): Record<string, unknown>[] => {
+    const sm = app.locals.stateManager as StateManager | undefined;
+    const stores: Record<string, () => Record<string, unknown>[]> = sm ? {
+      windowsEndpoints: () => sm.windowsEndpoints.getAll() as unknown as Record<string, unknown>[],
+      androidEndpoints: () => sm.androidEndpoints.getAll(),
+      iosEndpoints: () => sm.iosEndpoints.getAll(),
+      macEndpoints: () => sm.macEndpoints.getAll(),
+      logicalGroups: () => sm.logicalGroups.getAll(),
+      jobs: () => sm.jobs.getAll(),
+    } : {};
+    const fromStore = stores[fixture];
+    if (fromStore) { return fromStore(); }
+    const data = profile.getFixture(fixture);
+    return Array.isArray(data) ? (data as Record<string, unknown>[]) : [];
+  };
 
   // ─── KioskReleases (P13.4.5) ──────────────────────────────────────────────
   // GET /v2.0/KioskReleases
@@ -22,7 +53,7 @@ export function registerCatalogRoutes(app: Express, profile: IProfile): void {
         ? sm.addStore('kioskReleases', profile.getFixture('kioskReleases') as { id: string }[]).getAll()
         : (profile.getFixture('kioskReleases') as Record<string, unknown>[]);
       const searchQuery = req.query.SearchQuery as string | undefined;
-      if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'version', 'status', 'description']); }
+      if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, KIOSK_SEARCH_FIELDS); }
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
@@ -36,11 +67,33 @@ export function registerCatalogRoutes(app: Express, profile: IProfile): void {
     entityName: 'Kiosk release',
   });
 
-  // POST /v2.0/KioskReleases
-  app.post('/v2.0/KioskReleases', validateWriteBody(['name']), (req: Request, res: Response) => {
+  // POST /v2.0/KioskReleases — spec KioskReleaseForCreation: { assignmentTargetId, jobDefinitionId }.
+  // Releases the job definition to the target; name, type and job definition fields are derived.
+  app.post('/v2.0/KioskReleases', validateWriteBody(['assignmentTargetId', 'jobDefinitionId']), (req: Request, res: Response) => {
     const sm = app.locals.stateManager as StateManager | undefined;
     if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
-    res.status(201).json(sm.addStore('kioskReleases', profile.getFixture('kioskReleases') as { id: string }[]).create(req.body as Record<string, unknown>));
+    const { assignmentTargetId, jobDefinitionId } = req.body as { assignmentTargetId: string; jobDefinitionId: string };
+    const jobDefinition = records('jobs').find((j) => j['id'] === jobDefinitionId);
+    if (!jobDefinition) { res.status(404).json({ error: `Job definition ${jobDefinitionId} not found` }); return; }
+    let target: { record: Record<string, unknown>; type: string; key: string } | undefined;
+    for (const kind of ASSIGNMENT_TARGETS) {
+      const record = records(kind.fixture).find((r) => r['id'] === assignmentTargetId);
+      if (record) { target = { record, type: kind.type, key: kind.key }; break; }
+    }
+    if (!target) { res.status(404).json({ error: `Assignment target ${assignmentTargetId} not found` }); return; }
+    const release = sm.addStore('kioskReleases', profile.getFixture('kioskReleases') as { id: string }[]).create({
+      assignmentTargetId,
+      assignmentTargetName: target.record['displayName'] ?? target.record['name'] ?? target.record['hostName'] ?? null,
+      assignmentTargetType: target.type,
+      jobDefinitionId,
+      jobDefinitionName: jobDefinition['name'] ?? null,
+      jobDefinitionDisplayName: jobDefinition['displayName'] ?? null,
+      jobDefinitionCategory: jobDefinition['category'] ?? null,
+      jobDefinitionSupportedPlatforms: ['Windows'],
+      // internal relation, used by the Endpoints/LogicalGroups/ADObjects sub-resources
+      [target.key]: assignmentTargetId,
+    });
+    res.status(201).json(release);
   });
 
   // DELETE /v2.0/KioskReleases/:id
