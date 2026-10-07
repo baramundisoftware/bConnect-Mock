@@ -29,9 +29,9 @@ describe('Server Management Singletons (P13.7.2)', () => {
 
   it('GET /v2.0/ManagementServer returns 200 with singleton data', async () => {
     const res = await request(app).get('/v2.0/ManagementServer').expect(200);
-    expect(res.body).toHaveProperty('id');
     expect(res.body).toHaveProperty('name');
     expect(res.body).toHaveProperty('version');
+    expect(res.body).toHaveProperty('state');
   });
 
   it('GET /v2.0/VpnAppliance returns 200 with singleton data', async () => {

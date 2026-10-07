@@ -6,8 +6,31 @@
 
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
+import { BmsVersion } from '../profiles/ProfileManager';
 import { resolveEntityData, applyMultiKeywordSearch, parsePage } from './utils';
 import { registerSingleton } from './factories/singleton';
+
+/**
+ * The version GET /v2.0/ManagementServer reports per simulated release. Clients detect the
+ * bMS release from its first two parts (26.1 → 26R1, 25.2 → 25R2; bConnect-MCP#159).
+ * 26R1 is the value a live 26R1 returns; the 25R2 format is not yet confirmed on a live system.
+ */
+export const MANAGEMENT_SERVER_VERSIONS: Record<BmsVersion, string> = {
+  [BmsVersion.BMS_25R2]: '25.2.0.0',
+  [BmsVersion.BMS_26R1]: '26.1.161.0',
+};
+
+/** Used when a profile has no managementServer fixture: a bMS always has a management server. */
+const DEFAULT_MANAGEMENT_SERVER = { name: 'BMS Management Server', state: 'Running', plannedServerRestartTimes: null };
+
+/**
+ * The version to report: BCONNECT_MANAGEMENT_SERVER_VERSION if set (to test how clients handle
+ * an unknown or malformed version), otherwise the simulated release's version.
+ */
+export function managementServerVersion(bmsVersion: BmsVersion): string {
+  const override = process.env.BCONNECT_MANAGEMENT_SERVER_VERSION?.trim();
+  return override ? override : MANAGEMENT_SERVER_VERSIONS[bmsVersion];
+}
 
 export function registerServerManagementRoutes(app: Express, profile: IProfile): void {
 
@@ -66,7 +89,21 @@ export function registerServerManagementRoutes(app: Express, profile: IProfile):
 
   // P13.7.2 — Singleton routes: Gateway, ManagementServer, VpnAppliance
   registerSingleton(app, profile, { path: '/v2.0/Gateway',          fixtureKey: 'gateway',          entityName: 'Gateway' });
-  registerSingleton(app, profile, { path: '/v2.0/ManagementServer', fixtureKey: 'managementServer', entityName: 'ManagementServer' });
+
+  // ManagementServer: the spec's four fields; version follows the simulated release.
+  const reportedVersion = managementServerVersion(profile.bmsVersion);
+  app.get('/v2.0/ManagementServer', (_req: Request, res: Response) => {
+    try {
+      const fixture = profile.getFixture('managementServer') as Record<string, unknown>[];
+      const base = (Array.isArray(fixture) && fixture[0]) || DEFAULT_MANAGEMENT_SERVER;
+      res.status(200).json({
+        name: base['name'] ?? DEFAULT_MANAGEMENT_SERVER.name,
+        version: reportedVersion,
+        state: base['state'] ?? DEFAULT_MANAGEMENT_SERVER.state,
+        plannedServerRestartTimes: base['plannedServerRestartTimes'] ?? null,
+      });
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
   registerSingleton(app, profile, { path: '/v2.0/VpnAppliance',     fixtureKey: 'vpnAppliance',     entityName: 'VpnAppliance' });
   registerSingleton(app, profile, { path: '/v2.0/Dips',             fixtureKey: 'dips',             entityName: 'Dips' });
 

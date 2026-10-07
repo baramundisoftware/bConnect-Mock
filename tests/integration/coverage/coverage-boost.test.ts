@@ -867,7 +867,7 @@ describe('Singleton factory edge cases (singleton.ts)', () => {
 
   it('GET /v2.0/ManagementServer returns singleton from array', async () => {
     const res = await request(app).get('/v2.0/ManagementServer').expect(200);
-    expect(res.body).toHaveProperty('id');
+    expect(res.body).toHaveProperty('version');
   });
 
   it('GET /v2.0/VpnAppliance returns singleton', async () => {
