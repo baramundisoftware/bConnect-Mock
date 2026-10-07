@@ -13,7 +13,7 @@
     "initiator": "admin@company.com",
     "start": "2026-03-29T08:00:00Z",
     "lastAction": "2026-03-29T08:15:00Z",
-    "state": "Completed",
+    "state": "FinishedSuccessfully",
     "stateDescription": "Job completed on endpoint",
     "successfulExecutions": 1,
     "erroneousExecutions": 0,

@@ -2,7 +2,7 @@
   {
     "id": "a1000001-0001-0001-0001-000000000001",
     "guid": "a1000001-0001-0001-0001-000000000001",
-    "type": "ADUser",
+    "type": "User",
     "displayName": "John Smith",
     "samAccountName": "jsmith",
     "userPrincipalName": "jsmith@corp.test",
@@ -17,7 +17,7 @@
   {
     "id": "a1000001-0002-0002-0002-000000000002",
     "guid": "a1000001-0002-0002-0002-000000000002",
-    "type": "ADUser",
+    "type": "User",
     "displayName": "Jane Doe",
     "samAccountName": "jdoe",
     "userPrincipalName": "jdoe@corp.test",
@@ -32,7 +32,7 @@
   {
     "id": "a1000001-0003-0003-0003-000000000003",
     "guid": "a1000001-0003-0003-0003-000000000003",
-    "type": "ADUser",
+    "type": "User",
     "displayName": "Alice Brown",
     "samAccountName": "abrown",
     "userPrincipalName": "abrown@corp.test",
@@ -47,7 +47,7 @@
   {
     "id": "a1000001-0004-0004-0004-000000000004",
     "guid": "a1000001-0004-0004-0004-000000000004",
-    "type": "ADUser",
+    "type": "User",
     "displayName": "Bob Wilson",
     "samAccountName": "bwilson",
     "userPrincipalName": "bwilson@corp.test",
@@ -62,7 +62,7 @@
   {
     "id": "a1000001-0005-0005-0005-000000000005",
     "guid": "a1000001-0005-0005-0005-000000000005",
-    "type": "ADUser",
+    "type": "User",
     "displayName": "Carol Davis",
     "samAccountName": "cdavis",
     "userPrincipalName": "cdavis@corp.test",

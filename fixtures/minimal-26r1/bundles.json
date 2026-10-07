@@ -2,7 +2,7 @@
   {
     "id": "b0011111-0000-0000-0000-000000000001",
     "name": "Office Suite Bundle",
-    "type": "ApplicationBundle",
+    "type": "Install",
     "ignoreDependencies": false,
     "parentId": "bf011111-0000-0000-0000-000000000001",
     "parentName": "Productivity",

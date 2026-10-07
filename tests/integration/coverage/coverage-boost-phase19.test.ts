@@ -210,16 +210,9 @@ describe('ServerManagement 26R1 routes (serverManagement.ts)', () => {
 
   beforeAll(() => { app = createApp(ProfileMode.STANDARD_READONLY, BmsVersion.BMS_26R1); });
 
-  it('GET /v2.0/ApiKeys returns list', async () => {
+  it('GET /v2.0/ApiKeys returns a plain array', async () => {
     const res = await request(app).get('/v2.0/ApiKeys').expect(200);
-    expect(res.body).toHaveProperty('data');
-  });
-
-  it('GET /v2.0/ApiKeys — PageSize + SearchQuery branches', async () => {
-    const res = await request(app)
-      .get('/v2.0/ApiKeys?PageSize=2&SearchQuery=key')
-      .expect(200);
-    expect(res.body.pageSize).toBe(2);
+    expect(Array.isArray(res.body)).toBe(true);
   });
 
   it('GET /v2.0/DownloadJobs returns list', async () => {
@@ -276,11 +269,11 @@ describe('ServerManagement 26R1 routes (serverManagement.ts)', () => {
       .expect(404);
   });
 
-  it('GET /v2.0/Microservices — SearchQuery branch', async () => {
+  it('GET /v2.0/Microservices returns a plain array, whatever the query', async () => {
     const res = await request(app)
       .get('/v2.0/Microservices?SearchQuery=bconnect')
       .expect(200);
-    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(Array.isArray(res.body)).toBe(true);
   });
 });
 

@@ -2,8 +2,8 @@
   {
     "id": "d1950001-0001-0001-0001-000000000001",
     "type": "Dips",
-    "name": "DIPS Service",
-    "state": "Running",
+    "name": "DIPS Service", "hostName": "dip01.corp.test",
+    "state": "Idle",
     "version": "26.1.0.9012",
     "port": 8080,
     "isEnabled": true,

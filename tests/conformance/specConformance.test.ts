@@ -72,15 +72,31 @@ function paramListPath(param: string): string | undefined {
   return `/v2.0/${name.charAt(0).toUpperCase()}${name.slice(1)}s`;
 }
 
-/** The ID to use for a parameter: the item's field of that name (endpointId) if it has one, else its id */
-function itemId(item: unknown, param = 'id'): string | undefined {
+/**
+ * The ID to use for a parameter. The ID field comes from the spec's item schema of the list:
+ * the field named like the parameter (endpointId), else id, else the entity's own ID field
+ * (Assets → assetId), else endpointId or guid. A field the spec
+ * doesn't define (a mock-only `id`) is never used, since a real client wouldn't know it.
+ */
+function itemId(item: unknown, param = 'id', specFields?: Set<string>, entityIdField?: string): string | undefined {
   const o = item as Record<string, unknown> | undefined;
-  const id = o?.[param] ?? o?.['id'] ?? o?.['endpointId'] ?? o?.['guid'];
-  return typeof id === 'string' ? id : undefined;
+  const all = [param, 'id', ...(entityIdField ? [entityIdField] : []), 'endpointId', 'guid'];
+  const candidates = specFields ? all.filter((f) => specFields.has(f)) : all;
+  const field = candidates.find((f) => typeof o?.[f] === 'string');
+  return field ? (o?.[field] as string) : undefined;
+}
+
+/** The property names of a list route's items, from its spec schema (paged or plain array) */
+function itemFields(route: SpecRoute | undefined): Set<string> | undefined {
+  if (!route?.schema) { return undefined; }
+  const list = route.validator.resolve(route.schema);
+  const items = (list['properties'] as Record<string, Schema> | undefined)?.['data']?.['items'] ?? list['items'];
+  const props = route.validator.resolve(items as Schema | undefined)['properties'] as Schema | undefined;
+  return props ? new Set(Object.keys(props)) : undefined;
 }
 
 /** All findings of one version, as baseline lines */
-async function findings(app: Express, version: string, dirName: string): Promise<string[]> {
+async function findings(app: Express, version: string, dirName: string, profileLabel = ''): Promise<string[]> {
   const routes = specRoutes(dirName);
   /** Modules that serve a parameter-free GET at a path, e.g. /v2.0/LogicalGroups → endpoints */
   const listModules = (listPath: string): string[] =>
@@ -89,34 +105,41 @@ async function findings(app: Express, version: string, dirName: string): Promise
   const get = async (url: string): Promise<request.Response> => request(app).get(url);
 
   /** Fill each {param} with the first ID of the list at the path before it */
-  const firstId = async (listUrl: string, param?: string): Promise<string | undefined> => {
+  const routeAt = (module: string, specPath: string): SpecRoute | undefined =>
+    routes.find((r) => r.module === module && r.path.toLowerCase() === specPath.toLowerCase());
+  const firstId = async (listUrl: string, param?: string, listRoute?: SpecRoute): Promise<string | undefined> => {
     if (!lists.has(listUrl)) { lists.set(listUrl, (await get(listUrl)).body); }
     const body = lists.get(listUrl) as { data?: unknown[] } | unknown[] | undefined;
-    return itemId(Array.isArray(body) ? body[0] : body?.data?.[0], param);
+    const entity = listUrl.split('/').pop() ?? '';
+    const entityIdField = `${entity.charAt(0).toLowerCase()}${entity.slice(1).replace(/s$/, '')}Id`;
+    return itemId(Array.isArray(body) ? body[0] : body?.data?.[0], param, itemFields(listRoute), entityIdField);
   };
 
   /** Fill each {param}: from the list before it in the same module, else from the list it names */
   const concretePath = async (module: string, specPath: string): Promise<string | undefined> => {
     let resolved = '';
+    let specSoFar = '';
     for (const part of specPath.split(/(\{[^}]+\})/)) {
-      if (!part.startsWith('{')) { resolved += part; continue; }
+      if (!part.startsWith('{')) { resolved += part; specSoFar += part; continue; }
       const param = part.slice(1, -1);
-      let id = await firstId(`/bconnect/${module}${resolved.replace(/\/$/, '')}`, param);
+      const parentSpec = specSoFar.replace(/\/$/, '');
+      let id = await firstId(`/bconnect/${module}${resolved.replace(/\/$/, '')}`, param, routeAt(module, parentSpec));
       const named = paramListPath(param);
       for (const owner of id || !named ? [] : listModules(named)) {
-        id = await firstId(`/bconnect/${owner}${named}`);
+        id = await firstId(`/bconnect/${owner}${named ?? ''}`, undefined, routeAt(owner, named ?? ''));
         if (id) { break; }
       }
       id ??= FIXTURE_IDS[param];
       if (!id) { return undefined; }
       resolved += id;
+      specSoFar += part;
     }
     return resolved;
   };
 
   const out: string[] = [];
   for (const route of routes) {
-    const label = `${version} GET /${route.module}${route.path}`;
+    const label = `${version}${profileLabel} GET /${route.module}${route.path}`;
     const concrete = await concretePath(route.module, route.path);
     if (!concrete) { out.push(`${label} not checked: no ID in the parent list`); continue; }
     const res = await get(`/bconnect/${route.module}${concrete}`);
@@ -138,6 +161,9 @@ describe('Spec conformance of all GET answers', () => {
       for (const [version, dirName] of VERSIONS) {
         const app = createApp(ProfileMode.STANDARD_READONLY, version);
         current.push(...await findings(app, version, dirName));
+        // The large-scale profile serves generated data instead of fixtures
+        const large = createApp(ProfileMode.LARGESCALE_READONLY, version);
+        current.push(...await findings(large, version, dirName, ' largescale'));
       }
     } finally {
       if (previous === undefined) { delete process.env.BCONNECT_MODULE_ROUTING; } else { process.env.BCONNECT_MODULE_ROUTING = previous; }

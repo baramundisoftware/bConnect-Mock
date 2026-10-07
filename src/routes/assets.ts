@@ -54,7 +54,9 @@ export function registerAssetRoutes(app: Express, profile: IProfile): void {
   app.post('/v2.0/Assets', validateAssetCreate, (req: Request, res: Response) => {
     const sm: StateManager | undefined = app.locals.stateManager;
     if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
-    res.status(201).json(sm.assets.create(req.body));
+    const created = sm.assets.create(req.body);
+    // The spec identifies an asset by assetId; keep it equal to the store's id
+    res.status(201).json((created.id && sm.assets.patch(created.id, { assetId: created.id })) || created);
   });
 
   // PUT /v2.0/Assets/:id

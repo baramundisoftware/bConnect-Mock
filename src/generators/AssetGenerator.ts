@@ -58,6 +58,8 @@ function indexToDate(index: number, offsetYears: number): string {
 
 export interface AssetRecord {
   id: string;
+  /** The spec's identifier of an asset (Asset.assetId); same value as id */
+  assetId: string;
   assetTag: string;
   type: string;
   location: string;
@@ -81,11 +83,12 @@ export class AssetGenerator extends BaseGenerator<AssetRecord> {
 
     return {
       id: indexToGuid(index),
+      assetId: indexToGuid(index),
       assetTag: `AST-${site}-${seq}`,
       type: pick(ASSET_TYPES, index),
       location: pick(LOCATIONS, index),
       department: pick(DEPARTMENTS, index),
-      purchaseDate: indexToDate(index, 2),
+      purchaseDate: `${indexToDate(index, 2)}T00:00:00Z`, // spec: date-time
       warrantyExpires: indexToDate(index, -1),
       costCenter: pick(COST_CENTERS, index),
     };

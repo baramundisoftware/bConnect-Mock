@@ -2,10 +2,10 @@
   {
     "id": "ac011111-0000-0000-0000-000000000001",
     "name": "CI/CD Pipeline Key",
-    "expirationDate": "2027-01-01T00:00:00Z",
+    "expirationDate": "2027-01-01",
     "comment": "Used for automated deployments",
     "isActive": true,
     "isAvailableViaGateway": true,
-    "securityProfiles": ["Administrators"]
+    "securityProfiles": ["e0000001-0002-0002-0002-000000000002"]
   }
 ]

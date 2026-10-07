@@ -13,13 +13,15 @@ const JOB_TYPES = [
   'NetworkAndOTDeviceJobDefinition',
 ];
 
+// Valid in both releases' EndpointType enum (25R2 says IndustrialEndpoint, 26R1 Deprecated_IndustrialEndpoint)
 const ENDPOINT_TYPES = [
   'WindowsEndpoint', 'AndroidEndpoint', 'IOSEndpoint', 'MacEndpoint',
-  'NetworkEndpoint', 'IndustrialEndpoint', 'LinuxEndpoint',
+  'NetworkEndpoint', 'LinuxEndpoint',
 ];
 
+// Values of the spec's job instance State enum
 const JOB_STATES = [
-  'Active', 'Completed', 'Failed', 'Pending', 'Cancelled', 'Running',
+  'Running', 'FinishedSuccessfully', 'FinishedWithError', 'Queued', 'Cancelled', 'Running',
 ];
 
 const JOB_NAME_PREFIXES = [
@@ -114,9 +116,9 @@ export class JobInstanceGenerator extends BaseGenerator<JobInstanceRecord> {
     const subject = pick(JOB_NAME_SUBJECTS, index * 5 + 2);
     const jobName = `${prefix} ${subject}`;
 
-    const isCompleted = state === 'Completed' || state === 'Failed';
-    const successCount = state === 'Completed' ? Math.floor(index % 10) + 1 : 0;
-    const errorCount = state === 'Failed' ? Math.floor(index % 3) + 1 : 0;
+    const isCompleted = state === 'FinishedSuccessfully' || state === 'FinishedWithError';
+    const successCount = state === 'FinishedSuccessfully' ? Math.floor(index % 10) + 1 : 0;
+    const errorCount = state === 'FinishedWithError' ? Math.floor(index % 3) + 1 : 0;
 
     return {
       id: guid,

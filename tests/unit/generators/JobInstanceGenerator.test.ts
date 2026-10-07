@@ -117,7 +117,8 @@ describe('JobInstanceGenerator — field shape', () => {
   });
 
   it('state is one of the valid values', () => {
-    const validStates = new Set(['Active', 'Completed', 'Failed', 'Pending', 'Cancelled', 'Running']);
+    // the spec's job instance State enum
+    const validStates = new Set(['Queued', 'Running', 'FinishedSuccessfully', 'FinishedWithError', 'Cancelled']);
     for (let i = 0; i < 20; i++) {
       expect(validStates.has(gen.generateItem(i).state)).toBe(true);
     }
@@ -164,27 +165,27 @@ describe('JobInstanceGenerator — field shape', () => {
 // ============================================================================
 
 describe('JobInstanceGenerator — state-specific rules', () => {
-  it('Completed items have successfulExecutions >= 1', () => {
+  it('FinishedSuccessfully items have successfulExecutions >= 1', () => {
     const completed = Array.from({ length: 2000 }, (_, i) => gen.generateItem(i))
-      .filter((item) => item.state === 'Completed');
+      .filter((item) => item.state === 'FinishedSuccessfully');
     expect(completed.length).toBeGreaterThan(0);
     for (const item of completed) {
       expect(item.successfulExecutions).toBeGreaterThanOrEqual(1);
     }
   });
 
-  it('Failed items have erroneousExecutions >= 1', () => {
+  it('FinishedWithError items have erroneousExecutions >= 1', () => {
     const failed = Array.from({ length: 2000 }, (_, i) => gen.generateItem(i))
-      .filter((item) => item.state === 'Failed');
+      .filter((item) => item.state === 'FinishedWithError');
     expect(failed.length).toBeGreaterThan(0);
     for (const item of failed) {
       expect(item.erroneousExecutions).toBeGreaterThanOrEqual(1);
     }
   });
 
-  it('non-Completed/non-Failed items have successfulExecutions === 0', () => {
+  it('unfinished items have successfulExecutions === 0', () => {
     const others = Array.from({ length: 200 }, (_, i) => gen.generateItem(i))
-      .filter((item) => item.state !== 'Completed' && item.state !== 'Failed');
+      .filter((item) => item.state !== 'FinishedSuccessfully' && item.state !== 'FinishedWithError');
     for (const item of others) {
       expect(item.successfulExecutions).toBe(0);
     }

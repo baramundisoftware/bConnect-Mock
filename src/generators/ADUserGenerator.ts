@@ -72,7 +72,7 @@ function indexToTimestamp(index: number): string {
 export interface ADUserRecord {
   id: string;
   guid: string;
-  type: 'ADUser';
+  type: 'User'; // spec ADObjectType: User | Group
   displayName: string;
   samAccountName: string;
   userPrincipalName: string;
@@ -103,7 +103,7 @@ export class ADUserGenerator extends BaseGenerator<ADUserRecord> {
     return {
       id: guid,
       guid,
-      type: 'ADUser',
+      type: 'User',
       displayName: `${firstName} ${lastName}`,
       samAccountName: sam,
       userPrincipalName: `${sam}@${domain}`,

@@ -20,20 +20,25 @@ describe('ServerManagement 26R1 routes', () => {
   });
 
   describe('GET /v2.0/ApiKeys', () => {
-    it('returns 200 with apiKeys list', async () => {
+    // The spec answers ApiKeys as a plain array, without paging or search
+    it('returns 200 with the API keys as a plain array', async () => {
       const res = await request(app).get('/v2.0/ApiKeys').expect(200);
-      expect(Array.isArray(res.body.data)).toBe(true);
-      expect(res.body).toHaveProperty('totalItems');
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBeGreaterThan(0);
     });
 
-    it('supports SearchQuery filtering', async () => {
-      const res = await request(app).get('/v2.0/ApiKeys?SearchQuery=API').expect(200);
-      expect(Array.isArray(res.body.data)).toBe(true);
+    it('references security profiles by GUID and has a date-only expirationDate', async () => {
+      const res = await request(app).get('/v2.0/ApiKeys').expect(200);
+      for (const key of res.body as Array<{ securityProfiles: string[]; expirationDate: string }>) {
+        for (const p of key.securityProfiles) { expect(p).toMatch(/^[0-9a-f-]{36}$/); }
+        expect(key.expirationDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      }
     });
 
-    it('supports PageSize pagination', async () => {
-      const res = await request(app).get('/v2.0/ApiKeys?PageSize=1&Page=1').expect(200);
-      expect(res.body.data.length).toBeLessThanOrEqual(1);
+    it('ignores paging and search parameters (the spec has none)', async () => {
+      const all = await request(app).get('/v2.0/ApiKeys').expect(200);
+      const res = await request(app).get('/v2.0/ApiKeys?PageSize=1&Page=1&SearchQuery=zzz').expect(200);
+      expect(res.body).toEqual(all.body);
     });
   });
 
@@ -106,18 +111,12 @@ describe('CloudConnectors and PxeRelays edge cases', () => {
     app = createApp(ProfileMode.STANDARD_READONLY);
   });
 
-  it('CloudConnectors supports PageSize pagination', async () => {
-    const res = await request(app).get('/v2.0/CloudConnectors?PageSize=1&Page=1').expect(200);
-    expect(res.body.data.length).toBeLessThanOrEqual(1);
-  });
-
-  it('PxeRelays supports SearchQuery filtering', async () => {
-    const res = await request(app).get('/v2.0/PxeRelays?SearchQuery=Relay').expect(200);
-    expect(Array.isArray(res.body.data)).toBe(true);
-  });
-
-  it('PxeRelays supports PageSize pagination', async () => {
-    const res = await request(app).get('/v2.0/PxeRelays?PageSize=1&Page=1').expect(200);
-    expect(res.body.data.length).toBeLessThanOrEqual(1);
+  it('CloudConnectors and PxeRelays ignore paging and search (plain arrays in the spec)', async () => {
+    for (const path of ['/v2.0/CloudConnectors', '/v2.0/PxeRelays']) {
+      const all = await request(app).get(path).expect(200);
+      const res = await request(app).get(`${path}?PageSize=1&Page=1&SearchQuery=zzz`).expect(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body).toEqual(all.body);
+    }
   });
 });

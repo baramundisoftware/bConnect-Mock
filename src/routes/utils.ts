@@ -6,7 +6,7 @@
  */
 
 import { effectivePageSize } from '../middleware/pagedList';
-import type { IProfile } from '../profiles/ProfileManager';
+import { BmsVersion, type IProfile } from '../profiles/ProfileManager';
 
 /** Shared GUID format regex */
 export const GUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -89,6 +89,16 @@ export function applyMultiKeywordSearch<T extends Record<string, unknown>>(
 export interface ResolvedEntityData {
   data: Record<string, unknown>[];
   totalItems: number;
+}
+
+/**
+ * The endpoint `type` as the selected release names it: 26R1's EndpointType enum calls
+ * industrial endpoints 'Deprecated_IndustrialEndpoint', 25R2's 'IndustrialEndpoint'.
+ */
+export function withReleaseEndpointType(item: Record<string, unknown>, bmsVersion: BmsVersion): Record<string, unknown> {
+  return bmsVersion === BmsVersion.BMS_26R1 && item['type'] === 'IndustrialEndpoint'
+    ? { ...item, type: 'Deprecated_IndustrialEndpoint' }
+    : item;
 }
 
 /**

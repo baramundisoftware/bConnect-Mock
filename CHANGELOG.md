@@ -8,9 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Assets carry the spec's identifier `assetId`, asset types `guid` (both equal to `id`); `POST /v2.0/Assets` sets `assetId` too. Spec-conformant clients couldn't find an asset's ID before
+- The spec conformance test also covers the `largescale-readonly` profile (generated data)
 - `tests/conformance`: every GET answer of both specs is validated against the spec schemas (types, enums, formats, required and undefined fields). Known differences are kept in a baseline that can only shrink (`npm run spec-conformance:update`); it starts at 1811 lines, mostly fields the spec doesn't define
 
 ### Changed
+- `CloudConnectors`, `Dips`, `Microservices`, `PxeRelays` and (26R1) `ApiKeys` answer with a plain array, as in the spec: no paged envelope, no paging, no search (`Dips` was a single object)
 - `PageSize` behaves as on a live bMS (26R1, checked 2026-10-07): **20** when it's missing, `0` or invalid, and at most **1000**; larger values are capped. None of these is an error any more (before: no `PageSize` returned the whole list, `0` too, and values above 10,000 or below 0 got 400). The parameter name is matched case-insensitively
 - Error answers have the live bMS's shape (26R1, checked 2026-10-07) instead of the mock's `{"error": …}`; the mock's message moved to the `X-BConnect-Mock-Reason` header and the request log:
   - unknown ID: 404 `application/problem+json`, title "Object [<id>] not found or not visible due to missing rights."
@@ -19,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In strict routing, a path parameter that isn't a GUID gets 400 with the spec's parameter name (`"errors":{"id":["The value 'x' is not valid."]}`), as on a live bMS; before, most routes answered 404. The route table now also records each route's parameter names and request body schema (`ROUTE_DETAILS`)
 
 ### Fixed
+- Values outside the spec's enums and formats, in fixtures and generators: job instance `state` (`Completed` → `FinishedSuccessfully`, `Failed` → `FinishedWithError`, `Pending` → `Queued`), job definition `type` (→ `WindowsJobDefinition`), AD user `type` (`ADUser` → `User`), Defender threat `severity`/`category`, bundle `type` (→ `Install`/`Uninstall`), download job `stateValue` and `interval` (now Daily/Weekly repetitions), cloud connector, PXE relay and DIP `state`, the updatemanagement projection's enums and `updateProfileId` (now a GUID), asset `purchaseDate` (date-time), API key `expirationDate` (date) and `securityProfiles` (GUIDs), and `Deprecated_IndustrialEndpoint` as the 26R1 type in aggregated endpoint lists. DIPs have the required `hostName`
 - A request body that isn't valid JSON answered 500; it now gets 400 with `errors`, naming the body parameter (e.g. `logicalGroup`)
 - 44 fixture IDs weren't valid GUIDs (e.g. BitLocker `bl000001-…`, API keys `ak011111-…`, download jobs `dj011111-…`), so they couldn't be fetched by ID in strict routing; their letters outside 0-9a-f were replaced (`b1000001-…`, `ac011111-…`, `d7011111-…`). A test now checks every fixture ID
 

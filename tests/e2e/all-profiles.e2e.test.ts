@@ -102,7 +102,6 @@ describe('E2E: minimal-readonly — all GET endpoints', () => {
     '/v2.0/WindowsUpdates',
     '/v2.0/ADGroups',
     '/v2.0/ADObjects',
-    '/v2.0/Microservices',
     '/v2.0/BitLocker/WindowsEndpoints',
     '/v2.0/OSFolders',
   ];
@@ -484,16 +483,16 @@ describe('E2E: BMS version switching (25R2 vs 26R1)', () => {
 describe('E2E: Phase 6 modules — ServerManagement', () => {
   const app = createApp(ProfileMode.STANDARD_READONLY, BmsVersion.BMS_25R2);
 
-  it('GET /v2.0/Microservices returns paginated microservices', async () => {
+  it('GET /v2.0/Microservices returns the microservices as a plain array (spec: Microservice[])', async () => {
     const res = await request(app).get('/v2.0/Microservices');
     expect(res.status).toBe(200);
-    expectPaginated(res.body);
-    expect((res.body as { totalItems: number }).totalItems).toBeGreaterThan(0);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect((res.body as unknown[]).length).toBeGreaterThan(0);
   });
 
   it('GET /v2.0/Microservices/:id returns single microservice', async () => {
-    const list = await request(app).get('/v2.0/Microservices?PageSize=1');
-    const firstId = (list.body as { data: Array<{ id: string }> }).data[0]?.id;
+    const list = await request(app).get('/v2.0/Microservices');
+    const firstId = (list.body as Array<{ id: string }>)[0]?.id;
     if (firstId) {
       const single = await request(app).get(`/v2.0/Microservices/${firstId}`);
       expect(single.status).toBe(200);
@@ -502,8 +501,8 @@ describe('E2E: Phase 6 modules — ServerManagement', () => {
   });
 
   it('POST /v2.0/Microservices/:id/Start returns 200', async () => {
-    const list = await request(app).get('/v2.0/Microservices?PageSize=1');
-    const firstId = (list.body as { data: Array<{ id: string }> }).data[0]?.id;
+    const list = await request(app).get('/v2.0/Microservices');
+    const firstId = (list.body as Array<{ id: string }>)[0]?.id;
     if (firstId) {
       const res = await request(app).post(`/v2.0/Microservices/${firstId}/Start`);
       expect(res.status).toBe(200);
@@ -511,8 +510,8 @@ describe('E2E: Phase 6 modules — ServerManagement', () => {
   });
 
   it('POST /v2.0/Microservices/:id/Stop returns 200', async () => {
-    const list = await request(app).get('/v2.0/Microservices?PageSize=1');
-    const firstId = (list.body as { data: Array<{ id: string }> }).data[0]?.id;
+    const list = await request(app).get('/v2.0/Microservices');
+    const firstId = (list.body as Array<{ id: string }>)[0]?.id;
     if (firstId) {
       const res = await request(app).post(`/v2.0/Microservices/${firstId}/Stop`);
       expect(res.status).toBe(200);
@@ -520,8 +519,8 @@ describe('E2E: Phase 6 modules — ServerManagement', () => {
   });
 
   it('POST /v2.0/Microservices/:id/Restart returns 200', async () => {
-    const list = await request(app).get('/v2.0/Microservices?PageSize=1');
-    const firstId = (list.body as { data: Array<{ id: string }> }).data[0]?.id;
+    const list = await request(app).get('/v2.0/Microservices');
+    const firstId = (list.body as Array<{ id: string }>)[0]?.id;
     if (firstId) {
       const res = await request(app).post(`/v2.0/Microservices/${firstId}/Restart`);
       expect(res.status).toBe(200);
@@ -614,7 +613,6 @@ describe('E2E: Security validation — all profiles', () => {
     '/v2.0/WindowsEndpoints',
     '/v2.0/Software',
     '/v2.0/ADGroups',
-    '/v2.0/Microservices',
     '/v2.0/BitLocker/WindowsEndpoints',
   ];
 

@@ -2,7 +2,7 @@
   {
     "id": "a1000001-0001-0001-0001-000000000001",
     "guid": "a1000001-0001-0001-0001-000000000001",
-    "type": "ADUser",
+    "type": "User",
     "displayName": "John Smith",
     "samAccountName": "jsmith",
     "userPrincipalName": "jsmith@corp.test",

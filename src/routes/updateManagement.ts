@@ -21,7 +21,8 @@ function hashId(id: string): number {
   return Math.abs(h);
 }
 
-const UPDATE_STATES = ['UpToDate', 'UpdatesAvailable', 'RebootPending', 'Unknown'] as const;
+// Values from the spec's enums (UpdateState, UpdateDownloadMode, UpdateDownloadSource)
+const UPDATE_STATES = ['NonCompliant', 'InventoryOutdated', 'NonCompliant', 'Unknown'] as const;
 const UPDATE_PROFILES = ['Standard Security', 'Critical Only', 'Full Auto', null] as const;
 
 /** Project a full Windows endpoint record into the update management schema */
@@ -35,7 +36,7 @@ function toUpdateProjection(ep: Record<string, unknown>): Record<string, unknown
   const missingSecurity = isPatched ? 0 : ((h >> 3) % 8);
   const missingOther = isPatched ? 0 : ((h >> 6) % 12);
   const state = isPatched
-    ? 'UpToDate'
+    ? 'Compliant'
     : (UPDATE_STATES[(h >> 4) % UPDATE_STATES.length] as (typeof UPDATE_STATES)[number]);
   const profile = UPDATE_PROFILES[h % UPDATE_PROFILES.length] ?? null;
 
@@ -49,16 +50,16 @@ function toUpdateProjection(ep: Record<string, unknown>): Record<string, unknown
   return {
     endpointId: id,
     endpointName: ep['displayName'] ?? ep['hostName'],
-    updateProfileId: profile ? `profile-${h % 100}` : null,
+    updateProfileId: profile ? `f5000000-0000-0000-0000-${String(UPDATE_PROFILES.indexOf(profile) + 1).padStart(12, '0')}` : null,
     updateProfileName: profile,
     missingCriticalUpdates: missingCritical,
     missingSecurityUpdates: missingSecurity,
     missingOtherUpdates: missingOther,
-    updateDownloadMode: h % 3 === 0 ? 'Wsus' : h % 3 === 1 ? 'MicrosoftUpdate' : 'Unknown',
+    updateDownloadMode: h % 3 === 0 ? 'HttpOnly' : h % 3 === 1 ? 'HttpBlendedWithPeeringBehindSameNat' : 'Unknown',
     lastInventory,
-    lastInventorySource: h % 2 === 0 ? 'Wsus' : 'MicrosoftUpdate',
+    lastInventorySource: h % 2 === 0 ? 'WSUS' : 'MicrosoftOnline',
     lastSuccessfulUpdate,
-    lastSuccessfulUpdateSource: lastSuccessfulUpdate ? (h % 2 === 0 ? 'Wsus' : 'MicrosoftUpdate') : 'Unknown',
+    lastSuccessfulUpdateSource: lastSuccessfulUpdate ? (h % 2 === 0 ? 'WSUS' : 'MicrosoftOnline') : 'Unknown',
     deferredUpdates: isPatched ? 0 : ((h >> 2) % 4),
     blockedUpdates: isPatched ? 0 : ((h >> 5) % 3),
     featureUpdatesAvailable: !isPatched && (h % 7 === 0),

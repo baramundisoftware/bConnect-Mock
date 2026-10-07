@@ -12,62 +12,38 @@ describe('ServerManagement - Microservices', () => {
   });
 
   describe('GET /v2.0/Microservices', () => {
-    it('should return 200 with microservices list', async () => {
+    // The spec answers Microservices as a plain array, without paging or search
+    it('should return 200 with the microservices as a plain array', async () => {
       const response = await request(app)
         .get('/v2.0/Microservices')
         .expect('Content-Type', /json/)
         .expect(200);
 
-      expect(Array.isArray(response.body.data)).toBe(true);
-      expect(response.body.data.length).toBeGreaterThan(0);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBeGreaterThan(0);
     });
 
     it('should return microservices with required fields', async () => {
       const response = await request(app).get('/v2.0/Microservices').expect(200);
 
-      const ms = response.body.data[0];
+      const ms = response.body[0];
       expect(ms).toHaveProperty('id');
       expect(ms).toHaveProperty('name');
       expect(ms).toHaveProperty('state');
     });
 
-    it('should return pagination metadata', async () => {
-      const response = await request(app).get('/v2.0/Microservices').expect(200);
+    it('should ignore paging and search parameters (the spec has none)', async () => {
+      const all = await request(app).get('/v2.0/Microservices').expect(200);
+      const response = await request(app).get('/v2.0/Microservices?PageSize=2&Page=1&SearchQuery=zzz').expect(200);
 
-      expect(response.body).toHaveProperty('data');
-      expect(response.body).toHaveProperty('pageSize');
-      expect(response.body).toHaveProperty('currentPage');
-      expect(response.body).toHaveProperty('totalItems');
-    });
-
-    it('should support SearchQuery filtering', async () => {
-      const response = await request(app)
-        .get('/v2.0/Microservices?SearchQuery=Agent')
-        .expect(200);
-
-      expect(response.body.data.length).toBeGreaterThan(0);
-      expect(
-        response.body.data.some((ms: { name: string }) =>
-          ms.name.toLowerCase().includes('agent')
-        )
-      ).toBe(true);
-    });
-
-    it('should support pagination with PageSize and Page', async () => {
-      const response = await request(app)
-        .get('/v2.0/Microservices?PageSize=2&Page=0')
-        .expect(200);
-
-      expect(response.body.data.length).toBeLessThanOrEqual(2);
-      expect(response.body.pageSize).toBe(2);
-      expect(response.body.currentPage).toBe(0);
+      expect(response.body).toEqual(all.body);
     });
   });
 
   describe('GET /v2.0/Microservices/:id', () => {
     it('should return a single microservice by ID', async () => {
       const listResponse = await request(app).get('/v2.0/Microservices').expect(200);
-      const firstId = listResponse.body.data[0].id;
+      const firstId = listResponse.body[0].id;
 
       const response = await request(app)
         .get(`/v2.0/Microservices/${firstId}`)
@@ -88,7 +64,7 @@ describe('ServerManagement - Microservices', () => {
   describe('POST /v2.0/Microservices/:id/Start', () => {
     it('should return 200 when starting a microservice', async () => {
       const listResponse = await request(app).get('/v2.0/Microservices').expect(200);
-      const firstId = listResponse.body.data[0].id;
+      const firstId = listResponse.body[0].id;
 
       const response = await request(app)
         .post(`/v2.0/Microservices/${firstId}/Start`)
@@ -107,7 +83,7 @@ describe('ServerManagement - Microservices', () => {
   describe('POST /v2.0/Microservices/:id/Stop', () => {
     it('should return 200 when stopping a microservice', async () => {
       const listResponse = await request(app).get('/v2.0/Microservices').expect(200);
-      const firstId = listResponse.body.data[0].id;
+      const firstId = listResponse.body[0].id;
 
       const response = await request(app)
         .post(`/v2.0/Microservices/${firstId}/Stop`)
@@ -120,7 +96,7 @@ describe('ServerManagement - Microservices', () => {
   describe('POST /v2.0/Microservices/:id/Restart', () => {
     it('should return 200 when restarting a microservice', async () => {
       const listResponse = await request(app).get('/v2.0/Microservices').expect(200);
-      const firstId = listResponse.body.data[0].id;
+      const firstId = listResponse.body[0].id;
 
       const response = await request(app)
         .post(`/v2.0/Microservices/${firstId}/Restart`)
