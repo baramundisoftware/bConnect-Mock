@@ -38,83 +38,7 @@ export function registerMiscRoutes(app: Express, profile: IProfile): void {
   });
 
   // ─── /v2.0/Folders — Jobs context (P13.4.6) ────────────────────────────────
-  // GET /v2.0/Folders
-  app.get('/v2.0/Folders', (req: Request, res: Response) => {
-    try {
-      const sm = app.locals.stateManager as StateManager | undefined;
-      let data: Record<string, unknown>[] = sm
-        ? sm.addStore('jobFolders', profile.getFixture('jobFolders') as { id: string }[]).getAll()
-        : (profile.getFixture('jobFolders') as Record<string, unknown>[]);
-      const searchQuery = req.query.SearchQuery as string | undefined;
-      if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'comment']); }
-      const orderBy = req.query.OrderBy as string | undefined;
-      if (orderBy?.trim()) { data = applyMultiFieldSort(data, orderBy); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
-      const page = parsePage(req.query.Page);
-      res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
-    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
-  });
-
-  // GET /v2.0/Folders/:id
-  app.get('/v2.0/Folders/:id', (req: Request, res: Response) => {
-    try {
-      const id = req.params.id as string;
-      if (!id || !GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid GUID format' }); return; }
-      const sm = app.locals.stateManager as StateManager | undefined;
-      const data: Record<string, unknown>[] = sm
-        ? sm.addStore('jobFolders', profile.getFixture('jobFolders') as { id: string }[]).getAll()
-        : (profile.getFixture('jobFolders') as Record<string, unknown>[]);
-      const item = data.find((f) => f['id'] === id);
-      if (!item) { res.status(404).json({ error: 'Folder not found' }); return; }
-      res.status(200).json(item);
-    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
-  });
-
-  // GET /v2.0/Folders/:id/Folders — sub-navigation (children)
-  app.get('/v2.0/Folders/:id/Folders', (req: Request, res: Response) => {
-    try {
-      const id = req.params.id as string;
-      if (!id || !GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid GUID format' }); return; }
-      const sm = app.locals.stateManager as StateManager | undefined;
-      const all: Record<string, unknown>[] = sm
-        ? sm.addStore('jobFolders', profile.getFixture('jobFolders') as { id: string }[]).getAll()
-        : (profile.getFixture('jobFolders') as Record<string, unknown>[]);
-      const parent = all.find((f) => f['id'] === id);
-      if (!parent) { res.status(404).json({ error: 'Folder not found' }); return; }
-      const children = all.filter((f) => f['parentId'] === id);
-      res.status(200).json({ data: children, pageSize: children.length, page: 0, totalItems: children.length });
-    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
-  });
-
-  // POST /v2.0/Folders
-  app.post('/v2.0/Folders', validateWriteBody(['name']), (req: Request, res: Response) => {
-    const sm = app.locals.stateManager as StateManager | undefined;
-    if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
-    res.status(201).json(sm.addStore('jobFolders', profile.getFixture('jobFolders') as { id: string }[]).create(req.body as Record<string, unknown>));
-  });
-
-  // PATCH /v2.0/Folders/:id
-  app.patch('/v2.0/Folders/:id', validateGenericUpdate, (req: Request, res: Response) => {
-    const sm = app.locals.stateManager as StateManager | undefined;
-    if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
-    const id = req.params.id as string;
-    if (!id || !GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid GUID format' }); return; }
-    const updated = sm.addStore('jobFolders', profile.getFixture('jobFolders') as { id: string }[]).patch(id, req.body as Record<string, unknown>);
-    if (!updated) { res.status(404).json({ error: 'Folder not found' }); return; }
-    res.status(200).json(updated);
-  });
-
-  // DELETE /v2.0/Folders/:id
-  app.delete('/v2.0/Folders/:id', (req: Request, res: Response) => {
-    const sm = app.locals.stateManager as StateManager | undefined;
-    if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
-    const id = req.params.id as string;
-    if (!id || !GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid GUID format' }); return; }
-    if (!sm.addStore('jobFolders', profile.getFixture('jobFolders') as { id: string }[]).delete(id)) {
-      res.status(404).json({ error: 'Folder not found' }); return;
-    }
-    res.status(204).send();
-  });
+  registerFolderRoutes(app, profile, { basePath: '/v2.0/Folders', fixtureKey: 'jobFolders' });
 
   // GET /v2.0/EntraIdData + GET /v2.0/EntraIdData/:deviceId (26R1 only)
   if (profile.bmsVersion === BmsVersion.BMS_26R1) {
@@ -140,4 +64,96 @@ export function registerMiscRoutes(app: Express, profile: IProfile): void {
       } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
     });
   }
+}
+
+export interface FolderRoutesConfig {
+  /** e.g. '/v2.0/Folders' (jobs) or '/operatingsystems/v2.0/Folders' */
+  basePath: string;
+  /** Fixture and state-store key, e.g. 'jobFolders' or 'osFolders' */
+  fixtureKey: string;
+}
+
+/**
+ * The spec's folder routes: list, get, child folders (optionally all descendants with
+ * includeSubfolders=true), create, update, delete. Writes need a read-write profile.
+ */
+export function registerFolderRoutes(app: Express, profile: IProfile, config: FolderRoutesConfig): void {
+  const { basePath, fixtureKey } = config;
+  const folders = (): Record<string, unknown>[] => {
+    const sm = app.locals.stateManager as StateManager | undefined;
+    return sm
+      ? sm.addStore(fixtureKey, profile.getFixture(fixtureKey) as { id: string }[]).getAll()
+      : (profile.getFixture(fixtureKey) as Record<string, unknown>[]);
+  };
+
+  app.get(basePath, (req: Request, res: Response) => {
+    try {
+      let data = folders();
+      const searchQuery = req.query.SearchQuery as string | undefined;
+      if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'comment']); }
+      const orderBy = req.query.OrderBy as string | undefined;
+      if (orderBy?.trim()) { data = applyMultiFieldSort(data, orderBy); }
+      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const page = parsePage(req.query.Page);
+      res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  app.get(`${basePath}/:id`, (req: Request, res: Response) => {
+    try {
+      const id = req.params.id as string;
+      if (!id || !GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid GUID format' }); return; }
+      const item = folders().find((f) => f['id'] === id);
+      if (!item) { res.status(404).json({ error: 'Folder not found' }); return; }
+      res.status(200).json(item);
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  // Child folders; includeSubfolders=true returns all descendants
+  app.get(`${basePath}/:id/Folders`, (req: Request, res: Response) => {
+    try {
+      const id = req.params.id as string;
+      if (!id || !GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid GUID format' }); return; }
+      const all = folders();
+      if (!all.some((f) => f['id'] === id)) { res.status(404).json({ error: 'Folder not found' }); return; }
+      const recursive = String(req.query.includeSubfolders).toLowerCase() === 'true';
+      const result: Record<string, unknown>[] = [];
+      const parents = [id];
+      while (parents.length > 0) {
+        const parentId = parents.shift();
+        for (const child of all.filter((f) => f['parentId'] === parentId)) {
+          result.push(child);
+          if (recursive) { parents.push(String(child['id'])); }
+        }
+      }
+      res.status(200).json({ data: result, pageSize: result.length, page: 0, totalItems: result.length });
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  app.post(basePath, validateWriteBody(['name']), (req: Request, res: Response) => {
+    const sm = app.locals.stateManager as StateManager | undefined;
+    if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
+    res.status(201).json(sm.addStore(fixtureKey, profile.getFixture(fixtureKey) as { id: string }[]).create(req.body as Record<string, unknown>));
+  });
+
+  app.patch(`${basePath}/:id`, validateGenericUpdate, (req: Request, res: Response) => {
+    const sm = app.locals.stateManager as StateManager | undefined;
+    if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
+    const id = req.params.id as string;
+    if (!id || !GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid GUID format' }); return; }
+    const updated = sm.addStore(fixtureKey, profile.getFixture(fixtureKey) as { id: string }[]).patch(id, req.body as Record<string, unknown>);
+    if (!updated) { res.status(404).json({ error: 'Folder not found' }); return; }
+    res.status(200).json(updated);
+  });
+
+  app.delete(`${basePath}/:id`, (req: Request, res: Response) => {
+    const sm = app.locals.stateManager as StateManager | undefined;
+    if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
+    const id = req.params.id as string;
+    if (!id || !GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid GUID format' }); return; }
+    if (!sm.addStore(fixtureKey, profile.getFixture(fixtureKey) as { id: string }[]).delete(id)) {
+      res.status(404).json({ error: 'Folder not found' }); return;
+    }
+    res.status(204).send();
+  });
 }

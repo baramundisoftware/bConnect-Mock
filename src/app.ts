@@ -33,6 +33,17 @@ function loadWindowsEndpointFixture(profile: IProfile): WindowsEndpoint[] {
 }
 
 /**
+ * Paths whose module serves its own data under a path other modules share, so the module
+ * prefix must stay for routing: updatemanagement (updateManagement.ts) and the
+ * operatingsystems Folders and WindowsEndpoints (operatingSystems.ts, #53).
+ */
+const DEDICATED_MODULE_ROUTE = /^\/(?:bconnect\/)?(?:updatemanagement\/|operatingsystems\/v2\.0\/(?:folders|windowsendpoints)(?:[/?]|$))/i;
+
+function hasDedicatedModuleRoute(url: string): boolean {
+  return DEDICATED_MODULE_ROUTE.test(url);
+}
+
+/**
  * Create Express application with specified profile
  */
 export function createApp(
@@ -152,9 +163,11 @@ export function createApp(
   app.use(createModuleRoutingGuard(profile.bmsVersion));
 
   // Strip bConnect module prefix so connector paths like /endpoints/v2.0/... become /v2.0/...
-  // Excludes /updatemanagement/ which has dedicated projection routes (updateManagement.ts).
+  // Leaves paths with module-specific routes alone (see hasDedicatedModuleRoute).
   app.use((req: Request, _res: Response, next) => {
-    req.url = req.url.replace(/^\/(?!updatemanagement\/)[a-z]+(?:mgmt)?\/(v2\.0\/)/, '/$1');
+    if (!hasDedicatedModuleRoute(req.url)) {
+      req.url = req.url.replace(/^\/[a-z]+(?:mgmt)?\/(v2\.0\/)/, '/$1');
+    }
     next();
   });
 
@@ -339,11 +352,11 @@ export function createApp(
   //   /bconnect/software/v2.0/...  → /bconnect/v2.0/...
   //   /bconnect/jobs/v2.0/...      → /bconnect/v2.0/...
   // Real bMS uses module-scoped paths; our routes are registered without the module prefix.
-  // Handles all modules generically (excludes updatemanagement which has dedicated routes).
+  // Handles all modules generically, except paths with module-specific routes.
   app.use((req, _res, next) => {
-    const m = req.url.match(/^\/(bconnect\/)(?!updatemanagement\/)[a-z]+(?:mgmt)?\/(v\d)/);
+    const m = hasDedicatedModuleRoute(req.url) ? null : req.url.match(/^\/(bconnect\/)[a-z]+(?:mgmt)?\/(v\d)/);
     if (m) {
-      req.url = req.url.replace(/^\/(bconnect\/)(?!updatemanagement\/)[a-z]+(?:mgmt)?\//, `/${m[1]}`);
+      req.url = req.url.replace(/^\/(bconnect\/)[a-z]+(?:mgmt)?\//, `/${m[1]}`);
     }
     next();
   });

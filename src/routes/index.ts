@@ -23,6 +23,7 @@ import { registerActionRoutes } from './actions';
 import { registerCatalogRoutes } from './catalog';
 import { registerSubResourceRoutes } from './subResources';
 import { registerUpdateManagementRoutes } from './updateManagement';
+import { registerOperatingSystemsRoutes } from './operatingSystems';
 
 /**
  * Register all API routes on the Express application.
@@ -36,6 +37,9 @@ import { registerUpdateManagementRoutes } from './updateManagement';
 export function registerAllRoutes(app: Express, profile: IProfile): void {
   // Update Management (all versions — separate base path /updatemanagement/v2.0)
   registerUpdateManagementRoutes(app, profile);
+
+  // Operating Systems (all versions — OS folders and the OS view of Windows endpoints, own base path)
+  registerOperatingSystemsRoutes(app, profile);
 
   // Endpoint collections (all versions)
   registerEndpointRoutes(app, profile);

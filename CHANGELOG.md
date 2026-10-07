@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- The operatingsystems module answered `Folders` and `WindowsEndpoints` with the jobs folders and the full 53-field endpoint. It now has its own data, as in the spec (#53):
+  - `/operatingsystems/v2.0/WindowsEndpoints[/{id}]` returns the OS view: `endpointId`, `endpointName`, `bootEnvironmentId`, `hardwareProfileId`, `isOSInstallAllowed`, `inheritsAutoInstallation` and `operatingSystem` (name, version, displayVersion, releaseId, localeId, derived from the endpoint's OS name). `PATCH` (JSON Patch) changes the four OS settings in read-write profiles until `/api/reset`, and answers 400 for other fields
+  - `/operatingsystems/v2.0/Folders…` lists, creates, updates and deletes OS folders, separately from the jobs folders; `Folders/{id}/Folders?includeSubfolders=true` returns all descendants (jobs folders too)
+- The OS folder fixture IDs (`os000001-…`) weren't valid GUIDs; they are now `f4000001-…`, which the mock-only `/v2.0/OSFolders` route returns too
+
 ## [0.5.0] - 2026-10-07
 
 ### Added
