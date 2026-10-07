@@ -37,7 +37,7 @@ describe('GET /v2.0/LinuxEndpoints', () => {
 
     expect(response.body).toHaveProperty('data');
     expect(response.body).toHaveProperty('pageSize');
-    expect(response.body).toHaveProperty('page', 0);
+    expect(response.body).toHaveProperty('currentPage', 0);
     expect(response.body).toHaveProperty('totalItems', 3);
   });
 
@@ -56,7 +56,7 @@ describe('GET /v2.0/LinuxEndpoints', () => {
 
     expect(response.body.data).toHaveLength(2);
     expect(response.body.pageSize).toBe(2);
-    expect(response.body.page).toBe(0);
+    expect(response.body.currentPage).toBe(0);
     expect(response.body.totalItems).toBe(3);
   });
 

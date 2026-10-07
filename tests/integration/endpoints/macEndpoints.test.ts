@@ -37,7 +37,7 @@ describe('GET /v2.0/MacEndpoints', () => {
 
     expect(response.body).toHaveProperty('data');
     expect(response.body).toHaveProperty('pageSize');
-    expect(response.body).toHaveProperty('page', 0);
+    expect(response.body).toHaveProperty('currentPage', 0);
     expect(response.body).toHaveProperty('totalItems', 2);
   });
 

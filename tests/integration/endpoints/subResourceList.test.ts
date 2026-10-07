@@ -31,7 +31,7 @@ describe('LogicalGroups/{id}/WindowsEndpoints (standard-readonly)', () => {
     expect(res.body.data.length).toBeGreaterThan(0);
     expect(res.body).toHaveProperty('totalItems');
     expect(res.body).toHaveProperty('pageSize');
-    expect(res.body).toHaveProperty('page', 0);
+    expect(res.body).toHaveProperty('currentPage', 0);
   });
 
   it('returns endpoints with correct logicalGroupId', async () => {
@@ -68,13 +68,13 @@ describe('LogicalGroups/{id}/WindowsEndpoints (standard-readonly)', () => {
   });
 
   it('supports PageSize pagination', async () => {
-    // Page=1 is the first page (1-based API), returned as page=0 (0-based internal)
+    // Page is zero-indexed: Page=0 is the first page
     const res = await request(app)
-      .get(`/v2.0/LogicalGroups/${LG_WINDOWS_ID}/WindowsEndpoints?PageSize=3&Page=1`)
+      .get(`/v2.0/LogicalGroups/${LG_WINDOWS_ID}/WindowsEndpoints?PageSize=3&Page=0`)
       .expect(200);
     expect(res.body.data.length).toBeLessThanOrEqual(3);
     expect(res.body.pageSize).toBe(3);
-    expect(res.body.page).toBe(0);
+    expect(res.body.currentPage).toBe(0);
   });
 
   it('supports SearchQuery filtering', async () => {

@@ -45,7 +45,7 @@ describe('P4.15 — bConnect-MCP Integration: Endpoints Module', () => {
       expect(res.body).toHaveProperty('data');
       expect(res.body).toHaveProperty('totalItems');
       expect(res.body).toHaveProperty('pageSize');
-      expect(res.body).toHaveProperty('page');
+      expect(res.body).toHaveProperty('currentPage');
       expect(Array.isArray(res.body.data)).toBe(true);
       expect(res.body.totalItems).toBe(10);
       // Each endpoint has id and displayName as required by bConnect-MCP
@@ -80,10 +80,10 @@ describe('P4.15 — bConnect-MCP Integration: Endpoints Module', () => {
       expect(names).toEqual(sorted);
     });
 
-    it('Pagination — page 1 and page 2 (1-based) return non-overlapping slices', async () => {
+    it('Pagination — Page 0 and Page 1 (zero-indexed) return non-overlapping slices', async () => {
       const [p1, p2] = await Promise.all([
+        request(rw).get('/v2.0/WindowsEndpoints').query({ PageSize: 5, Page: 0 }),
         request(rw).get('/v2.0/WindowsEndpoints').query({ PageSize: 5, Page: 1 }),
-        request(rw).get('/v2.0/WindowsEndpoints').query({ PageSize: 5, Page: 2 }),
       ]);
 
       expect(p1.body.data).toHaveLength(5);

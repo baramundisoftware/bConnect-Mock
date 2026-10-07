@@ -37,7 +37,7 @@ describe('UpdateManagement routes (updateManagement.ts)', () => {
     expect(Array.isArray(res.body.data)).toBe(true);
     expect(res.body).toHaveProperty('totalItems');
     expect(res.body).toHaveProperty('pageSize');
-    expect(res.body).toHaveProperty('page');
+    expect(res.body).toHaveProperty('currentPage');
   });
 
   it('GET list returns update-projection schema (not full endpoint)', async () => {

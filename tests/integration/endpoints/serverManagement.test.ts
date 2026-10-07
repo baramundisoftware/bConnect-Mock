@@ -36,7 +36,7 @@ describe('ServerManagement - Microservices', () => {
 
       expect(response.body).toHaveProperty('data');
       expect(response.body).toHaveProperty('pageSize');
-      expect(response.body).toHaveProperty('page');
+      expect(response.body).toHaveProperty('currentPage');
       expect(response.body).toHaveProperty('totalItems');
     });
 
@@ -60,7 +60,7 @@ describe('ServerManagement - Microservices', () => {
 
       expect(response.body.data.length).toBeLessThanOrEqual(2);
       expect(response.body.pageSize).toBe(2);
-      expect(response.body.page).toBe(0);
+      expect(response.body.currentPage).toBe(0);
     });
   });
 

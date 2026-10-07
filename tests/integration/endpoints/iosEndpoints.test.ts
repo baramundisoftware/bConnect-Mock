@@ -24,7 +24,7 @@ describe('IosEndpoints (standard-readonly)', () => {
     expect(res.body.data.length).toBeGreaterThan(0);
     expect(res.body).toHaveProperty('totalItems');
     expect(res.body).toHaveProperty('pageSize');
-    expect(res.body).toHaveProperty('page', 0);
+    expect(res.body).toHaveProperty('currentPage', 0);
   });
 
   it('GET /v2.0/IosEndpoints returns endpoints with correct structure', async () => {

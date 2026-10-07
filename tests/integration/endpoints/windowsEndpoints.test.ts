@@ -55,12 +55,12 @@ describe('GET /v2.0/WindowsEndpoints', () => {
       // Assert: Response contains pagination fields
       expect(response.body).toHaveProperty('data');
       expect(response.body).toHaveProperty('pageSize');
-      expect(response.body).toHaveProperty('page');
+      expect(response.body).toHaveProperty('currentPage');
       expect(response.body).toHaveProperty('totalItems');
 
       // Verify pagination values for minimal profile
       expect(response.body.pageSize).toBeGreaterThan(0);
-      expect(response.body.page).toBe(0);
+      expect(response.body.currentPage).toBe(0);
       expect(response.body.totalItems).toBe(2);
     });
 
@@ -102,7 +102,7 @@ describe('GET /v2.0/WindowsEndpoints', () => {
       // Assert: Pagination parameters are respected
       expect(response.body).toHaveProperty('data');
       expect(response.body).toHaveProperty('pageSize', 1);
-      expect(response.body).toHaveProperty('page', 0);
+      expect(response.body).toHaveProperty('currentPage', 0);
       expect(response.body).toHaveProperty('totalItems', 2);
 
       // Assert: Only 1 endpoint returned per page (PageSize=1)
@@ -111,7 +111,7 @@ describe('GET /v2.0/WindowsEndpoints', () => {
     });
 
     it('should return empty array when Page exceeds available data', async () => {
-      // Act: Request page beyond available data (2 endpoints exist, request page 3 — 1-based)
+      // Act: Request page beyond available data (2 endpoints exist, request page 3 — zero-indexed, beyond the data)
       const response = await request(app)
         .get('/v2.0/WindowsEndpoints?PageSize=1&Page=3')
         .expect(200);
@@ -131,7 +131,7 @@ describe('GET /v2.0/WindowsEndpoints', () => {
       // Assert: All available data returned (2 endpoints)
       expect(response.body.data).toHaveLength(2);
       expect(response.body.pageSize).toBe(10);
-      expect(response.body.page).toBe(0);
+      expect(response.body.currentPage).toBe(0);
       expect(response.body.totalItems).toBe(2);
     });
 
@@ -144,7 +144,7 @@ describe('GET /v2.0/WindowsEndpoints', () => {
       // Assert: Default pagination (all data returned - 2 endpoints)
       expect(response.body.data).toHaveLength(2);
       expect(response.body.pageSize).toBeGreaterThan(0);
-      expect(response.body.page).toBe(0);
+      expect(response.body.currentPage).toBe(0);
       expect(response.body.totalItems).toBe(2);
     });
   });
@@ -194,7 +194,7 @@ describe('GET /v2.0/WindowsEndpoints', () => {
       // Assert: Empty results
       expect(response.body.data).toHaveLength(0);
       expect(response.body.totalItems).toBe(0);
-      expect(response.body.page).toBe(0);
+      expect(response.body.currentPage).toBe(0);
     });
 
     it('should combine SearchQuery with pagination', async () => {
@@ -206,7 +206,7 @@ describe('GET /v2.0/WindowsEndpoints', () => {
       // Assert: Pagination and filtering work together
       expect(response.body.data).toHaveLength(1);
       expect(response.body.pageSize).toBe(10);
-      expect(response.body.page).toBe(0);
+      expect(response.body.currentPage).toBe(0);
       expect(response.body.totalItems).toBe(1);
     });
 
@@ -317,7 +317,7 @@ describe('GET /v2.0/WindowsEndpoints', () => {
       // Assert: Sorting applied before pagination
       expect(response.body.data).toBeDefined();
       expect(response.body.pageSize).toBe(2);
-      expect(response.body.page).toBe(0);
+      expect(response.body.currentPage).toBe(0);
 
       // Data should be sorted
       const displayNames = response.body.data.map((e: { displayName: string }) => e.displayName);
@@ -346,7 +346,7 @@ describe('GET /v2.0/WindowsEndpoints', () => {
 
       // 3. Pagination applied
       expect(response.body.pageSize).toBe(5);
-      expect(response.body.page).toBe(0);
+      expect(response.body.currentPage).toBe(0);
       expect(response.body.data.length).toBeLessThanOrEqual(5);
     });
 
@@ -559,22 +559,22 @@ describe('GET /v2.0/WindowsEndpoints (standard-readonly profile)', () => {
     // Assert: Returns exactly 5 endpoints
     expect(response.body.data).toHaveLength(5);
     expect(response.body.pageSize).toBe(5);
-    expect(response.body.page).toBe(0);
+    expect(response.body.currentPage).toBe(0);
     expect(response.body.totalItems).toBe(10);
   });
 
-  it('should support pagination with Page=2 (second page, 1-based)', async () => {
+  it('should support pagination with Page=1 (second page, zero-indexed)', async () => {
     // Arrange: Get all endpoints first to verify correct slice
     const allResponse = await request(app)
-      .get('/v2.0/WindowsEndpoints?PageSize=100&Page=1')
+      .get('/v2.0/WindowsEndpoints?PageSize=100&Page=0')
       .expect(200);
 
     const allEndpoints = allResponse.body.data;
     const expectedSlice = allEndpoints.slice(5, 10); // Second page (indices 5-9)
 
-    // Act: Request second page with PageSize=5 (Page=2 is 1-based second page)
+    // Act: Request second page with PageSize=5 (Page=1 is the zero-indexed second page)
     const response = await request(app)
-      .get('/v2.0/WindowsEndpoints?PageSize=5&Page=2')
+      .get('/v2.0/WindowsEndpoints?PageSize=5&Page=1')
       .expect(200);
 
     // Assert: Returns remaining 5 endpoints (second page)

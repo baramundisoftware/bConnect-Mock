@@ -91,13 +91,14 @@ export interface ResolvedEntityData {
 }
 
 /**
- * Parse the `Page` query parameter and convert from 1-based (bConnect API contract)
- * to 0-based (internal slice index).
+ * Parse the `Page` query parameter. bConnect pages are zero-indexed: the spec describes
+ * `Page` as "the zero-indexed number of the first page", and a live bMS reports
+ * currentPage 0 for the first page. Missing or invalid values mean page 0.
  */
 export function parsePage(raw: unknown): number {
   const pg = parseInt(raw as string, 10);
-  if (isNaN(pg) || pg <= 0) { return 0; }
-  return pg - 1;
+  if (isNaN(pg) || pg < 0) { return 0; }
+  return pg;
 }
 
 /**

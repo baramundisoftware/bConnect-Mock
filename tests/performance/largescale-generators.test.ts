@@ -123,27 +123,27 @@ describe('Performance: largescale-readonly profile (25R2)', () => {
   // --- Pagination correctness at scale ----------------------------------------
 
   describe('P5.13b — Pagination correctness at 60K scale', () => {
-    it('page 1 (1-based), pageSize 50 returns 50 items with totalItems 60000', async () => {
+    it('Page 0 (zero-indexed), pageSize 50 returns 50 items with totalItems 60000', async () => {
       const res = await request(app)
-        .get('/v2.0/WindowsEndpoints?PageSize=50&Page=1')
+        .get('/v2.0/WindowsEndpoints?PageSize=50&Page=0')
         .expect(200);
       expect(res.body.data).toHaveLength(50);
       expect(res.body.totalItems).toBe(60_000);
       expect(res.body.pageSize).toBe(50);
     });
 
-    it('page 1200 (1-based), pageSize 50 returns 50 items (last full page of 60K)', async () => {
+    it('Page 1199 (zero-indexed), pageSize 50 returns 50 items (last full page of 60K)', async () => {
       const res = await request(app)
-        .get('/v2.0/WindowsEndpoints?PageSize=50&Page=1200')
+        .get('/v2.0/WindowsEndpoints?PageSize=50&Page=1199')
         .expect(200);
       expect(res.body.data).toHaveLength(50);
       expect(res.body.totalItems).toBe(60_000);
     });
 
-    it('page 1 and page 2 (1-based) return different items', async () => {
+    it('Page 0 and Page 1 (zero-indexed) return different items', async () => {
       const [r0, r1] = await Promise.all([
+        request(app).get('/v2.0/WindowsEndpoints?PageSize=10&Page=0').expect(200),
         request(app).get('/v2.0/WindowsEndpoints?PageSize=10&Page=1').expect(200),
-        request(app).get('/v2.0/WindowsEndpoints?PageSize=10&Page=2').expect(200),
       ]);
       const ids0 = r0.body.data.map((d: Record<string, unknown>) => d.id);
       const ids1 = r1.body.data.map((d: Record<string, unknown>) => d.id);

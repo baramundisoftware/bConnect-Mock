@@ -15,6 +15,7 @@ import { runAndLogFixtureIntegrity } from './validateFixtureIntegrity';
 import { apiKeyGuard } from './middleware/apiKeyGuard';
 import { registerAllRoutes } from './routes/index';
 import { createModuleRoutingGuard, MOCK_REASON_HEADER } from './middleware/moduleRouting';
+import { pagedListEnvelope } from './middleware/pagedList';
 
 /**
  * Windows endpoint interface (used for StateManager initialization)
@@ -363,6 +364,9 @@ export function createApp(
     }
     next();
   });
+
+  // List responses get the spec's PagedList envelope (currentPage, totalPages, hasNextPage, …)
+  app.use(pagedListEnvelope);
 
   // Register all domain routes (at root and under /bconnect prefix)
   registerAllRoutes(app, profile);
