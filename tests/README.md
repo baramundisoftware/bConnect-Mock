@@ -23,11 +23,31 @@ tests/
 │   ├── coverage/      # Coverage-boost tests
 │   ├── security/      # Security / OWASP tests
 │   └── bconnect-mcp/  # bConnect-MCP consumer integration
+├── conformance/       # Every GET answer validated against the spec schemas, with a baseline
+│   ├── specConformance.test.ts
+│   ├── specValidator.ts
+│   └── spec-conformance.baseline.json
 ├── e2e/               # End-to-end tests (server start → request → stop)
 │   └── all-profiles.e2e.test.ts
 └── performance/       # Performance benchmarks
     ├── response-time.test.ts
     └── largescale-generators.test.ts
+```
+
+## Spec conformance
+
+`tests/conformance/specConformance.test.ts` calls every GET route of the 25R2 and 26R1 specs
+against the mock (strict routing, `standard-readonly`) and validates each answer against the
+spec's 200 schema: types, enums, formats (`guid`, `date-time`), required fields, and fields the
+spec doesn't define. Path parameters get real IDs from the parent list.
+
+Known differences are listed in `spec-conformance.baseline.json`, one line each, e.g.
+`26r1 GET /jobs/v2.0/JobDefinitions data[*].type: not in enum: "SoftwareDeployment"`.
+The test fails on a **new** difference, and on a baseline line that no longer occurs, so the
+baseline only shrinks. After fixing differences (or, deliberately, adding one):
+
+```bash
+npm run spec-conformance:update
 ```
 
 ## Testing Strategy
