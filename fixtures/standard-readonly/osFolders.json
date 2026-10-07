@@ -1,32 +1,32 @@
 [
   {
-    "id": "os000001-0001-0001-0001-000000000001",
+    "id": "f4000001-0001-0001-0001-000000000001",
     "name": "Windows 10",
     "comment": "Windows 10 operating system folder",
     "parentId": null
   },
   {
-    "id": "os000001-0001-0001-0001-000000000002",
+    "id": "f4000001-0001-0001-0001-000000000002",
     "name": "Windows 11",
     "comment": "Windows 11 operating system folder",
     "parentId": null
   },
   {
-    "id": "os000001-0001-0001-0001-000000000003",
+    "id": "f4000001-0001-0001-0001-000000000003",
     "name": "Windows Server 2019",
     "comment": "Windows Server 2019 folder",
     "parentId": null
   },
   {
-    "id": "os000001-0001-0001-0001-000000000004",
+    "id": "f4000001-0001-0001-0001-000000000004",
     "name": "Windows Server 2022",
     "comment": "Windows Server 2022 folder",
     "parentId": null
   },
   {
-    "id": "os000001-0001-0001-0001-000000000005",
+    "id": "f4000001-0001-0001-0001-000000000005",
     "name": "Windows 10 21H2",
     "comment": "Windows 10 version 21H2",
-    "parentId": "os000001-0001-0001-0001-000000000001"
+    "parentId": "f4000001-0001-0001-0001-000000000001"
   }
 ]
