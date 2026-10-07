@@ -14,7 +14,7 @@ import { openApiSpec } from './openapi';
 import { runAndLogFixtureIntegrity } from './validateFixtureIntegrity';
 import { apiKeyGuard } from './middleware/apiKeyGuard';
 import { registerAllRoutes } from './routes/index';
-import { createModuleRoutingGuard } from './middleware/moduleRouting';
+import { createModuleRoutingGuard, MOCK_REASON_HEADER } from './middleware/moduleRouting';
 
 /**
  * Windows endpoint interface (used for StateManager initialization)
@@ -84,7 +84,8 @@ export function createApp(
       }
     : { origin: '*' };
 
-  app.use(cors(corsOptions));
+  // Let browser clients read the mock's explanation of a routing rejection
+  app.use(cors({ ...corsOptions, exposedHeaders: [MOCK_REASON_HEADER] }));
   app.use(express.json({ type: ['application/json', 'application/json-patch+json'] }));
   // Convert JSON Patch arrays (RFC 6902) to plain merge-patch objects for state store compatibility.
   // Connectors send PATCH as [{op:'replace',path:'/field',value:'x'},...] but the state store
@@ -122,6 +123,7 @@ export function createApp(
     const requestPath = req.originalUrl.split('?')[0] ?? req.path;
     res.on('finish', () => {
       const duration = Date.now() - start;
+      const reason = res.getHeader(MOCK_REASON_HEADER) as string | undefined;
       if (isJsonFormat) {
         const entry: Record<string, unknown> = {
           time: new Date().toISOString(),
@@ -131,10 +133,11 @@ export function createApp(
           status: res.statusCode,
           durationMs: duration,
         };
+        if (reason) {entry.reason = reason;}
         if (isDebug) {entry.query = req.query;}
         console.info(JSON.stringify(entry));
       } else {
-        const msg = `${req.method} ${requestPath} ${res.statusCode} ${duration}ms`;
+        const msg = `${req.method} ${requestPath} ${res.statusCode} ${duration}ms${reason ? ` | ${reason}` : ''}`;
         if (isDebug) {
           console.info(`[DEBUG] ${msg} | query=${JSON.stringify(req.query)}`);
         } else {

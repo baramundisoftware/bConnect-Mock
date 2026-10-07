@@ -47,15 +47,15 @@ describe('Request logging (text format, strict routing)', () => {
     await request(app).get('/bconnect/jobs/v2.0/Endpoints');
     await request(app).put('/bconnect/endpoints/v2.0/WindowsEndpoints/00000000-0000-0000-0000-000000000000').send({});
     const lines = await loggedLines(info);
-    expect(lines).toContainEqual(expect.stringMatching(/^\[LOG\] GET \/bconnect\/jobs\/v2\.0\/Endpoints 404 /));
+    expect(lines).toContainEqual(expect.stringMatching(/^\[LOG\] GET \/bconnect\/jobs\/v2\.0\/Endpoints 404 \d+ms \| \/v2\.0\/Endpoints is not a route of module "jobs"/));
     expect(lines).toContainEqual(expect.stringMatching(/^\[LOG\] PUT \/bconnect\/endpoints\/v2\.0\/WindowsEndpoints\/0{8}-0{4}-0{4}-0{4}-0{12} 405 /));
   });
 
   it('counts guard rejections in /metrics', async () => {
-    const before = (await request(app).get('/metrics')).body.requestsByStatus['404'] ?? 0;
+    const before = (await request(app).get('/metrics')).body.requestsByStatus['400'] ?? 0;
     await request(app).get('/bconnect/nonsense/v2.0/Endpoints');
     await new Promise((resolve) => setImmediate(resolve));
-    const after = (await request(app).get('/metrics')).body.requestsByStatus['404'];
+    const after = (await request(app).get('/metrics')).body.requestsByStatus['400'];
     expect(after).toBe(before + 1);
   });
 });

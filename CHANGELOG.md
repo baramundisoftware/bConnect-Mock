@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Strict module routing now answers rejected requests exactly as a live bMS does (26R1, checked 2026-10-07), instead of 404 with a mock `{"error": …}` body:
+  - no module: 404 `application/json` `{"Message":"No HTTP resource was found that matches the request URI '…'."}`
+  - unknown module: **400** `text/plain` "The request URI is invalid. Route data could not be determined. …" (was 404)
+  - route not in the module, or not in the spec: 404 `application/problem+json` with `type`, `title`, `status`, `traceId`
+  - method not in the spec: 405 `application/problem+json`, with `Allow`
+
+  The mock's explanation moved to the `X-BConnect-Mock-Reason` response header (exposed to browsers via CORS) and the request log
+
 ## [0.5.1] - 2026-10-07
 
 ### Fixed
