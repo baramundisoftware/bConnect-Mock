@@ -123,6 +123,7 @@ Verify: `curl http://localhost:3433/health`
 | `ALLOWED_ORIGINS` | `*` | CORS allowed origins |
 | `REQUIRE_API_KEY` | — | If set, write operations require `X-Api-Key` header |
 | `BCONNECT_MODULE_ROUTING` | `strict` | `strict`: like a real bMS, each route answers only under its module prefix; `lenient`: any prefix or none (pre-0.4 behaviour). See [Module prefixes](#module-prefixes) |
+| `BCONNECT_MANAGEMENT_SERVER_VERSION` | — | Overrides the `version` of `GET …/ManagementServer` (default: `25.2.0.0` for 25R2, `26.1.161.0` for 26R1), to test clients with an unknown version |
 
 ### bMS Version Support
 

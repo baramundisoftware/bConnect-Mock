@@ -1,15 +1,7 @@
 [
   {
-    "id": "ms000001-0001-0001-0001-000000000001",
-    "type": "ManagementServer",
     "name": "BMS Management Server",
-    "version": "26.1.0.5678",
     "state": "Running",
-    "hostname": "bms-server.corp.test",
-    "port": 443,
-    "databaseVersion": "15.3",
-    "isLicensed": true,
-    "licenseExpiresAt": "2027-01-01T00:00:00Z",
-    "installedAt": "2025-01-01T00:00:00Z"
+    "plannedServerRestartTimes": null
   }
 ]
