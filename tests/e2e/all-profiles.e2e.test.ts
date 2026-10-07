@@ -20,13 +20,18 @@ import { ProfileMode, BmsVersion } from '../../src/profiles/ProfileManager';
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+/** The spec's PagedList envelope, as a live bMS answers every list */
 function expectPaginated(body: unknown): void {
   expect(body).toMatchObject({
-    data: expect.any(Array),
-    page: expect.any(Number),
+    currentPage: expect.any(Number),
     pageSize: expect.any(Number),
+    totalPages: expect.any(Number),
     totalItems: expect.any(Number),
+    hasPreviousPage: expect.any(Boolean),
+    hasNextPage: expect.any(Boolean),
+    data: expect.any(Array),
   });
+  expect(body).not.toHaveProperty('page');
 }
 
 // ---------------------------------------------------------------------------
@@ -252,9 +257,9 @@ describe('E2E: standard-readonly — pagination, search, sort', () => {
     expect((res.body as { pageSize: number }).pageSize).toBe(5);
   });
 
-  it('pagination: Page=2 (1-based) returns second page', async () => {
-    const p1 = await request(app).get('/v2.0/WindowsEndpoints?PageSize=5&Page=1');
-    const p2 = await request(app).get('/v2.0/WindowsEndpoints?PageSize=5&Page=2');
+  it('pagination: Page=1 (zero-indexed) returns the second page', async () => {
+    const p1 = await request(app).get('/v2.0/WindowsEndpoints?PageSize=5&Page=0');
+    const p2 = await request(app).get('/v2.0/WindowsEndpoints?PageSize=5&Page=1');
     const ids1 = (p1.body as { data: Array<{ id: string }> }).data.map((e) => e.id);
     const ids2 = (p2.body as { data: Array<{ id: string }> }).data.map((e) => e.id);
     // Pages must not overlap

@@ -35,7 +35,7 @@ describe('OperatingSystems - Folders', () => {
 
       expect(response.body).toHaveProperty('data');
       expect(response.body).toHaveProperty('pageSize');
-      expect(response.body).toHaveProperty('page');
+      expect(response.body).toHaveProperty('currentPage');
       expect(response.body).toHaveProperty('totalItems');
     });
 

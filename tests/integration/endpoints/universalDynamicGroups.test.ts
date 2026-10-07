@@ -58,7 +58,7 @@ describe('UniversalDynamicGroups API (26R1 routes)', () => {
         .expect(200);
       expect(response.body.data.length).toBeLessThanOrEqual(2);
       expect(response.body.pageSize).toBe(2);
-      expect(response.body.page).toBe(0);
+      expect(response.body.currentPage).toBe(0);
     });
 
     it('should support OrderBy sorting in 26R1 mode', async () => {

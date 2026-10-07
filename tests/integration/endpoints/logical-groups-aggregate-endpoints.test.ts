@@ -32,7 +32,7 @@ describe('GET /v2.0/LogicalGroups/:parentId/Endpoints (aggregate, standard-readw
     expect(Array.isArray(res.body.data)).toBe(true);
     expect(res.body).toHaveProperty('totalItems');
     expect(res.body).toHaveProperty('pageSize');
-    expect(res.body).toHaveProperty('page', 0);
+    expect(res.body).toHaveProperty('currentPage', 0);
   });
 
   it('returns endpoints that all belong to the requested parent', async () => {

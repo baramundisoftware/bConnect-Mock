@@ -53,12 +53,12 @@ describe('GET /v2.0/Software', () => {
       // Assert: Response contains pagination fields
       expect(response.body).toHaveProperty('data');
       expect(response.body).toHaveProperty('pageSize');
-      expect(response.body).toHaveProperty('page');
+      expect(response.body).toHaveProperty('currentPage');
       expect(response.body).toHaveProperty('totalItems');
 
       // Verify pagination values
       expect(response.body.pageSize).toBeGreaterThan(0);
-      expect(response.body.page).toBe(0);
+      expect(response.body.currentPage).toBe(0);
       expect(response.body.totalItems).toBe(1);
     });
 
@@ -100,7 +100,7 @@ describe('GET /v2.0/Software', () => {
 
       // Assert: Pagination parameters are respected
       expect(response.body).toHaveProperty('pageSize', 10);
-      expect(response.body).toHaveProperty('page', 0);
+      expect(response.body).toHaveProperty('currentPage', 0);
       expect(response.body).toHaveProperty('totalItems', 1);
       expect(response.body.data).toHaveLength(1);
     });

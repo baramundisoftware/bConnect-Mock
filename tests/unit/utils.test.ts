@@ -47,19 +47,19 @@ function makeGeneratorProfile(items: Record<string, unknown>[]): IProfile {
 // ─── parsePage ────────────────────────────────────────────────────────────────
 
 describe('parsePage', () => {
-  it('converts 1-based Page=1 to 0', () => {
-    expect(parsePage('1')).toBe(0);
+  it('keeps zero-indexed Page=1 as 1 (second page)', () => {
+    expect(parsePage('1')).toBe(1);
   });
 
-  it('converts 1-based Page=3 to 2', () => {
-    expect(parsePage('3')).toBe(2);
+  it('keeps zero-indexed Page=3 as 3', () => {
+    expect(parsePage('3')).toBe(3);
   });
 
   it('returns 0 for undefined', () => {
     expect(parsePage(undefined)).toBe(0);
   });
 
-  it('returns 0 for 0 (invalid, below minimum)', () => {
+  it('returns 0 for 0 (the first page)', () => {
     expect(parsePage('0')).toBe(0);
   });
 

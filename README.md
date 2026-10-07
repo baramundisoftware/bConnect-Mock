@@ -219,6 +219,13 @@ Set `BCONNECT_MODULE_ROUTING=lenient` to accept any module prefix, or none, as i
 | `PageSize` | Items per page | `?PageSize=50` |
 | `Page` | Page number (zero-based) | `?Page=2` |
 
+Lists answer with the spec's paged envelope, as a live bMS does:
+
+```json
+{ "currentPage": 0, "pageSize": 5, "totalPages": 2, "totalItems": 10,
+  "hasPreviousPage": false, "hasNextPage": true, "data": [ … ] }
+```
+
 ---
 
 ## Using with Other Projects

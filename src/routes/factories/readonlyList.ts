@@ -4,7 +4,7 @@
  * Registers a GET handler for a collection endpoint that supports:
  * - SearchQuery filtering (multi-keyword)
  * - OrderBy sorting (multi-field)
- * - Page/PageSize pagination (1-based Page parameter)
+ * - Page/PageSize pagination (zero-indexed Page parameter)
  * - Generator-aware data resolution (ADR-007)
  */
 

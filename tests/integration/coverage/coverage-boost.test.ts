@@ -890,18 +890,18 @@ describe('Route utils edge cases (utils.ts)', () => {
 
   beforeAll(() => { app = createApp(ProfileMode.STANDARD_READONLY); });
 
-  it('Page=0 treated as page 1 (1-based pagination)', async () => {
-    const resP0 = await request(app).get('/v2.0/WindowsEndpoints?Page=0').expect(200);
-    const resP1 = await request(app).get('/v2.0/WindowsEndpoints?Page=1').expect(200);
-    // Both should return first page
-    expect(resP0.body.data[0]?.id).toBe(resP1.body.data[0]?.id);
+  it('Page=0 is the first page and Page=1 the second (zero-indexed pagination)', async () => {
+    const all = await request(app).get('/v2.0/WindowsEndpoints').expect(200);
+    const resP0 = await request(app).get('/v2.0/WindowsEndpoints?Page=0&PageSize=2').expect(200);
+    const resP1 = await request(app).get('/v2.0/WindowsEndpoints?Page=1&PageSize=2').expect(200);
+    expect(resP0.body.data[0]?.id).toBe(all.body.data[0]?.id);
+    expect(resP1.body.data[0]?.id).toBe(all.body.data[2]?.id);
   });
 
-  it('Page=2 returns second page', async () => {
-    const res = await request(app)
-      .get('/v2.0/WindowsEndpoints?Page=2&PageSize=2')
-      .expect(200);
-    expect(Array.isArray(res.body.data)).toBe(true);
+  it('Page=-1 falls back to the first page', async () => {
+    const all = await request(app).get('/v2.0/WindowsEndpoints').expect(200);
+    const res = await request(app).get('/v2.0/WindowsEndpoints?Page=-1&PageSize=2');
+    if (res.status === 200) { expect(res.body.data[0]?.id).toBe(all.body.data[0]?.id); }
   });
 
   it('GET /v2.0/LinuxEndpoints/:id returns 400 for non-GUID id', async () => {

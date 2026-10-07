@@ -22,7 +22,7 @@ describe('GET /v2.0/ADUsers (standard-readonly)', () => {
     expect(Array.isArray(res.body.data)).toBe(true);
     expect(res.body.data.length).toBeGreaterThan(0);
     expect(res.body).toHaveProperty('totalItems');
-    expect(res.body).toHaveProperty('page', 0);
+    expect(res.body).toHaveProperty('currentPage', 0);
   });
 
   it('returns users with correct structure', async () => {
@@ -155,7 +155,7 @@ describe('GET /v2.0/OrgUnits (standard-readonly)', () => {
     expect(Array.isArray(res.body.data)).toBe(true);
     expect(res.body.data.length).toBeGreaterThan(0);
     expect(res.body).toHaveProperty('totalItems');
-    expect(res.body).toHaveProperty('page', 0);
+    expect(res.body).toHaveProperty('currentPage', 0);
   });
 
   it('returns org units with correct structure', async () => {
