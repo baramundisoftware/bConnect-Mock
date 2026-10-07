@@ -3,6 +3,7 @@
     {
       "id": "d0000002-0001-0001-0001-000000000001",
       "displayName": "AND-CORP-001",
+      "type": "AndroidEndpoint",
       "endpointType": "AndroidEndpoint",
       "logicalGroupId": "d1000001-0003-0003-0003-000000000003",
       "publicKey": "PFJTQUtleVZhbHVlPjxNb2R1bHVzPmFuZHJvaWQtcHVibGljLWtleS1kYXRhPC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48L1JTQUtleVZhbHVlPg==",
@@ -22,6 +23,7 @@
     {
       "id": "d0000002-0001-0001-0001-000000000002",
       "displayName": "AND-CORP-002",
+      "type": "AndroidEndpoint",
       "endpointType": "AndroidEndpoint",
       "logicalGroupId": "d1000001-0003-0003-0003-000000000003",
       "publicKey": "PFJTQUtleVZhbHVlPjxNb2R1bHVzPmFuZHJvaWQtcHVibGljLWtleS1kYXRhPC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48L1JTQUtleVZhbHVlPg==",
@@ -41,6 +43,7 @@
     {
       "id": "d0000002-0001-0001-0001-000000000003",
       "displayName": "AND-TAB-003",
+      "type": "AndroidEndpoint",
       "endpointType": "AndroidEndpoint",
       "logicalGroupId": "d1000001-0003-0003-0003-000000000003",
       "publicKey": "PFJTQUtleVZhbHVlPjxNb2R1bHVzPmFuZHJvaWQtcHVibGljLWtleS1kYXRhPC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48L1JTQUtleVZhbHVlPg==",
@@ -60,6 +63,7 @@
     {
       "id": "d0000002-0001-0001-0001-000000000004",
       "displayName": "AND-CORP-004",
+      "type": "AndroidEndpoint",
       "endpointType": "AndroidEndpoint",
       "logicalGroupId": "d1000001-0003-0003-0003-000000000003",
       "publicKey": "PFJTQUtleVZhbHVlPjxNb2R1bHVzPmFuZHJvaWQtcHVibGljLWtleS1kYXRhPC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48L1JTQUtleVZhbHVlPg==",
@@ -79,6 +83,7 @@
     {
       "id": "d0000002-0001-0001-0001-000000000005",
       "displayName": "AND-CORP-005",
+      "type": "AndroidEndpoint",
       "endpointType": "AndroidEndpoint",
       "logicalGroupId": "d1000001-0003-0003-0003-000000000003",
       "publicKey": "PFJTQUtleVZhbHVlPjxNb2R1bHVzPmFuZHJvaWQtcHVibGljLWtleS1kYXRhPC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48L1JTQUtleVZhbHVlPg==",
