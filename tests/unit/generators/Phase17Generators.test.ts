@@ -491,8 +491,12 @@ describe('LogicalGroupGenerator — field shape', () => {
     }
   });
 
-  it('index 0 has parentId null (root)', () => {
-    expect(gen.generateItem(0).parentId).toBeNull();
+  it('index 0 is the top group: its parent is the hidden root of the endpoints module', () => {
+    expect(gen.generateItem(0)).toMatchObject({ parentId: '299d0b30-d384-430c-875a-63c3ef73a150', parent: '[environment]' });
+  });
+
+  it('every other group names its parent', () => {
+    expect(gen.generateItem(12).parent).toBe(gen.generateItem(1).name);
   });
 
   it('non-root items have a non-null parentId that is a valid GUID', () => {

@@ -9,6 +9,7 @@ import type { StateManager } from '../state/StateManager';
 import { resolveEntityData, applyMultiKeywordSearch, parsePage, GUID_REGEX, parsePageSize } from './utils';
 import { currentRecords } from './factories/currentRecords';
 import { validateWriteBody, validateGenericUpdate } from '../middleware/validateBody';
+import { withTreeParent } from './factories/treeParent';
 
 export function registerSoftwareRoutes(app: Express, profile: IProfile): void {
 
@@ -115,7 +116,7 @@ export function registerSoftware26R1Routes(app: Express, profile: IProfile): voi
   app.post('/v2.0/Bundle/Folders', validateWriteBody(['name']), (req: Request, res: Response) => {
     const sm = app.locals.stateManager as StateManager | undefined;
     if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
-    res.status(201).json(sm.addStore('bundleFolders', profile.getFixture('bundleFolders') as { id: string }[]).create(req.body as Record<string, unknown>));
+    res.status(201).json(sm.addStore('bundleFolders', profile.getFixture('bundleFolders') as { id: string }[]).create(withTreeParent(app, profile, 'bundleFolders', req.body as Record<string, unknown>, 'create')));
   });
 
   // PATCH /v2.0/Bundle/Folders/:id
@@ -124,7 +125,7 @@ export function registerSoftware26R1Routes(app: Express, profile: IProfile): voi
     if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
     const id = req.params.id as string;
     if (!id || !GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid GUID format' }); return; }
-    const updated = sm.addStore('bundleFolders', profile.getFixture('bundleFolders') as { id: string }[]).patch(id, req.body as Record<string, unknown>);
+    const updated = sm.addStore('bundleFolders', profile.getFixture('bundleFolders') as { id: string }[]).patch(id, withTreeParent(app, profile, 'bundleFolders', req.body as Record<string, unknown>, 'update'));
     if (!updated) { res.status(404).json({ error: 'Bundle folder not found' }); return; }
     res.status(200).json(updated);
   });

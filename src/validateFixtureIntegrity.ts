@@ -6,6 +6,8 @@
  * logged as warnings — they never crash the server (mock server must always start).
  */
 
+import { isHiddenTreeRoot } from './profiles/treeRoots';
+
 /** Severity of an integrity issue */
 export type IssueSeverity = 'warn' | 'error';
 
@@ -31,7 +33,7 @@ interface FixtureCollections {
  * Validate cross-references across fixture collections.
  *
  * Checks performed:
- *  1. logicalGroups[*].parentId → logicalGroups[*].id (must resolve or be null)
+ *  1. logicalGroups[*].parentId → logicalGroups[*].id (must resolve, be null, or be the hidden root)
  *  2. jobInstances[*].jobDefinitionId → jobs[*].id (must resolve)
  *
  * @returns Array of IntegrityIssue (empty = all good)
@@ -46,7 +48,7 @@ export function validateFixtureIntegrity(fixtures: FixtureCollections): Integrit
     for (const group of groups) {
       const parentId = group['parentId'];
       if (parentId !== null && parentId !== undefined && typeof parentId === 'string') {
-        if (!groupIds.has(parentId)) {
+        if (!groupIds.has(parentId) && !isHiddenTreeRoot(parentId)) {
           issues.push({
             type: 'broken-parent-ref',
             severity: 'warn',

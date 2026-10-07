@@ -42,12 +42,13 @@ describe('AssetTypes/Folders (P13.4.10)', () => {
 
   it('GET /v2.0/AssetTypes/Folders/:folderId/Folders returns children', async () => {
     const listRes = await request(appRo).get('/v2.0/AssetTypes/Folders');
-    const parentId = listRes.body.data.find((f: Record<string, unknown>) => f['parentId'] !== null)?.parentId as string;
-    if (parentId) {
-      const res = await request(appRo).get(`/v2.0/AssetTypes/Folders/${parentId}/Folders`);
-      expect(res.status).toBe(200);
-      expect(Array.isArray(res.body.data)).toBe(true);
-    }
+    const folders = listRes.body.data as Array<{ id: string; parentId: string }>;
+    // A folder that is the parent of another one (top folders' parent is the hidden module root)
+    const parentId = folders.find((f) => folders.some((p) => p.id === f.parentId))?.parentId as string;
+    expect(parentId).toBeDefined();
+    const res = await request(appRo).get(`/v2.0/AssetTypes/Folders/${parentId}/Folders`);
+    expect(res.status).toBe(200);
+    expect(res.body.data.length).toBeGreaterThan(0);
   });
 
   it('GET /v2.0/AssetTypes/Folders/:folderId/Folders returns 400 for malformed folderId', async () => {
@@ -134,12 +135,13 @@ describe('AssetStock/Folders + Assets (P13.4.11)', () => {
 
   it('GET /v2.0/AssetStock/Folders/:folderId/Folders returns children', async () => {
     const listRes = await request(appRo).get('/v2.0/AssetStock/Folders');
-    const parentId = listRes.body.data.find((f: Record<string, unknown>) => f['parentId'] !== null)?.parentId as string;
-    if (parentId) {
-      const res = await request(appRo).get(`/v2.0/AssetStock/Folders/${parentId}/Folders`);
-      expect(res.status).toBe(200);
-      expect(Array.isArray(res.body.data)).toBe(true);
-    }
+    const folders = listRes.body.data as Array<{ id: string; parentId: string }>;
+    // A folder that is the parent of another one (top folders' parent is the hidden module root)
+    const parentId = folders.find((f) => folders.some((p) => p.id === f.parentId))?.parentId as string;
+    expect(parentId).toBeDefined();
+    const res = await request(appRo).get(`/v2.0/AssetStock/Folders/${parentId}/Folders`);
+    expect(res.status).toBe(200);
+    expect(res.body.data.length).toBeGreaterThan(0);
   });
 
   it('POST /v2.0/AssetStock/Folders creates folder in readwrite', async () => {

@@ -8,6 +8,7 @@
  * - Profile selection via environment variable or programmatic API
  */
 
+import { HIDDEN_TREE_ROOTS, withHiddenTreeRoot } from './treeRoots';
 import fs from 'fs';
 import path from 'path';
 
@@ -146,17 +147,17 @@ export class ProfileManager {
   static loadProfile(mode: ProfileMode, version: BmsVersion = BmsVersion.BMS_25R2): IProfile {
     switch (mode) {
       case ProfileMode.MINIMAL_READONLY:
-        return new MinimalReadonlyProfile(version);
+        return withTreeRoots(new MinimalReadonlyProfile(version));
       case ProfileMode.MINIMAL_READWRITE:
-        return new MinimalReadwriteProfile(version);
+        return withTreeRoots(new MinimalReadwriteProfile(version));
       case ProfileMode.STANDARD_READONLY:
-        return new StandardReadonlyProfile(version);
+        return withTreeRoots(new StandardReadonlyProfile(version));
       case ProfileMode.STANDARD_READWRITE:
-        return new StandardReadwriteProfile(version);
+        return withTreeRoots(new StandardReadwriteProfile(version));
       case ProfileMode.LARGESCALE_READONLY:
-        return new LargeScaleReadonlyProfile(version);
+        return withTreeRoots(new LargeScaleReadonlyProfile(version));
       case ProfileMode.LARGESCALE_READWRITE:
-        return new LargeScaleReadwriteProfile(version);
+        return withTreeRoots(new LargeScaleReadwriteProfile(version));
       default:
         throw new Error(`Unknown profile mode: ${mode}`);
     }
@@ -245,6 +246,27 @@ function loadFixtureFile(fixtureDir: string, fileName: string): unknown[] {
     if (firstArray) { return firstArray as unknown[]; }
   }
   return [];
+}
+
+/**
+ * Every profile serves its trees as a live bMS does: top items point to the module's hidden root
+ * and every item names its parent (src/profiles/treeRoots.ts). Applied once per source list, for
+ * fixtures and generated data alike.
+ */
+function withTreeRoots(profile: IProfile): IProfile {
+  const load = profile.getFixture.bind(profile);
+  const done = new WeakMap<object, unknown[]>();
+  profile.getFixture = (entityType: string) => {
+    const data = load(entityType);
+    if (!HIDDEN_TREE_ROOTS[entityType] || !Array.isArray(data)) { return data; }
+    let items = done.get(data);
+    if (!items) {
+      items = withHiddenTreeRoot(entityType, data as Record<string, unknown>[]);
+      done.set(data, items);
+    }
+    return items;
+  };
+  return profile;
 }
 
 /**

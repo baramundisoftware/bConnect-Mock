@@ -16,6 +16,7 @@ import { resolveEntityData, applyMultiKeywordSearch, applyMultiFieldSort, parseP
 import { registerReadonlyList } from './factories/readonlyList';
 import { registerGetById } from './factories/getById';
 import { registerSubResourceList } from './factories/subResourceList';
+import { withTreeParent } from './factories/treeParent';
 
 export function registerGroupRoutes(app: Express, profile: IProfile): void {
 
@@ -66,7 +67,7 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
     if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
     const body = req.body as Record<string, unknown>;
     // Fixture groups carry both `name` and `displayName`; mirror so created groups read back the same way.
-    res.status(201).json(sm.logicalGroups.create({ ...body, displayName: body['displayName'] ?? body['name'] }));
+    res.status(201).json(sm.logicalGroups.create(withTreeParent(app, profile, 'logicalGroups', { ...body, displayName: body['displayName'] ?? body['name'] }, 'create')));
   });
 
   app.patch('/v2.0/LogicalGroups/:id', validateGenericUpdate, (req: Request, res: Response) => {
@@ -74,7 +75,7 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
     if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
     const id = req.params.id as string;
     if (!id || Array.isArray(id)) { res.status(400).json({ error: 'Invalid ID' }); return; }
-    const updated = sm.logicalGroups.patch(id, req.body as Record<string, unknown>);
+    const updated = sm.logicalGroups.patch(id, withTreeParent(app, profile, 'logicalGroups', req.body as Record<string, unknown>, 'update'));
     if (!updated) { res.status(404).json({ error: 'Logical group not found' }); return; }
     res.status(200).json(updated);
   });
