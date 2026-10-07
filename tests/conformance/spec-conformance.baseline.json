@@ -36,6 +36,7 @@
   "26r1 GET /variables/v2.0/WindowsApplications/{windowsApplicationId}/VariableInstances not checked: no ID in the parent list",
   "26r1 GET /variables/v2.0/WindowsJobDefinitions/{windowsJobDefinitionId}/VariableInstances not checked: no ID in the parent list",
   "26r1 largescale GET /compliance/v2.0/DetectedRuleViolations data[*].state: required, missing",
+  "26r1 largescale GET /compliance/v2.0/Endpoints/{endpointId}/DetectedRuleViolations data[*].state: required, missing",
   "26r1 largescale GET /defensecontrol/v2.0/LocalAdministrativeAccounts/WindowsEndpoints/{id} not checked: no ID in the parent list",
   "26r1 largescale GET /endpoints/v2.0/EntraIdData/{deviceId} not checked: no ID in the parent list",
   "26r1 largescale GET /servermanagement/v2.0/Objects/{id}/Rights not checked: no ID in the parent list",

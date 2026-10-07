@@ -60,7 +60,8 @@ export function registerMiscRoutes(app: Express, profile: IProfile): void {
         if (!deviceId || Array.isArray(deviceId)) { res.status(400).json({ error: 'Invalid device ID' }); return; }
         const data = profile.getFixture('entraIdData') as Record<string, unknown>[];
         const item = data.find((e) => e['deviceId'] === deviceId || e['id'] === deviceId);
-        if (!item) { res.status(404).json({ error: 'EntraId data not found for device' }); return; }
+        // A live bMS answers an unknown device with a bare 404 (title "Not Found", no message)
+        if (!item) { res.status(404).json({ error: 'EntraId data not found for device', bareNotFound: true }); return; }
         res.status(200).json(item);
       } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
     });

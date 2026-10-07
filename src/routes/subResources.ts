@@ -60,15 +60,18 @@ export function registerSubResourceRoutes(app: Express, profile: IProfile): void
       childEntityName: 'Detected vulnerability',
     });
 
+    // Rule violations exist only for iOS, Android and Mac endpoints; for any other endpoint (and
+    // an unknown ID) a live bMS answers a bare 404 (probe version 6, 2026-10-07)
     registerSubResourceList(app, profile, {
       parentPath: '/v2.0/Endpoints',
       childPath: 'DetectedRuleViolations',
-      parentFixture: 'windowsEndpoints',
+      parentFixture: ['iosEndpoints', 'androidEndpoints', 'macEndpoints'],
       childFixture: 'ruleViolations',
       foreignKey: 'endpointId',
       searchFields: ['ruleName'],
-      parentEntityName: 'Endpoint',
+      parentEntityName: 'Mobile or Mac endpoint',
       childEntityName: 'Rule violation',
+      unknownParent: 'bare',
     });
   }
 
@@ -95,6 +98,7 @@ export function registerSubResourceRoutes(app: Express, profile: IProfile): void
       searchFields: ['cveId'],
       parentEntityName: 'Windows endpoint',
       childEntityName: 'Detected vulnerability',
+      unknownParent: 'bare',
     });
   }
 
@@ -120,6 +124,8 @@ export function registerSubResourceRoutes(app: Express, profile: IProfile): void
     searchFields: KIOSK_SEARCH_FIELDS,
     parentEntityName: 'Job definition',
     childEntityName: 'Kiosk release',
+    // A live bMS answers an unknown job definition here with an empty list
+    unknownParent: 'empty',
   });
 
   // ─── ADObjects sub-resources ─────────────────────────────────────────────────

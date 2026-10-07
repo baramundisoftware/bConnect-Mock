@@ -9,6 +9,7 @@ import type { IProfile } from '../profiles/ProfileManager';
 import { BmsVersion } from '../profiles/ProfileManager';
 import { resolveEntityData, parsePage, parsePageSize } from './utils';
 import { registerSingleton } from './factories/singleton';
+import { sendNotFoundDetail } from '../middleware/bmsErrors';
 
 /**
  * The version GET /v2.0/ManagementServer reports per simulated release. Clients detect the
@@ -55,7 +56,8 @@ export function registerServerManagementRoutes(app: Express, profile: IProfile):
     try {
       const data = profile.getFixture('microservices') as Record<string, unknown>[];
       const item = data.find((ms) => ms['id'] === req.params.id);
-      if (!item) { res.status(404).json({ error: 'Microservice not found' }); return; }
+      // The live bMS's own wording for an unknown microservice (probe version 6, 2026-10-07)
+      if (!item) { sendNotFoundDetail(res, 'Microservice not found', `Microservice with id [${String(req.params.id)}] not found.`); return; }
       res.status(200).json(item);
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });

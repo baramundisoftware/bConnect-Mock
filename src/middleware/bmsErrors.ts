@@ -58,6 +58,15 @@ export function sendProblem(res: Response, status: number, reason: string, title
   res.status(status).type('application/problem+json').send(JSON.stringify(problemBody(status, title)));
 }
 
+/**
+ * A 404 with a detail message (application/json, title "Not Found"), as the bMS answers some
+ * typed lookups: hidden tree roots ("job folder [ID] not found …") and Microservices.
+ */
+export function sendNotFoundDetail(res: Response, reason: string, detail: string): void {
+  res.setHeader(MOCK_REASON_HEADER, reason);
+  res.status(404).type('application/json').send(JSON.stringify(problemBody(404, 'Not Found', { detail })));
+}
+
 /** A 400 validation answer (application/json), as the bMS answers invalid IDs and bodies */
 export function sendValidationProblem(res: Response, errors: Record<string, string[]>, reason: string): void {
   res.setHeader(MOCK_REASON_HEADER, reason);
@@ -122,7 +131,7 @@ export function bmsErrorBodies(req: Request, res: Response, next: NextFunction):
     if (status === 400) {
       sendValidationProblem(res, validationErrors(message, req, route), message);
     } else if (status === 404) {
-      sendProblem(res, 404, message, notFoundTitle(req.path));
+      sendProblem(res, 404, message, (body as { bareNotFound?: boolean }).bareNotFound ? 'Not Found' : notFoundTitle(req.path));
     } else {
       sendProblem(res, status, message);
     }

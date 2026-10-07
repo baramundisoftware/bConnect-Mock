@@ -18,14 +18,15 @@ async function testSubResource(
   app: Express,
   parentPath: string,
   parentId: string,
-  child: string
+  child: string,
+  unknownParentStatus = 404,
 ): Promise<void> {
   const res = await request(app).get(`${parentPath}/${parentId}/${child}`).expect(200);
   expect(res.body).toHaveProperty('data');
   expect(Array.isArray(res.body.data)).toBe(true);
   expect(res.body).toHaveProperty('totalItems');
 
-  await request(app).get(`${parentPath}/${UNKNOWN_GUID}/${child}`).expect(404);
+  await request(app).get(`${parentPath}/${UNKNOWN_GUID}/${child}`).expect(unknownParentStatus);
   await request(app).get(`${parentPath}/${BAD_ID}/${child}`).expect(400);
 }
 
@@ -76,8 +77,9 @@ describe('JobDefinitions sub-resources (P13.2.10)', () => {
   it('GET JobDefinitions/:id/JobInstances returns 200', () =>
     testSubResource(app, '/v2.0/JobDefinitions', jobId, 'JobInstances'));
 
+  // A live bMS answers an unknown job definition here with an empty list, not a 404
   it('GET JobDefinitions/:id/KioskReleases returns 200', () =>
-    testSubResource(app, '/v2.0/JobDefinitions', jobId, 'KioskReleases'));
+    testSubResource(app, '/v2.0/JobDefinitions', jobId, 'KioskReleases', 200));
 });
 
 describe('ADObjects sub-resources (P13.2.10)', () => {
@@ -265,7 +267,9 @@ describe('26R1-only sub-resources (P13.2.10)', () => {
     bundleId = br.body.data[0].id;
     const wr = await request(app).get('/v2.0/WindowsEndpoints');
     windowsId = wr.body.data[0].id;
-    endpointId = windowsId;
+    // Rule violations exist only for iOS, Android and Mac endpoints
+    const ar = await request(app).get('/v2.0/AndroidEndpoints');
+    endpointId = ar.body.data[0].id;
   });
 
   it('GET Folders/:id/UniversalDynamicGroups returns 200', () =>

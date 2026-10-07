@@ -18,6 +18,7 @@ import { createModuleRoutingGuard } from './middleware/moduleRouting';
 import { bmsErrorBodies, bodyErrors, MOCK_REASON_HEADER, ROUTE_LOCAL, sendProblem, sendValidationProblem, type MatchedRoute } from './middleware/bmsErrors';
 import { pagedListEnvelope, pageSizeDefaults } from './middleware/pagedList';
 import { specProjection } from './middleware/specProjection';
+import { hiddenRootAnswers } from './middleware/hiddenRootAnswers';
 
 /**
  * Paths whose module serves its own data under a path other modules share, so the module
@@ -343,6 +344,9 @@ export function createApp(
   app.use(pagedListEnvelope);
 
   // Register all domain routes (at root and under /bconnect prefix)
+  // A hidden tree root asked for by ID or for its children: the live bMS's typed 404
+  app.use(hiddenRootAnswers);
+
   registerAllRoutes(app, profile);
   const bconnectRouter = express.Router();
   // Share app.locals with the sub-router so route handlers can access stateManager
