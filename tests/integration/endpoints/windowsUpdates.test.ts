@@ -137,7 +137,7 @@ describe('GET /v2.0/WindowsUpdates', () => {
         .expect('Content-Type', /json/)
         .expect(403);
 
-      expect(response.body).toHaveProperty('error');
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
     });
   });
 

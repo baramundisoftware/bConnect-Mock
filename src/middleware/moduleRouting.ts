@@ -22,36 +22,18 @@
  * Non-API paths (/health, /metrics, /api/reset, /api-docs) are never affected.
  */
 
-import { randomBytes } from 'crypto';
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import type { BmsVersion } from '../profiles/ProfileManager';
-import { MODULE_ROUTES } from '../generated/moduleRoutes';
+import { MODULE_ROUTES, ROUTE_DETAILS } from '../generated/moduleRoutes';
+import { MOCK_REASON_HEADER, ROUTE_LOCAL, sendProblem, sendValidationProblem, type MatchedRoute } from './bmsErrors';
+
+export { MOCK_REASON_HEADER } from './bmsErrors';
 
 export type ModuleRoutingMode = 'strict' | 'lenient';
-
-/**
- * Response header with the mock's explanation of a rejection. The bodies copy a live bMS
- * (26R1, checked 2026-10-07), which explains nothing, so the reason travels here and in
- * the request log.
- */
-export const MOCK_REASON_HEADER = 'X-BConnect-Mock-Reason';
 
 /** The text/plain body a live bMS sends for a path whose module it doesn't know */
 export const UNKNOWN_MODULE_TEXT =
   'The request URI is invalid. Route data could not be determined. Maybe you entered a wrong URI format or bConnect version?';
-
-/** A W3C trace id, as the bMS puts into its problem details */
-function traceId(): string {
-  return `00-${randomBytes(16).toString('hex')}-${randomBytes(8).toString('hex')}-00`;
-}
-
-/** RFC 7807 problem details, as a live bMS answers an unknown route (404) or method (405) */
-function sendProblem(res: Response, status: 404 | 405, reason: string): void {
-  const title = status === 404 ? 'Not Found' : 'Method Not Allowed';
-  res.setHeader(MOCK_REASON_HEADER, reason);
-  res.status(status).type('application/problem+json')
-    .send(JSON.stringify({ type: `https://httpstatuses.io/${status}`, title, status, traceId: traceId() }));
-}
 
 /**
  * Returns the configured routing mode. Unset or empty means strict;
@@ -68,16 +50,38 @@ export function getModuleRoutingMode(): ModuleRoutingMode {
   return 'strict';
 }
 
-interface CompiledRoute { method: string; pattern: RegExp; params: number }
+interface CompiledRoute {
+  method: string;
+  pattern: RegExp;
+  /** Number of path parameters (fewer wins: a literal segment beats a parameter) */
+  params: number;
+  /** The spec's names for the path parameters, in order */
+  paramNames: readonly string[];
+  /** The spec's request body schema, if any */
+  body?: string;
+}
+
+/** decodeURIComponent that keeps a malformed escape as it is instead of throwing */
+function safeDecode(value: string): string {
+  try { return decodeURIComponent(value); } catch { return value; }
+}
+
+const GUID_VALUE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Compile 'GET /v2.0/WindowsEndpoints/{}' into a method plus a case-insensitive path regex. */
-function compileRoute(route: string): CompiledRoute {
+function compileRoute(route: string, detail: { params?: readonly string[]; body?: string } = {}): CompiledRoute {
   const [method = '', routePath = ''] = route.split(' ');
   const source = routePath
     .split('{}')
     .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-    .join('[^/]+');
-  return { method, pattern: new RegExp(`^${source}$`, 'i'), params: routePath.split('{}').length - 1 };
+    .join('([^/]+)');
+  return {
+    method,
+    pattern: new RegExp(`^${source}$`, 'i'),
+    params: routePath.split('{}').length - 1,
+    paramNames: detail.params ?? [],
+    ...(detail.body ? { body: detail.body } : {}),
+  };
 }
 
 // Optional /bconnect, optional module segment, then the API version and the rest of the path.
@@ -96,7 +100,8 @@ export function createModuleRoutingGuard(
 
   const modules = new Map<string, CompiledRoute[]>();
   for (const [moduleName, routes] of Object.entries(MODULE_ROUTES[bmsVersion] ?? {})) {
-    modules.set(moduleName, routes.map(compileRoute));
+    const details = ROUTE_DETAILS[bmsVersion]?.[moduleName] ?? {};
+    modules.set(moduleName, routes.map((route) => compileRoute(route, details[route])));
   }
 
   return (req: Request, res: Response, next: NextFunction) => {
@@ -140,6 +145,22 @@ export function createModuleRoutingGuard(
       return;
     }
 
+    // Every path parameter in the specs is a GUID; the bMS rejects anything else with 400.
+    const route = pathMatches.find((r) => r.method === method) as CompiledRoute;
+    const values = route.pattern.exec(apiPath)?.slice(1) ?? [];
+    const params = Object.fromEntries(route.paramNames.map((name, i) => [name, safeDecode(values[i] ?? '')]));
+    const invalid = Object.entries(params).filter(([, value]) => !GUID_VALUE.test(value));
+    if (invalid.length > 0) {
+      sendValidationProblem(
+        res,
+        Object.fromEntries(invalid.map(([name, value]) => [name, [`The value '${value}' is not valid.`]])),
+        `${invalid.map(([name]) => name).join(', ')} must be a GUID`,
+      );
+      return;
+    }
+
+    const matched: MatchedRoute = { params, ...(route.body ? { body: route.body } : {}) };
+    res.locals[ROUTE_LOCAL] = matched;
     next();
   };
 }

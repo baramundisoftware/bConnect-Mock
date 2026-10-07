@@ -42,7 +42,7 @@ describe('REQUIRE_API_KEY guard', () => {
         .post('/v2.0/WindowsEndpoints')
         .send({ displayName: 'Test' });
       expect(res.status).toBe(401);
-      expect(res.body).toHaveProperty('error');
+      expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
     });
 
     it('POST /v2.0/WindowsEndpoints → 401 when key is wrong', async () => {
@@ -157,8 +157,8 @@ describe('REQUIRE_API_KEY guard', () => {
         .post('/v2.0/WindowsEndpoints')
         .send({ displayName: 'Test' });
       expect(res.status).toBe(401);
-      expect(typeof res.body.error).toBe('string');
-      expect(res.body.error.length).toBeGreaterThan(0);
+      expect(typeof res.headers['x-bconnect-mock-reason']).toBe('string');
+      expect(String(res.headers['x-bconnect-mock-reason']).length).toBeGreaterThan(0);
     });
 
     it('401 response does not leak the configured API key', async () => {

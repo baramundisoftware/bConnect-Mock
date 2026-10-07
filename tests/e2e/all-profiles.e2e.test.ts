@@ -636,7 +636,7 @@ describe('E2E: Security validation — all profiles', () => {
     const longQuery = 'x'.repeat(501);
     const res = await request(app).get(`/v2.0/WindowsEndpoints?SearchQuery=${encodeURIComponent(longQuery)}`);
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('Negative Page rejected with 400', async () => {

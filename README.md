@@ -204,9 +204,21 @@ checked 2026-10-07):
 | `/bconnect/jobs/v2.0/WindowsEndpoints` (module doesn't own the route), or a route the spec doesn't declare | 404 `application/problem+json`: `{"type":"https://httpstatuses.io/404","title":"Not Found","status":404,"traceId":"…"}` |
 | A method the spec doesn't declare | 405 `application/problem+json`, with `Allow` |
 
+### Error answers
+
+Other errors also come in the live bMS's shape (checked on 26R1, 2026-10-07):
+
+| Case | Result |
+|---|---|
+| Unknown ID | 404 `application/problem+json`, title `Object [<id>] not found or not visible due to missing rights.` |
+| ID that isn't a GUID | 400 `application/json` `{"title":"One or more validation errors occurred.","errors":{"id":["The value 'x' is not valid."]},…}`, with the spec's parameter name |
+| Invalid JSON, or a required field missing | 400 with `errors` per field (`$`, and the body parameter, e.g. `logicalGroup`) |
+| No login (with `REQUIRE_API_KEY` / `REQUIRE_BASIC_AUTH`) | 401 `application/problem+json`, no `WWW-Authenticate` header |
+| Other errors (403 read-only, 500, …) | problem details: `type`, `title`, `status`, `traceId` |
+
 A live bMS explains none of these. The mock puts its explanation in the
 `X-BConnect-Mock-Reason` response header and in its request log, e.g.
-`unknown module "nonsense" for bMS 26r1`.
+`unknown module "nonsense" for bMS 26r1` or `Job definition not found`.
 
 Set `BCONNECT_MODULE_ROUTING=lenient` to accept any module prefix, or none, as in 0.3.x.
 

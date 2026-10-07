@@ -29,7 +29,7 @@ describe('Zod validation — write endpoints (standard-readwrite)', () => {
       .send('[{"displayName":"test"}]');
     // express.json strict mode rejects arrays → body becomes {} → displayName missing → 400
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   // --- Prototype pollution (must use raw JSON strings — JSON.stringify strips __proto__) ---
@@ -40,7 +40,7 @@ describe('Zod validation — write endpoints (standard-readwrite)', () => {
       .set('Content-Type', 'application/json')
       .send('{"displayName":"test","__proto__":{"isAdmin":true}}');
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('POST /v2.0/AndroidEndpoints — rejects constructor key in raw JSON with 400', async () => {
@@ -49,7 +49,7 @@ describe('Zod validation — write endpoints (standard-readwrite)', () => {
       .set('Content-Type', 'application/json')
       .send('{"displayName":"test","constructor":{"name":"pwned"}}');
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('POST /v2.0/LinuxEndpoints — rejects prototype key in raw JSON with 400', async () => {
@@ -58,7 +58,7 @@ describe('Zod validation — write endpoints (standard-readwrite)', () => {
       .set('Content-Type', 'application/json')
       .send('{"displayName":"test","prototype":{"isAdmin":true}}');
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('PATCH /v2.0/AndroidEndpoints/:id — rejects __proto__ in raw JSON patch body with 400', async () => {
@@ -73,7 +73,7 @@ describe('Zod validation — write endpoints (standard-readwrite)', () => {
       .set('Content-Type', 'application/json')
       .send('{"__proto__":{"isAdmin":true}}');
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   // --- Required field validation ---
@@ -83,7 +83,7 @@ describe('Zod validation — write endpoints (standard-readwrite)', () => {
       .post('/v2.0/JobInstances')
       .send({ endpointId: 'some-id' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/jobDefinitionId/i);
+    expect(res.headers['x-bconnect-mock-reason']).toMatch(/jobDefinitionId/i);
   });
 
   it('POST /v2.0/JobInstances — rejects body missing endpointId with 400', async () => {
@@ -91,7 +91,7 @@ describe('Zod validation — write endpoints (standard-readwrite)', () => {
       .post('/v2.0/JobInstances')
       .send({ jobDefinitionId: 'some-id' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/endpointId/i);
+    expect(res.headers['x-bconnect-mock-reason']).toMatch(/endpointId/i);
   });
 
   it('POST /v2.0/Assets — rejects body missing assetTypeId with 400', async () => {
@@ -99,7 +99,7 @@ describe('Zod validation — write endpoints (standard-readwrite)', () => {
       .post('/v2.0/Assets')
       .send({ department: 'IT' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/assetTypeId/i);
+    expect(res.headers['x-bconnect-mock-reason']).toMatch(/assetTypeId/i);
   });
 
   it('POST /v2.0/Variables — rejects body missing name with 400', async () => {
@@ -107,7 +107,7 @@ describe('Zod validation — write endpoints (standard-readwrite)', () => {
       .post('/v2.0/Variables')
       .send({ value: 'something' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/name/i);
+    expect(res.headers['x-bconnect-mock-reason']).toMatch(/name/i);
   });
 
   it('POST /v2.0/JobDefinitions — rejects body missing name with 400', async () => {
@@ -115,7 +115,7 @@ describe('Zod validation — write endpoints (standard-readwrite)', () => {
       .post('/v2.0/JobDefinitions')
       .send({ type: 'Script' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/name/i);
+    expect(res.headers['x-bconnect-mock-reason']).toMatch(/name/i);
   });
 
   it('POST /v2.0/LogicalGroups — rejects body missing name with 400', async () => {
@@ -123,7 +123,7 @@ describe('Zod validation — write endpoints (standard-readwrite)', () => {
       .post('/v2.0/LogicalGroups')
       .send({ comment: 'test' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/\bname\b/);
+    expect(res.headers['x-bconnect-mock-reason']).toMatch(/\bname\b/);
   });
 
   // --- Type coercion resistance ---
@@ -133,7 +133,7 @@ describe('Zod validation — write endpoints (standard-readwrite)', () => {
       .post('/v2.0/WindowsEndpoints')
       .send({ displayName: 12345 });
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('POST /v2.0/WindowsEndpoints — rejects displayName as boolean with 400', async () => {
@@ -141,7 +141,7 @@ describe('Zod validation — write endpoints (standard-readwrite)', () => {
       .post('/v2.0/WindowsEndpoints')
       .send({ displayName: true });
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('POST /v2.0/WindowsEndpoints — rejects empty displayName string with 400', async () => {
@@ -149,7 +149,7 @@ describe('Zod validation — write endpoints (standard-readwrite)', () => {
       .post('/v2.0/WindowsEndpoints')
       .send({ displayName: '' });
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   // --- Valid payloads still work ---

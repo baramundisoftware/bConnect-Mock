@@ -38,7 +38,7 @@ describe('Security: DoS — PageSize upper bound', () => {
   it('rejects negative Page with 400', async () => {
     const res = await request(app).get('/v2.0/WindowsEndpoints?Page=-1');
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/Page/i);
+    expect(res.headers['x-bconnect-mock-reason']).toMatch(/Page/i);
   });
 });
 
@@ -47,7 +47,7 @@ describe('Security: DoS — SearchQuery length limit', () => {
     const longQuery = 'a'.repeat(501);
     const res = await request(app).get(`/v2.0/WindowsEndpoints?SearchQuery=${encodeURIComponent(longQuery)}`);
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/SearchQuery/i);
+    expect(res.headers['x-bconnect-mock-reason']).toMatch(/SearchQuery/i);
   });
 
   it('accepts SearchQuery at the boundary (500 chars)', async () => {
@@ -66,7 +66,7 @@ describe('Security: Error disclosure', () => {
 
   it('error responses have consistent shape', async () => {
     const res = await request(app).get('/v2.0/WindowsEndpoints?Page=-1');
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
     expect(res.body.stack).toBeUndefined();
   });
 

@@ -288,7 +288,7 @@ describe('Full CRUD Lifecycle', () => {
       });
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error');
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
     });
 
     it('should handle invalid GUID format in READ/UPDATE/DELETE operations', async () => {

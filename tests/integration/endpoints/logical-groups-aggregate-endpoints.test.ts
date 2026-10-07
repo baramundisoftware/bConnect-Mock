@@ -58,14 +58,14 @@ describe('GET /v2.0/LogicalGroups/:parentId/Endpoints (aggregate, standard-readw
     const res = await request(app)
       .get(`/v2.0/LogicalGroups/${UNKNOWN_ID}/Endpoints`)
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('returns 400 for malformed parent ID', async () => {
     const res = await request(app)
       .get(`/v2.0/LogicalGroups/${BAD_ID}/Endpoints`)
       .expect(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('supports PageSize pagination', async () => {

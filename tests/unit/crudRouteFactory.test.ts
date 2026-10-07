@@ -35,7 +35,7 @@ describe('Generic CRUD factory — AndroidEndpoints (standard-readwrite)', () =>
       .post('/v2.0/AndroidEndpoints')
       .send({ operatingSystem: 'Android 14' });
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('PUT /v2.0/AndroidEndpoints/:id returns 200 on success', async () => {

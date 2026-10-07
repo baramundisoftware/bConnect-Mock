@@ -53,7 +53,7 @@ describe('AssetTypes/Folders (P13.4.10)', () => {
   it('GET /v2.0/AssetTypes/Folders/:folderId/Folders returns 400 for malformed folderId', async () => {
     const res = await request(appRo).get('/v2.0/AssetTypes/Folders/not-a-guid/Folders');
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('GET /v2.0/AssetTypes/Folders/:folderId/Folders returns 400 for SQL-injection-style folderId', async () => {

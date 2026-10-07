@@ -35,7 +35,7 @@ describe('BitLocker Secrets (P13.6.2)', () => {
     const res = await request(app)
       .get('/v2.0/BitLocker/WindowsEndpoints/00000000-0000-0000-0000-000000000000/Secrets')
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 });
 
@@ -66,7 +66,7 @@ describe('LocalAdministrativeAccounts (P13.6.3)', () => {
     const res = await request(app)
       .get('/v2.0/LocalAdministrativeAccounts/WindowsEndpoints/00000000-0000-0000-0000-000000000000')
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 });
 
@@ -107,7 +107,7 @@ describe('MicrosoftDefender Threats (P13.6.4)', () => {
     const res = await request(app)
       .get('/v2.0/MicrosoftDefender/Threats/00000000-0000-0000-0000-000000000000')
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('supports SearchQuery filtering on threats', async () => {
@@ -156,7 +156,7 @@ describe('MicrosoftDefender WindowsEndpoints (P13.6.4)', () => {
     const res = await request(app)
       .get('/v2.0/MicrosoftDefender/WindowsEndpoints/00000000-0000-0000-0000-000000000000')
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('supports SearchQuery filtering on defender states', async () => {

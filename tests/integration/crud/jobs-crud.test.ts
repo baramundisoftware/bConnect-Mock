@@ -52,7 +52,7 @@ describe('Jobs CRUD (standard-readwrite)', () => {
         .send({ type: 'SoftwareDeployment' });
 
       expect(res.status).toBe(400);
-      expect(res.body).toHaveProperty('error');
+      expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
     });
 
     it('should trigger a job (create with status Running)', async () => {

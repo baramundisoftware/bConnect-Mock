@@ -36,7 +36,7 @@ describe('LogicalGroups IndustrialEndpoints — 25R2 only (P13.9.3)', () => {
     const res = await request(app25r2)
       .get('/v2.0/LogicalGroups/00000000-0000-0000-0000-000000000000/IndustrialEndpoints')
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('GET LogicalGroups/:id/IndustrialEndpoints returns 200 in 26R1 (route available in both versions)', async () => {
@@ -74,7 +74,7 @@ describe('StaticGroups IndustrialEndpoints — 25R2 only (P13.9.4)', () => {
     const res = await request(app25r2)
       .get('/v2.0/StaticGroups/00000000-0000-0000-0000-000000000000/IndustrialEndpoints')
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 });
 

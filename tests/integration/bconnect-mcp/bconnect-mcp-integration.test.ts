@@ -369,7 +369,7 @@ describe('P4.15 — bConnect-MCP Integration: Error Handling', () => {
       '/v2.0/WindowsEndpoints/00000000-0000-0000-0000-000000000000'
     );
     expect(res.status).toBe(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('POST /v2.0/AndroidEndpoints — 400 when displayName missing', async () => {
@@ -378,7 +378,7 @@ describe('P4.15 — bConnect-MCP Integration: Error Handling', () => {
       .send({ operatingSystem: 'Android 14' });
 
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('Write to standard-readonly profile returns 403 (bConnect-MCP detects read-only mode)', async () => {
@@ -387,7 +387,7 @@ describe('P4.15 — bConnect-MCP Integration: Error Handling', () => {
       .send({ displayName: 'test' });
 
     expect(res.status).toBe(403);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('PUT /v2.0/JobDefinitions/:id — 404 for non-existent job', async () => {

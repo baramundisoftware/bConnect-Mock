@@ -39,7 +39,7 @@ describe('KioskReleases (standard-readonly)', () => {
 
   it('GET /v2.0/KioskReleases/:id returns 404 for unknown id', async () => {
     const res = await request(app).get('/v2.0/KioskReleases/00000000-0000-0000-0000-000000000000').expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('supports SearchQuery filtering', async () => {
@@ -70,7 +70,7 @@ describe('KioskReleases CRUD (standard-readwrite)', () => {
 
   it('DELETE /v2.0/KioskReleases/:id returns 404 for unknown id', async () => {
     const res = await request(app).delete('/v2.0/KioskReleases/00000000-0000-0000-0000-000000000000').expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 });
 
@@ -254,6 +254,6 @@ describe('AssetTypes CRUD (standard-readwrite)', () => {
 
   it('DELETE /v2.0/AssetTypes/:id returns 404 for unknown id', async () => {
     const res = await request(app).delete('/v2.0/AssetTypes/00000000-0000-0000-0000-000000000000').expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 });

@@ -43,7 +43,7 @@ describe('A01 — Broken Access Control', () => {
         .post('/v2.0/WindowsEndpoints')
         .send({ displayName: 'Attacker' });
       expect(res.status).toBe(403);
-      expect(res.body).toHaveProperty('error');
+      expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
     });
 
     it('PUT /v2.0/WindowsEndpoints/:id → 403 on standard-readonly', async () => {
@@ -131,7 +131,7 @@ describe('A03 — Injection', () => {
         .get('/v2.0/WindowsEndpoints')
         .query({ OrderBy: 'a'.repeat(201) });
       expect(res.status).toBe(400);
-      expect(res.body.error).toMatch(/OrderBy/);
+      expect(res.headers['x-bconnect-mock-reason']).toMatch(/OrderBy/);
     });
   });
 
@@ -188,7 +188,7 @@ describe('A04 — Insecure Design', () => {
         .get('/v2.0/WindowsEndpoints')
         .query({ SearchQuery: 'a'.repeat(501) });
       expect(res.status).toBe(400);
-      expect(res.body.error).toMatch(/SearchQuery/);
+      expect(res.headers['x-bconnect-mock-reason']).toMatch(/SearchQuery/);
     });
 
     it('SearchQuery with > 10 keywords → 400', async () => {
@@ -196,7 +196,7 @@ describe('A04 — Insecure Design', () => {
         .get('/v2.0/WindowsEndpoints')
         .query({ SearchQuery: 'a b c d e f g h i j k' }); // 11 keywords
       expect(res.status).toBe(400);
-      expect(res.body.error).toMatch(/SearchQuery/);
+      expect(res.headers['x-bconnect-mock-reason']).toMatch(/SearchQuery/);
     });
 
     it('OrderBy > 200 chars → 400', async () => {
@@ -204,7 +204,7 @@ describe('A04 — Insecure Design', () => {
         .get('/v2.0/WindowsEndpoints')
         .query({ OrderBy: 'x'.repeat(201) });
       expect(res.status).toBe(400);
-      expect(res.body.error).toMatch(/OrderBy/);
+      expect(res.headers['x-bconnect-mock-reason']).toMatch(/OrderBy/);
     });
   });
 });

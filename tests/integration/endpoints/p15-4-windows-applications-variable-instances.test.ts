@@ -5,8 +5,8 @@
  * with proper 404 for unknown parent and 400 for invalid GUID.
  *
  * Known fixture IDs (from fixtures/<profile>/windowsApplications.json):
- *   standard-readonly / standard-readwrite (fallback): wa000001-0001-0001-0001-000000000001
- *   minimal-readonly:                                   wa000001-0001-0001-0001-000000000001
+ *   standard-readonly / standard-readwrite (fallback): 3a000001-0001-0001-0001-000000000001
+ *   minimal-readonly:                                   3a000001-0001-0001-0001-000000000001
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';

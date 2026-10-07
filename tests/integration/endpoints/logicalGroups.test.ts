@@ -91,7 +91,7 @@ describe('LogicalGroups CRUD (standard-readwrite)', () => {
       .post('/v2.0/LogicalGroups')
       .send({ comment: 'No name' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/\bname\b/);
+    expect(res.headers['x-bconnect-mock-reason']).toMatch(/\bname\b/);
   });
 
   it('POST returns 400 when only displayName is sent (not a spec field)', async () => {

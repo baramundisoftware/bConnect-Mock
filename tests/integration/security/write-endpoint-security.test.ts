@@ -69,7 +69,7 @@ describe('Write endpoint security — standard-readwrite', () => {
         it(`POST ${endpoint} — rejects "${dangerousKey}" key with 400`, async () => {
           const res = await rawPost(endpoint, payload);
           expect(res.status).toBe(400);
-          expect(res.body).toHaveProperty('error');
+          expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
           // Ensure global prototype was NOT polluted
           expect((Object.prototype as Record<string, unknown>)['isAdmin']).toBeUndefined();
           expect((Object.prototype as Record<string, unknown>)['polluted']).toBeUndefined();
@@ -80,25 +80,25 @@ describe('Write endpoint security — standard-readwrite', () => {
     it('POST /v2.0/JobDefinitions — rejects __proto__ key with 400', async () => {
       const res = await rawPost('/v2.0/JobDefinitions', '{"name":"x","__proto__":{"isAdmin":true}}');
       expect(res.status).toBe(400);
-      expect(res.body).toHaveProperty('error');
+      expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
     });
 
     it('POST /v2.0/Assets — rejects __proto__ key with 400', async () => {
       const res = await rawPost('/v2.0/Assets', '{"assetTag":"AT-001","__proto__":{"isAdmin":true}}');
       expect(res.status).toBe(400);
-      expect(res.body).toHaveProperty('error');
+      expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
     });
 
     it('POST /v2.0/Variables — rejects __proto__ key with 400', async () => {
       const res = await rawPost('/v2.0/Variables', '{"name":"myVar","__proto__":{"isAdmin":true}}');
       expect(res.status).toBe(400);
-      expect(res.body).toHaveProperty('error');
+      expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
     });
 
     it('POST /v2.0/JobInstances — rejects __proto__ key with 400', async () => {
       const res = await rawPost('/v2.0/JobInstances', '{"jobDefinitionId":"x","endpointId":"y","__proto__":{"isAdmin":true}}');
       expect(res.status).toBe(400);
-      expect(res.body).toHaveProperty('error');
+      expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
     });
   });
 
@@ -181,19 +181,19 @@ describe('Write endpoint security — standard-readwrite', () => {
     it('POST /v2.0/Assets — empty body {} returns 400 (missing required field)', async () => {
       const res = await request(app).post('/v2.0/Assets').send({});
       expect(res.status).toBe(400);
-      expect(res.body.error).toMatch(/assetTypeId/i);
+      expect(res.headers['x-bconnect-mock-reason']).toMatch(/assetTypeId/i);
     });
 
     it('POST /v2.0/JobInstances — body missing endpointId returns 400', async () => {
       const res = await request(app).post('/v2.0/JobInstances').send({ jobDefinitionId: 'j1' });
       expect(res.status).toBe(400);
-      expect(res.body.error).toMatch(/endpointId/i);
+      expect(res.headers['x-bconnect-mock-reason']).toMatch(/endpointId/i);
     });
 
     it('POST /v2.0/JobInstances — body missing jobDefinitionId returns 400', async () => {
       const res = await request(app).post('/v2.0/JobInstances').send({ endpointId: 'e1' });
       expect(res.status).toBe(400);
-      expect(res.body.error).toMatch(/jobDefinitionId/i);
+      expect(res.headers['x-bconnect-mock-reason']).toMatch(/jobDefinitionId/i);
     });
   });
 
@@ -214,7 +214,7 @@ describe('Write endpoint security — standard-readwrite', () => {
       it(`POST /v2.0/WindowsEndpoints — displayName as ${label} returns 400`, async () => {
         const res = await rawPost('/v2.0/WindowsEndpoints', value);
         expect(res.status).toBe(400);
-        expect(res.body).toHaveProperty('error');
+        expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
       });
     }
 

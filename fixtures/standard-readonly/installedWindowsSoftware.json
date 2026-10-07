@@ -1,6 +1,6 @@
 [
   {
-    "id": "isw00001-0001-0001-0001-000000000001",
+    "id": "15300001-0001-0001-0001-000000000001",
     "displayName": "Microsoft Office 365",
     "version": "16.0.14332.20604",
     "publisher": "Microsoft Corporation",
@@ -11,7 +11,7 @@
     "universalDynamicGroupId": "d0011111-0000-0000-0000-000000000001"
   },
   {
-    "id": "isw00001-0002-0002-0002-000000000002",
+    "id": "15300001-0002-0002-0002-000000000002",
     "displayName": "Visual Studio Code",
     "version": "1.87.0",
     "publisher": "Microsoft Corporation",
@@ -22,7 +22,7 @@
     "universalDynamicGroupId": "d0011111-0000-0000-0000-000000000002"
   },
   {
-    "id": "isw00001-0003-0003-0003-000000000003",
+    "id": "15300001-0003-0003-0003-000000000003",
     "displayName": "Google Chrome",
     "version": "122.0.6261.112",
     "publisher": "Google LLC",
@@ -33,7 +33,7 @@
     "universalDynamicGroupId": "d0011111-0000-0000-0000-000000000003"
   },
   {
-    "id": "isw00001-0004-0004-0004-000000000004",
+    "id": "15300001-0004-0004-0004-000000000004",
     "displayName": "7-Zip",
     "version": "23.01",
     "publisher": "Igor Pavlov",
@@ -44,7 +44,7 @@
     "universalDynamicGroupId": "d0011111-0000-0000-0000-000000000001"
   },
   {
-    "id": "isw00001-0005-0005-0005-000000000005",
+    "id": "15300001-0005-0005-0005-000000000005",
     "displayName": "Adobe Acrobat Reader DC",
     "version": "23.008.20555",
     "publisher": "Adobe Inc.",

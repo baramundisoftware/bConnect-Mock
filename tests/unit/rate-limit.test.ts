@@ -46,7 +46,7 @@ describe('Rate Limiting — enabled via RATE_LIMIT_ENABLED=true', () => {
     }
     const res = await request(app).get('/health');
     expect(res.status).toBe(429);
-    expect(res.body.error).toMatch(/rate limit/i);
+    expect(res.headers['x-bconnect-mock-reason']).toMatch(/rate limit/i);
   });
 
   it('includes Retry-After header on 429 responses', async () => {

@@ -152,8 +152,8 @@ describe('GET /v2.0/Software', () => {
         .expect(403);
 
       // Assert: Read-only guard prevents POST operation
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toMatch(/not implemented|read-only/i);
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(response.headers['x-bconnect-mock-reason']).toMatch(/not implemented|read-only/i);
     });
   });
 });

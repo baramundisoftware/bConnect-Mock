@@ -53,7 +53,7 @@ describe('AndroidEndpoints CRUD (standard-readwrite)', () => {
         .send({ operatingSystem: 'Android 14' });
 
       expect(res.status).toBe(400);
-      expect(res.body).toHaveProperty('error');
+      expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
     });
 
     it('should increase totalItems after POST', async () => {

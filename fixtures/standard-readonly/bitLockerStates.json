@@ -1,6 +1,6 @@
 [
   {
-    "id": "bl000001-0001-0001-0001-000000000001",
+    "id": "b1000001-0001-0001-0001-000000000001",
     "endpointId": "d0000001-0001-0001-0001-000000000001",
     "endpointName": "DESKTOP-WIN001",
     "conversionStatus": "FullyEncrypted",
@@ -11,7 +11,7 @@
     "suspendCount": 0
   },
   {
-    "id": "bl000001-0001-0001-0001-000000000002",
+    "id": "b1000001-0001-0001-0001-000000000002",
     "endpointId": "d0000001-0001-0001-0001-000000000002",
     "endpointName": "DESKTOP-WIN002",
     "conversionStatus": "EncryptionInProgress",
@@ -22,7 +22,7 @@
     "suspendCount": 1
   },
   {
-    "id": "bl000001-0001-0001-0001-000000000003",
+    "id": "b1000001-0001-0001-0001-000000000003",
     "endpointId": "d0000001-0001-0001-0001-000000000003",
     "endpointName": "LAPTOP-WIN003",
     "conversionStatus": "FullyEncrypted",
@@ -33,7 +33,7 @@
     "suspendCount": 0
   },
   {
-    "id": "bl000001-0001-0001-0001-000000000004",
+    "id": "b1000001-0001-0001-0001-000000000004",
     "endpointId": "d0000001-0001-0001-0001-000000000004",
     "endpointName": "LAPTOP-WIN004",
     "conversionStatus": "FullyDecrypted",
@@ -44,7 +44,7 @@
     "suspendCount": 0
   },
   {
-    "id": "bl000001-0001-0001-0001-000000000005",
+    "id": "b1000001-0001-0001-0001-000000000005",
     "endpointId": "d0000001-0001-0001-0001-000000000005",
     "endpointName": "SERVER-WIN005",
     "conversionStatus": "FullyEncrypted",
