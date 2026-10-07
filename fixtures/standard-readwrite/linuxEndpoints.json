@@ -3,6 +3,7 @@
     {
       "id": "d0000003-0001-0001-0001-000000000001",
       "displayName": "LNX-PROD-001",
+      "type": "LinuxEndpoint",
       "endpointType": "LinuxEndpoint",
       "logicalGroupId": "d1000001-0004-0004-0004-000000000004",
       "publicKey": "PFJTQUtleVZhbHVlPjxNb2R1bHVzPmxpbnV4LXB1YmxpYy1rZXktZGF0YTwvTW9kdWx1cz48RXhwb25lbnQ+QVFBQjwvRXhwb25lbnQ+PC9SU0FLZXlWYWx1ZT4=",
@@ -22,6 +23,7 @@
     {
       "id": "d0000003-0001-0001-0001-000000000002",
       "displayName": "LNX-DEV-002",
+      "type": "LinuxEndpoint",
       "endpointType": "LinuxEndpoint",
       "logicalGroupId": "d1000001-0004-0004-0004-000000000004",
       "publicKey": "PFJTQUtleVZhbHVlPjxNb2R1bHVzPmxpbnV4LXB1YmxpYy1rZXktZGF0YTwvTW9kdWx1cz48RXhwb25lbnQ+QVFBQjwvRXhwb25lbnQ+PC9SU0FLZXlWYWx1ZT4=",
@@ -41,6 +43,7 @@
     {
       "id": "d0000003-0001-0001-0001-000000000003",
       "displayName": "LNX-WEB-003",
+      "type": "LinuxEndpoint",
       "endpointType": "LinuxEndpoint",
       "logicalGroupId": "d1000001-0004-0004-0004-000000000004",
       "publicKey": "PFJTQUtleVZhbHVlPjxNb2R1bHVzPmxpbnV4LXB1YmxpYy1rZXktZGF0YTwvTW9kdWx1cz48RXhwb25lbnQ+QVFBQjwvRXhwb25lbnQ+PC9SU0FLZXlWYWx1ZT4=",
