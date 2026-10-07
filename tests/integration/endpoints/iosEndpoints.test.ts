@@ -47,7 +47,7 @@ describe('IosEndpoints (standard-readonly)', () => {
   it('GET /v2.0/IosEndpoints/:id returns 404 for unknown id', async () => {
     const res = await request(app).get('/v2.0/IosEndpoints/00000000-0000-0000-0000-000000000000');
     expect(res.status).toBe(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('POST /v2.0/IosEndpoints returns 403 in read-only profile', async () => {
@@ -90,7 +90,7 @@ describe('IosEndpoints CRUD (standard-readwrite)', () => {
       .post('/v2.0/IosEndpoints')
       .send({ operatingSystem: 'iOS 17.4' });
     expect(res.status).toBe(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('PATCH /v2.0/IosEndpoints/:id updates endpoint fields', async () => {

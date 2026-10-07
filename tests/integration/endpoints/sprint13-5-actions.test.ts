@@ -40,14 +40,14 @@ describe('Enrollment action routes (P13.5.1)', () => {
     const res = await request(app)
       .post('/v2.0/WindowsEndpoints/00000000-0000-0000-0000-000000000000/StartEnrollment')
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('POST StartEnrollment returns 400 for malformed id', async () => {
     const res = await request(app)
       .post('/v2.0/WindowsEndpoints/not-a-guid/StartEnrollment')
       .expect(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 });
 
@@ -82,7 +82,7 @@ describe('Group AssignJobDefinition actions (P13.5.3)', () => {
     const res = await request(app)
       .post('/v2.0/LogicalGroups/00000000-0000-0000-0000-000000000000/AssignJobDefinition')
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 });
 

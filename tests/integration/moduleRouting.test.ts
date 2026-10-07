@@ -218,7 +218,9 @@ describe.each([BmsVersion.BMS_25R2, BmsVersion.BMS_26R1])('Module routing — ev
       for (const method of methods) {
         const res = await send(app, method, url);
         const noHandler = res.status === 404 && /text\/html/.test(res.headers['content-type'] ?? '');
-        const rejected = res.headers[REASON] !== undefined;
+        // A guard rejection, as opposed to a handler's own 404/400 for the placeholder id
+        const rejected = /is not a route of module|unknown module|has no module prefix|is not a method of module|must be a GUID/
+          .test(String(res.headers[REASON] ?? ''));
         if (noHandler || rejected) { unserved.push(`${res.status} ${method} ${url}`); }
       }
     }

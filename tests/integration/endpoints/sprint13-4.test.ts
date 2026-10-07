@@ -45,12 +45,12 @@ describe('GET /v2.0/ADUsers (standard-readonly)', () => {
     const res = await request(app)
       .get('/v2.0/ADUsers/00000000-0000-0000-0000-000000000000')
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('GET /v2.0/ADUsers/:id returns 400 for malformed id', async () => {
     const res = await request(app).get('/v2.0/ADUsers/not-a-guid').expect(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('supports SearchQuery filtering', async () => {
@@ -82,12 +82,12 @@ describe('GET/DELETE /v2.0/Endpoints/:id (standard-readwrite)', () => {
     const res = await request(app)
       .get('/v2.0/Endpoints/00000000-0000-0000-0000-000000000000')
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('GET /v2.0/Endpoints/:id returns 400 for malformed id', async () => {
     const res = await request(app).get('/v2.0/Endpoints/not-a-guid').expect(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('DELETE /v2.0/Endpoints/:id deletes a windows endpoint', async () => {
@@ -102,7 +102,7 @@ describe('GET/DELETE /v2.0/Endpoints/:id (standard-readwrite)', () => {
     const res = await request(app)
       .delete('/v2.0/Endpoints/00000000-0000-0000-0000-000000000000')
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 });
 
@@ -177,12 +177,12 @@ describe('GET /v2.0/OrgUnits (standard-readonly)', () => {
     const res = await request(app)
       .get('/v2.0/OrgUnits/00000000-0000-0000-0000-000000000000')
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('GET /v2.0/OrgUnits/:id returns 400 for malformed id', async () => {
     const res = await request(app).get('/v2.0/OrgUnits/not-a-guid').expect(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('supports SearchQuery filtering', async () => {
@@ -229,7 +229,7 @@ describe('GET /v2.0/VariableDefinitions (standard-readonly)', () => {
     const res = await request(app)
       .get('/v2.0/VariableDefinitions/00000000-0000-0000-0000-000000000000')
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 });
 

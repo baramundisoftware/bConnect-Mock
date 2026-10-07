@@ -89,7 +89,7 @@ describe.each([BmsVersion.BMS_25R2, BmsVersion.BMS_26R1])('operatingsystems Wind
     const res = await request(app).patch(`${OS}/WindowsEndpoints/d0000001-0001-0001-0001-000000000001`)
       .send([{ op: 'replace', path: '/endpointName', value: 'renamed' }]);
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/endpointName/);
+    expect(res.headers['x-bconnect-mock-reason']).toMatch(/endpointName/);
   });
 
   it('PATCH answers 404 for an unknown endpoint', async () => {

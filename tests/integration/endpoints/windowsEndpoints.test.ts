@@ -370,8 +370,8 @@ describe('GET /v2.0/WindowsEndpoints', () => {
         .expect(404);
 
       // Assert: Error response format
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toMatch(/not found/i);
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(response.headers['x-bconnect-mock-reason']).toMatch(/not found/i);
     });
 
     it('should return 400 for invalid GUID format', async () => {
@@ -381,8 +381,8 @@ describe('GET /v2.0/WindowsEndpoints', () => {
         .expect(400);
 
       // Assert: Validation error response
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toMatch(/invalid|guid/i);
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(response.headers['x-bconnect-mock-reason']).toMatch(/invalid|guid/i);
     });
   });
 
@@ -404,8 +404,8 @@ describe('GET /v2.0/WindowsEndpoints', () => {
         .expect(403);
 
       // Assert: Read-only guard prevents POST operation
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toMatch(/not implemented|read-only/i);
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(response.headers['x-bconnect-mock-reason']).toMatch(/not implemented|read-only/i);
     });
 
     it('should return 403 Not Implemented for PUT /v2.0/WindowsEndpoints/{id}', async () => {
@@ -425,8 +425,8 @@ describe('GET /v2.0/WindowsEndpoints', () => {
         .expect(403);
 
       // Assert: Read-only guard prevents PUT operation
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toMatch(/not implemented|read-only/i);
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(response.headers['x-bconnect-mock-reason']).toMatch(/not implemented|read-only/i);
     });
 
     it('should return 403 Not Implemented for PATCH /v2.0/WindowsEndpoints/{id}', async () => {
@@ -446,8 +446,8 @@ describe('GET /v2.0/WindowsEndpoints', () => {
         .expect(403);
 
       // Assert: Read-only guard prevents PATCH operation
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toMatch(/not implemented|read-only/i);
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(response.headers['x-bconnect-mock-reason']).toMatch(/not implemented|read-only/i);
     });
 
     it('should return 403 Not Implemented for DELETE /v2.0/WindowsEndpoints/{id}', async () => {
@@ -462,8 +462,8 @@ describe('GET /v2.0/WindowsEndpoints', () => {
         .expect(403);
 
       // Assert: Read-only guard prevents DELETE operation
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toMatch(/not implemented|read-only/i);
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(response.headers['x-bconnect-mock-reason']).toMatch(/not implemented|read-only/i);
     });
 
     it('should still allow GET requests (read operations)', async () => {
@@ -781,8 +781,8 @@ describe('POST /v2.0/WindowsEndpoints (minimal-readwrite)', () => {
       .expect(400);
 
     // Assert: Validation error returned
-    expect(response.body).toHaveProperty('error');
-    expect(response.body.error).toMatch(/displayName|required/i);
+    expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+    expect(response.headers['x-bconnect-mock-reason']).toMatch(/displayName|required/i);
   });
 });
 
@@ -868,7 +868,7 @@ describe('PUT /v2.0/WindowsEndpoints/:id (minimal-readwrite)', () => {
       .expect(404);
 
     // Assert: Error response
-    expect(response.body).toHaveProperty('error');
-    expect(response.body.error).toMatch(/not found/i);
+    expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+    expect(response.headers['x-bconnect-mock-reason']).toMatch(/not found/i);
   });
 });

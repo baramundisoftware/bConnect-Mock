@@ -1,6 +1,6 @@
 [
   {
-    "id": "mds00001-0001-0001-0001-000000000001",
+    "id": "3d500001-0001-0001-0001-000000000001",
     "endpointId": "d0000001-0001-0001-0001-000000000001",
     "endpointName": "DESKTOP-WIN001",
     "type": "MicrosoftDefenderState",
@@ -14,7 +14,7 @@
     "threatCount": 0
   },
   {
-    "id": "mds00001-0001-0001-0001-000000000002",
+    "id": "3d500001-0001-0001-0001-000000000002",
     "endpointId": "d0000001-0001-0001-0001-000000000002",
     "endpointName": "DESKTOP-WIN002",
     "type": "MicrosoftDefenderState",
@@ -28,7 +28,7 @@
     "threatCount": 1
   },
   {
-    "id": "mds00001-0001-0001-0001-000000000003",
+    "id": "3d500001-0001-0001-0001-000000000003",
     "endpointId": "d0000001-0001-0001-0001-000000000003",
     "endpointName": "LAPTOP-WIN003",
     "type": "MicrosoftDefenderState",

@@ -14,7 +14,8 @@ import { openApiSpec } from './openapi';
 import { runAndLogFixtureIntegrity } from './validateFixtureIntegrity';
 import { apiKeyGuard } from './middleware/apiKeyGuard';
 import { registerAllRoutes } from './routes/index';
-import { createModuleRoutingGuard, MOCK_REASON_HEADER } from './middleware/moduleRouting';
+import { createModuleRoutingGuard } from './middleware/moduleRouting';
+import { bmsErrorBodies, bodyErrors, MOCK_REASON_HEADER, ROUTE_LOCAL, sendProblem, sendValidationProblem, type MatchedRoute } from './middleware/bmsErrors';
 import { pagedListEnvelope, pageSizeDefaults } from './middleware/pagedList';
 
 /**
@@ -87,23 +88,6 @@ export function createApp(
 
   // Let browser clients read the mock's explanation of a routing rejection
   app.use(cors({ ...corsOptions, exposedHeaders: [MOCK_REASON_HEADER] }));
-  app.use(express.json({ type: ['application/json', 'application/json-patch+json'] }));
-  // Convert JSON Patch arrays (RFC 6902) to plain merge-patch objects for state store compatibility.
-  // Connectors send PATCH as [{op:'replace',path:'/field',value:'x'},...] but the state store
-  // expects a plain object {field: 'x'}.
-  app.use((req: Request, _res: Response, next) => {
-    if (['PATCH', 'PUT'].includes(req.method) && Array.isArray(req.body)) {
-      const merged: Record<string, unknown> = {};
-      for (const op of req.body as Array<{op?: string; path?: string; value?: unknown}>) {
-        if (op.op === 'replace' || op.op === 'add') {
-          const key = (op.path ?? '').replace(/^\//, '');
-          if (key) {merged[key] = op.value;}
-        }
-      }
-      req.body = merged;
-    }
-    next();
-  });
   app.disable('x-powered-by'); // P8.8 — do not disclose framework identity
 
   // HTTP security headers (P10.3)
@@ -161,6 +145,10 @@ export function createApp(
     next();
   });
 
+  // Error answers in the live bMS's shape (problem details); the mock's message goes to the
+  // X-BConnect-Mock-Reason header. Registered before everything that can answer an error.
+  app.use(bmsErrorBodies);
+
   // Reject paths a real bMS would refuse: no module prefix, or a module that does not
   // own the route in the selected version's spec (#49). Must run before the prefix is
   // stripped below. BCONNECT_MODULE_ROUTING=lenient restores the old behaviour.
@@ -171,6 +159,26 @@ export function createApp(
   app.use((req: Request, _res: Response, next) => {
     if (!hasDedicatedModuleRoute(req.url)) {
       req.url = req.url.replace(/^\/[a-z]+(?:mgmt)?\/(v2\.0\/)/, '/$1');
+    }
+    next();
+  });
+
+  // Body parsing runs after the routing guard, so a body the bMS can't read is reported
+  // with the matched route's body parameter (see the entity.parse.failed handler below).
+  app.use(express.json({ type: ['application/json', 'application/json-patch+json'] }));
+  // Convert JSON Patch arrays (RFC 6902) to plain merge-patch objects for state store compatibility.
+  // Connectors send PATCH as [{op:'replace',path:'/field',value:'x'},...] but the state store
+  // expects a plain object {field: 'x'}.
+  app.use((req: Request, _res: Response, next) => {
+    if (['PATCH', 'PUT'].includes(req.method) && Array.isArray(req.body)) {
+      const merged: Record<string, unknown> = {};
+      for (const op of req.body as Array<{op?: string; path?: string; value?: unknown}>) {
+        if (op.op === 'replace' || op.op === 'add') {
+          const key = (op.path ?? '').replace(/^\//, '');
+          if (key) {merged[key] = op.value;}
+        }
+      }
+      req.body = merged;
     }
     next();
   });
@@ -385,6 +393,20 @@ export function createApp(
       console.error(error instanceof Error ? error.message : String(error));
       res.status(500).json({ error: 'Internal server error' });
     }
+  });
+
+  // A body that isn't valid JSON: 400 in the bMS's validation shape, not 500
+  app.use((err: Error & { type?: string }, _req: Request, res: Response, next: NextFunction) => {
+    if (err.type === 'entity.parse.failed') {
+      const route = res.locals[ROUTE_LOCAL] as MatchedRoute | undefined;
+      sendValidationProblem(res, bodyErrors(err.message, route?.body), `invalid JSON body: ${err.message}`);
+      return;
+    }
+    if (err.type === 'entity.too.large') {
+      sendProblem(res, 413, `request body too large: ${err.message}`);
+      return;
+    }
+    next(err);
   });
 
   // Global error handler (P8.8 — A05/A09: prevent stack trace leakage)

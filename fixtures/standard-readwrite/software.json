@@ -1,7 +1,7 @@
 {
   "software": [
     {
-      "id": "s0000001-0001-0001-0001-000000000001",
+      "id": "50000001-0001-0001-0001-000000000001",
       "name": "Microsoft Office Professional Plus 2021",
       "version": "16.0.14332.20447",
       "vendor": "Microsoft Corporation",
@@ -9,7 +9,7 @@
       "category": "Productivity"
     },
     {
-      "id": "s0000001-0001-0001-0001-000000000002",
+      "id": "50000001-0001-0001-0001-000000000002",
       "name": "Google Chrome",
       "version": "122.0.6261.112",
       "vendor": "Google LLC",
@@ -17,7 +17,7 @@
       "category": "Browser"
     },
     {
-      "id": "s0000001-0001-0001-0001-000000000003",
+      "id": "50000001-0001-0001-0001-000000000003",
       "name": "Adobe Acrobat Reader DC",
       "version": "23.008.20470",
       "vendor": "Adobe Inc.",
@@ -25,7 +25,7 @@
       "category": "Document Viewer"
     },
     {
-      "id": "s0000001-0001-0001-0001-000000000004",
+      "id": "50000001-0001-0001-0001-000000000004",
       "name": "Java Runtime Environment",
       "version": "8.0.401",
       "vendor": "Oracle Corporation",
@@ -33,7 +33,7 @@
       "category": "Runtime"
     },
     {
-      "id": "s0000001-0001-0001-0001-000000000005",
+      "id": "50000001-0001-0001-0001-000000000005",
       "name": "7-Zip",
       "version": "23.01",
       "vendor": "Igor Pavlov",
@@ -41,7 +41,7 @@
       "category": "Compression"
     },
     {
-      "id": "s0000001-0001-0001-0001-000000000006",
+      "id": "50000001-0001-0001-0001-000000000006",
       "name": "Mozilla Firefox",
       "version": "123.0.1",
       "vendor": "Mozilla Foundation",
@@ -49,7 +49,7 @@
       "category": "Browser"
     },
     {
-      "id": "s0000001-0001-0001-0001-000000000007",
+      "id": "50000001-0001-0001-0001-000000000007",
       "name": "VLC Media Player",
       "version": "3.0.20",
       "vendor": "VideoLAN",
@@ -57,7 +57,7 @@
       "category": "Media Player"
     },
     {
-      "id": "s0000001-0001-0001-0001-000000000008",
+      "id": "50000001-0001-0001-0001-000000000008",
       "name": "Microsoft Teams",
       "version": "1.7.00.2814",
       "vendor": "Microsoft Corporation",
@@ -65,7 +65,7 @@
       "category": "Communication"
     },
     {
-      "id": "s0000001-0001-0001-0001-000000000009",
+      "id": "50000001-0001-0001-0001-000000000009",
       "name": "Notepad++",
       "version": "8.6.2",
       "vendor": "Don Ho",
@@ -73,7 +73,7 @@
       "category": "Text Editor"
     },
     {
-      "id": "s0000001-0001-0001-0001-000000000010",
+      "id": "50000001-0001-0001-0001-000000000010",
       "name": "WinRAR",
       "version": "6.24",
       "vendor": "RARLAB",

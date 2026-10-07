@@ -102,13 +102,13 @@ describe('GET /v2.0/MacEndpoints', () => {
     it('should return 404 for an unknown GUID', async () => {
       const res = await request(app).get('/v2.0/MacEndpoints/00000000-0000-0000-0000-000000000000');
       expect(res.status).toBe(404);
-      expect(res.body).toHaveProperty('error');
+      expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
     });
 
     it('should return 400 for an invalid GUID format', async () => {
       const res = await request(app).get('/v2.0/MacEndpoints/not-a-guid');
       expect(res.status).toBe(400);
-      expect(res.body).toHaveProperty('error');
+      expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
     });
   });
 });

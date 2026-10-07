@@ -47,14 +47,14 @@ describe('LogicalGroups/{id}/WindowsEndpoints (standard-readonly)', () => {
     const res = await request(app)
       .get(`/v2.0/LogicalGroups/${LG_UNKNOWN_ID}/WindowsEndpoints`)
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('GET 400 for malformed parent ID', async () => {
     const res = await request(app)
       .get('/v2.0/LogicalGroups/not-a-guid/WindowsEndpoints')
       .expect(400);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 
   it('returns empty data array for group with no matching endpoints', async () => {
@@ -200,7 +200,7 @@ describe('StaticGroups list & GET-by-ID (standard-readonly)', () => {
     const res = await request(app)
       .get('/v2.0/StaticGroups/00000000-0000-0000-0000-000000000000')
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 });
 
@@ -231,6 +231,6 @@ describe('DynamicGroups list & GET-by-ID (standard-readonly)', () => {
     const res = await request(app)
       .get('/v2.0/DynamicGroups/00000000-0000-0000-0000-000000000000')
       .expect(404);
-    expect(res.body).toHaveProperty('error');
+    expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
   });
 });

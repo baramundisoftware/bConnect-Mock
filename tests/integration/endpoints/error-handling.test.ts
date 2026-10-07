@@ -32,8 +32,8 @@ describe('Error Handling', () => {
       const response = await request(app).get(`/v2.0/WindowsEndpoints/${nonExistentId}`);
 
       expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toMatch(/not found/i);
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(response.headers['x-bconnect-mock-reason']).toMatch(/not found/i);
     });
 
     it('should return 404 when PUT /v2.0/WindowsEndpoints/:id with non-existent GUID', async () => {
@@ -44,8 +44,8 @@ describe('Error Handling', () => {
         .send({ displayName: 'Updated Name' });
 
       expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toMatch(/not found/i);
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(response.headers['x-bconnect-mock-reason']).toMatch(/not found/i);
     });
 
     it('should return 404 when PATCH /v2.0/WindowsEndpoints/:id with non-existent GUID', async () => {
@@ -56,8 +56,8 @@ describe('Error Handling', () => {
         .send({ displayName: 'Patched Name' });
 
       expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toMatch(/not found/i);
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(response.headers['x-bconnect-mock-reason']).toMatch(/not found/i);
     });
 
     it('should return 404 when DELETE /v2.0/WindowsEndpoints/:id with non-existent GUID', async () => {
@@ -66,8 +66,8 @@ describe('Error Handling', () => {
       const response = await request(app).delete(`/v2.0/WindowsEndpoints/${nonExistentId}`);
 
       expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toMatch(/not found/i);
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(response.headers['x-bconnect-mock-reason']).toMatch(/not found/i);
     });
 
     it('should return 404 when accessing deleted endpoint', async () => {
@@ -86,8 +86,8 @@ describe('Error Handling', () => {
       // Try to GET deleted endpoint
       const getResponse = await request(app).get(`/v2.0/WindowsEndpoints/${createdId}`);
       expect(getResponse.status).toBe(404);
-      expect(getResponse.body).toHaveProperty('error');
-      expect(getResponse.body.error).toMatch(/not found/i);
+      expect(getResponse.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(getResponse.headers['x-bconnect-mock-reason']).toMatch(/not found/i);
     });
   });
 
@@ -98,8 +98,8 @@ describe('Error Handling', () => {
       const response = await request(app).get(`/v2.0/WindowsEndpoints/${invalidId}`);
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toMatch(/invalid.*guid/i);
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(response.headers['x-bconnect-mock-reason']).toMatch(/invalid.*guid/i);
     });
 
     it('should return 400 when PUT /v2.0/WindowsEndpoints/:id with invalid GUID format', async () => {
@@ -110,8 +110,8 @@ describe('Error Handling', () => {
         .send({ displayName: 'Updated Name' });
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toMatch(/invalid.*guid/i);
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(response.headers['x-bconnect-mock-reason']).toMatch(/invalid.*guid/i);
     });
 
     it('should return 400 when PATCH /v2.0/WindowsEndpoints/:id with invalid GUID format', async () => {
@@ -122,8 +122,8 @@ describe('Error Handling', () => {
         .send({ displayName: 'Patched Name' });
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toMatch(/invalid.*guid/i);
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(response.headers['x-bconnect-mock-reason']).toMatch(/invalid.*guid/i);
     });
 
     it('should return 400 when DELETE /v2.0/WindowsEndpoints/:id with invalid GUID format', async () => {
@@ -132,8 +132,8 @@ describe('Error Handling', () => {
       const response = await request(app).delete(`/v2.0/WindowsEndpoints/${invalidId}`);
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toMatch(/invalid.*guid/i);
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(response.headers['x-bconnect-mock-reason']).toMatch(/invalid.*guid/i);
     });
 
     it('should return 400 when POST /v2.0/WindowsEndpoints with missing required field (displayName)', async () => {
@@ -142,8 +142,8 @@ describe('Error Handling', () => {
         .send({ type: 'Windows' }); // Missing displayName
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toMatch(/required.*displayname/i);
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
+      expect(response.headers['x-bconnect-mock-reason']).toMatch(/required.*displayname/i);
     });
 
     it('should return 400 when POST /v2.0/WindowsEndpoints with empty displayName', async () => {
@@ -152,7 +152,7 @@ describe('Error Handling', () => {
         .send({ displayName: '' });
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error');
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
     });
 
     it('should return 400 when POST /v2.0/WindowsEndpoints with null displayName', async () => {
@@ -161,7 +161,7 @@ describe('Error Handling', () => {
         .send({ displayName: null });
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('error');
+      expect(response.headers).toHaveProperty('x-bconnect-mock-reason');
     });
   });
 

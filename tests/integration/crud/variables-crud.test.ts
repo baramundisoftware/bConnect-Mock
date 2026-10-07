@@ -54,7 +54,7 @@ describe('Variables CRUD (standard-readwrite)', () => {
         .send({ type: 'String', values: ['A', 'B'] });
 
       expect(res.status).toBe(400);
-      expect(res.body).toHaveProperty('error');
+      expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
     });
   });
 
