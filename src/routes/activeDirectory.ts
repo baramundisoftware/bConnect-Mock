@@ -19,7 +19,7 @@ export function registerActiveDirectoryRoutes(app: Express, profile: IProfile): 
       const orderBy = req.query.OrderBy as string | undefined;
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'adGroups', { searchQuery, orderBy, page, pageSize, searchFields: ['name', 'distinguishedName', 'groupType'] });
+      const resolved = resolveEntityData(profile, 'adGroups', { searchQuery, orderBy, page, pageSize, searchFields: ['name', 'distinguishedName', 'groupType'] }, app.locals.stateManager);
       const data = resolved?.data ?? [];
       const totalItems = resolved?.totalItems ?? 0;
       const eff = pageSize;

@@ -67,12 +67,18 @@ describe('UnmanagedEndpoints (26R1)', () => {
     expect(res.status).toBe(404);
   });
 
-  it('DELETE /v2.0/UnmanagedEndpoints/:id returns 403 in 26R1 readwrite (mock does not delete)', async () => {
+  it('DELETE /v2.0/UnmanagedEndpoints/:id deletes in 26R1 readwrite', async () => {
     const app26r1rw = createApp(ProfileMode.STANDARD_READWRITE, BmsVersion.BMS_26R1);
     const listRes = await request(app26r1rw).get('/v2.0/UnmanagedEndpoints');
     const id = listRes.body.data[0].id;
-    const res = await request(app26r1rw).delete(`/v2.0/UnmanagedEndpoints/${id}`);
-    expect(res.status).toBe(403);
+    await request(app26r1rw).delete(`/v2.0/UnmanagedEndpoints/${id}`).expect(204);
+    await request(app26r1rw).get(`/v2.0/UnmanagedEndpoints/${id}`).expect(404);
+    await request(app26r1rw).delete(`/v2.0/UnmanagedEndpoints/${id}`).expect(404);
+  });
+
+  it('DELETE /v2.0/UnmanagedEndpoints/:id answers 403 in 26R1 readonly', async () => {
+    const listRes = await request(app26r1).get('/v2.0/UnmanagedEndpoints');
+    await request(app26r1).delete(`/v2.0/UnmanagedEndpoints/${listRes.body.data[0].id as string}`).expect(403);
   });
 });
 

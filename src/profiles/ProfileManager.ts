@@ -415,49 +415,11 @@ class MinimalReadwriteProfile extends BaseProfile {
     ],
   };
 
+  private _readonly?: IProfile;
+
+  /** The same data as minimal-readonly (both versions); writes go to the StateManager */
   getFixture(entityType: string): unknown[] {
-    // Delegate to minimal-readonly fixtures — readwrite uses same base data
-    if (this._fixtureCache.has(entityType)) {
-      return this._fixtureCache.get(entityType) ?? [];
-    }
-
-    const root = getFixturesRoot();
-    const minDir = path.join(root, 'minimal-readonly');
-
-    const fixtureMap: Record<string, string> = {
-      software: 'software.json',
-      windowsUpdates: 'windowsUpdates.json',
-      iosEndpoints: 'iosEndpoints.json',
-      networkEndpoints: 'networkEndpoints.json',
-      industrialEndpoints: 'industrialEndpoints.json',
-      logicalGroups: 'logicalGroups.json',
-      jobs: 'jobs.json',
-      jobInstances: 'jobInstances.json',
-      staticGroups: 'staticGroups.json',
-      dynamicGroups: 'dynamicGroups.json',
-      adUsers: 'adUsers.json',
-      orgUnits: 'orgUnits.json',
-      bitLockerSecrets: 'bitLockerSecrets.json',
-      localAdminAccounts: 'localAdminAccounts.json',
-      microsoftDefenderThreats: 'microsoftDefenderThreats.json',
-      microsoftDefenderStates: 'microsoftDefenderStates.json',
-      gateway: 'gateway.json',
-      managementServer: 'managementServer.json',
-      cloudConnectors: 'cloudConnectors.json',
-      pxeRelays: 'pxeRelays.json',
-      vpnAppliance: 'vpnAppliance.json',
-      dips: 'dips.json',
-    };
-
-    let result: unknown[] = [];
-    if (entityType === 'windowsEndpoints') {
-      try { result = loadFixtureFile(minDir, 'windowsEndpoints.json').slice(0, 2); } catch { result = []; }
-    } else if (fixtureMap[entityType]) {
-      try { result = loadFixtureFile(minDir, fixtureMap[entityType] as string); } catch { result = []; }
-    }
-
-    this._fixtureCache.set(entityType, result);
-    return result;
+    return (this._readonly ??= new MinimalReadonlyProfile(this.bmsVersion)).getFixture(entityType) as unknown[];
   }
 
   override reset(): void {
@@ -687,6 +649,48 @@ class StandardReadwriteProfile extends BaseProfile {
 }
 
 /**
+ * The generator for an entity type on both large-scale profiles (readonly and readwrite serve the
+ * same data; before, largescale-readwrite lacked the iOS, network, industrial endpoint and job
+ * instance generators).
+ */
+function largeScaleGenerator(entityType: string, version: BmsVersion): import('../generators/IDataGenerator').IDataGenerator | null {
+  // 25R2 entities — available in all BMS versions
+  switch (entityType) {
+    case 'windowsEndpoints':     return new WindowsEndpointGenerator();
+    case 'androidEndpoints':     return new AndroidEndpointGenerator();
+    case 'linuxEndpoints':       return new LinuxEndpointGenerator();
+    case 'macEndpoints':         return new MacEndpointGenerator();
+    case 'iosEndpoints':         return new IosEndpointGenerator();
+    case 'networkEndpoints':     return new NetworkEndpointGenerator();
+    case 'industrialEndpoints':  return new IndustrialEndpointGenerator();
+    case 'software':             return new SoftwareGenerator();
+    case 'windowsUpdates':       return new WindowsUpdatesGenerator();
+    case 'jobInstances':         return new JobInstanceGenerator();
+    case 'jobs':                  return new JobDefinitionGenerator();
+    case 'assets':               return new AssetGenerator();
+    case 'adUsers':              return new ADUserGenerator();
+    case 'adGroups':             return new ADGroupGenerator();
+    case 'logicalGroups':        return new LogicalGroupGenerator();
+  }
+
+  // 26R1-only entities — null in 25R2 mode (caller treats as HTTP 404)
+  if (version === BmsVersion.BMS_26R1) {
+    switch (entityType) {
+      case 'vulnerabilities':        return new VulnerabilitiesGenerator();
+      case 'rules':                  return new RulesGenerator();
+      case 'ruleViolations':         return new RuleViolationsGenerator();
+      case 'universalDynamicGroups': return new UniversalDynamicGroupsGenerator();
+      case 'bundles':                return new BundlesGenerator();
+      case 'bundleApplications':     return new BundleApplicationsGenerator();
+      case 'downloadJobs':           return new DownloadJobsGenerator();
+      case 'apiKeys':                return new ApiKeysGenerator();
+    }
+  }
+
+  return null;
+}
+
+/**
  * Data for a large-scale profile's getFixture(): the generated list for entity types with a
  * generator (built once on first use, then cached; all generators together take ~0.5 s and
  * ~100 MB), and the standard-readonly fixtures for everything else. Before, getFixture()
@@ -793,41 +797,9 @@ class LargeScaleReadonlyProfile extends BaseProfile {
   }
 
   getGenerator(entityType: string): import('../generators/IDataGenerator').IDataGenerator | null {
-    // 25R2 entities — available in all BMS versions
-    switch (entityType) {
-      case 'windowsEndpoints':     return new WindowsEndpointGenerator();
-      case 'androidEndpoints':     return new AndroidEndpointGenerator();
-      case 'linuxEndpoints':       return new LinuxEndpointGenerator();
-      case 'macEndpoints':         return new MacEndpointGenerator();
-      case 'iosEndpoints':         return new IosEndpointGenerator();
-      case 'networkEndpoints':     return new NetworkEndpointGenerator();
-      case 'industrialEndpoints':  return new IndustrialEndpointGenerator();
-      case 'software':             return new SoftwareGenerator();
-      case 'windowsUpdates':       return new WindowsUpdatesGenerator();
-      case 'jobInstances':         return new JobInstanceGenerator();
-      case 'jobs':                  return new JobDefinitionGenerator();
-      case 'assets':               return new AssetGenerator();
-      case 'adUsers':              return new ADUserGenerator();
-      case 'adGroups':             return new ADGroupGenerator();
-      case 'logicalGroups':        return new LogicalGroupGenerator();
-    }
-
-    // 26R1-only entities — null in 25R2 mode (caller treats as HTTP 404)
-    if (this.bmsVersion === BmsVersion.BMS_26R1) {
-      switch (entityType) {
-        case 'vulnerabilities':        return new VulnerabilitiesGenerator();
-        case 'rules':                  return new RulesGenerator();
-        case 'ruleViolations':         return new RuleViolationsGenerator();
-        case 'universalDynamicGroups': return new UniversalDynamicGroupsGenerator();
-        case 'bundles':                return new BundlesGenerator();
-        case 'bundleApplications':     return new BundleApplicationsGenerator();
-        case 'downloadJobs':           return new DownloadJobsGenerator();
-        case 'apiKeys':                return new ApiKeysGenerator();
-      }
-    }
-
-    return null;
+    return largeScaleGenerator(entityType, this.bmsVersion);
   }
+
 }
 
 /**
@@ -875,37 +847,9 @@ class LargeScaleReadwriteProfile extends BaseProfile {
   }
 
   getGenerator(entityType: string): import('../generators/IDataGenerator').IDataGenerator | null {
-    // 25R2 entities — available in all BMS versions
-    switch (entityType) {
-      case 'windowsEndpoints': return new WindowsEndpointGenerator();
-      case 'androidEndpoints': return new AndroidEndpointGenerator();
-      case 'linuxEndpoints':   return new LinuxEndpointGenerator();
-      case 'macEndpoints':     return new MacEndpointGenerator();
-      case 'software':         return new SoftwareGenerator();
-      case 'windowsUpdates':   return new WindowsUpdatesGenerator();
-      case 'jobs':             return new JobDefinitionGenerator();
-      case 'assets':           return new AssetGenerator();
-      case 'adUsers':          return new ADUserGenerator();
-      case 'adGroups':         return new ADGroupGenerator();
-      case 'logicalGroups':    return new LogicalGroupGenerator();
-    }
-
-    // 26R1-only entities — null in 25R2 mode (caller treats as HTTP 404)
-    if (this.bmsVersion === BmsVersion.BMS_26R1) {
-      switch (entityType) {
-        case 'vulnerabilities':        return new VulnerabilitiesGenerator();
-        case 'rules':                  return new RulesGenerator();
-        case 'ruleViolations':         return new RuleViolationsGenerator();
-        case 'universalDynamicGroups': return new UniversalDynamicGroupsGenerator();
-        case 'bundles':                return new BundlesGenerator();
-        case 'bundleApplications':     return new BundleApplicationsGenerator();
-        case 'downloadJobs':           return new DownloadJobsGenerator();
-        case 'apiKeys':                return new ApiKeysGenerator();
-      }
-    }
-
-    return null;
+    return largeScaleGenerator(entityType, this.bmsVersion);
   }
+
 
   override reset(): void {
     console.warn('WARNING: Resetting largescale-readwrite profile');

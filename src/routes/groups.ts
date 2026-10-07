@@ -5,6 +5,7 @@
 
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
+import { currentRecords } from './factories/currentRecords';
 import type { StateManager } from '../state/StateManager';
 import { BmsVersion } from '../profiles/ProfileManager';
 import { validateWriteBody, validateGenericUpdate } from '../middleware/validateBody';
@@ -34,7 +35,7 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
         return;
       }
       const pageSize = parsePageSize(req.query.PageSize);
-      const resolved = resolveEntityData(profile, 'logicalGroups', { searchQuery, orderBy, page, pageSize, searchFields: LOGICAL_GROUP_SEARCH_FIELDS });
+      const resolved = resolveEntityData(profile, 'logicalGroups', { searchQuery, orderBy, page, pageSize, searchFields: LOGICAL_GROUP_SEARCH_FIELDS }, app.locals.stateManager);
       if (!resolved) { res.status(200).json({ data: [], pageSize: 0, page: 0, totalItems: 0 }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -93,8 +94,12 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
       try {
         const id = req.params.id as string;
         if (!id || Array.isArray(id)) { res.status(400).json({ error: 'Invalid ID' }); return; }
-        // UnmanagedEndpoints are read-only fixture data; DELETE returns 501 in read-only profiles
-        res.status(403).json({ error: 'UnmanagedEndpoints delete not implemented in mock' });
+        const sm = app.locals.stateManager as StateManager | undefined;
+        if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
+        if (!sm.addStore('unmanagedEndpoints', profile.getFixture('unmanagedEndpoints') as { id: string }[]).delete(id)) {
+          res.status(404).json({ error: 'Unmanaged endpoint not found' }); return;
+        }
+        res.status(204).send();
       } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
     });
   }
@@ -218,7 +223,7 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
         const orderBy = req.query.OrderBy as string | undefined;
         const page = parsePage(req.query.Page);
         const pageSize = parsePageSize(req.query.PageSize);
-        const resolved = resolveEntityData(profile, 'unmanagedEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'primaryIP', 'detectedOS'] });
+        const resolved = resolveEntityData(profile, 'unmanagedEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'primaryIP', 'detectedOS'] }, app.locals.stateManager);
         if (!resolved) { res.status(200).json({ data: [], pageSize: 0, page: 0, totalItems: 0 }); return; }
         const eff = pageSize;
         res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -230,8 +235,7 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
       try {
         const id = req.params.id as string;
         if (!id || Array.isArray(id)) { res.status(400).json({ error: 'Invalid ID' }); return; }
-        const data = profile.getFixture('unmanagedEndpoints') as Record<string, unknown>[];
-        const item = data.find((e) => e['id'] === id || e['guid'] === id);
+        const item = (currentRecords(app, profile, 'unmanagedEndpoints') ?? []).find((e) => e['id'] === id || e['guid'] === id);
         if (!item) { res.status(404).json({ error: 'Unmanaged endpoint not found' }); return; }
         res.status(200).json(item);
       } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
@@ -312,7 +316,7 @@ export function registerUniversalDynamicGroupRoutes(app: Express, profile: IProf
       const orderBy = req.query.OrderBy as string | undefined;
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'universalDynamicGroups', { searchQuery, orderBy, page, pageSize, searchFields: ['name', 'folderName', 'comment'] });
+      const resolved = resolveEntityData(profile, 'universalDynamicGroups', { searchQuery, orderBy, page, pageSize, searchFields: ['name', 'folderName', 'comment'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'UniversalDynamicGroups not available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });

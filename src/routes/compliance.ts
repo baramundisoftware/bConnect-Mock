@@ -16,7 +16,7 @@ export function registerComplianceRoutes(app: Express, profile: IProfile): void 
       const orderBy = req.query.OrderBy as string | undefined;
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'rules', { searchQuery, orderBy, page, pageSize, searchFields: ['ruleName', 'description'] });
+      const resolved = resolveEntityData(profile, 'rules', { searchQuery, orderBy, page, pageSize, searchFields: ['ruleName', 'description'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'Mobile device rules not available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -40,7 +40,7 @@ export function registerComplianceRoutes(app: Express, profile: IProfile): void 
       const orderBy = req.query.OrderBy as string | undefined;
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'rules', { searchQuery, orderBy, page, pageSize, searchFields: ['ruleName', 'type', 'severity'] });
+      const resolved = resolveEntityData(profile, 'rules', { searchQuery, orderBy, page, pageSize, searchFields: ['ruleName', 'type', 'severity'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'Rules not available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -64,7 +64,7 @@ export function registerComplianceRoutes(app: Express, profile: IProfile): void 
       const orderBy = req.query.OrderBy as string | undefined;
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'vulnerabilities', { searchQuery, orderBy, page, pageSize, searchFields: ['cveId', 'severity', 'description'] });
+      const resolved = resolveEntityData(profile, 'vulnerabilities', { searchQuery, orderBy, page, pageSize, searchFields: ['cveId', 'severity', 'description'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'Vulnerabilities not available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -131,7 +131,7 @@ export function registerComplianceRoutes(app: Express, profile: IProfile): void 
       const orderBy = req.query.OrderBy as string | undefined;
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'ruleViolations', { searchQuery, orderBy, page, pageSize, searchFields: ['ruleName', 'endpointName'] });
+      const resolved = resolveEntityData(profile, 'ruleViolations', { searchQuery, orderBy, page, pageSize, searchFields: ['ruleName', 'endpointName'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'Rule violations not available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });

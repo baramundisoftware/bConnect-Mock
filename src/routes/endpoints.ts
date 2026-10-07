@@ -113,7 +113,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
         return;
       }
       const pageSize = parsePageSize(req.query.PageSize);
-      const resolved = resolveEntityData(profile, 'windowsEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'operatingSystem'] });
+      const resolved = resolveEntityData(profile, 'windowsEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'operatingSystem'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'No Windows endpoints available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -213,7 +213,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
       } else {
         const entityTypes = ['windowsEndpoints', 'androidEndpoints', 'linuxEndpoints', 'macEndpoints', 'iosEndpoints', 'networkEndpoints', 'industrialEndpoints'] as const;
         combined = entityTypes.flatMap((type) => {
-          const resolved = resolveEntityData(profile, type, { page: 0, pageSize: 0 });
+          const resolved = resolveEntityData(profile, type, { page: 0, pageSize: 0 }, app.locals.stateManager);
           return resolved ? (resolved.data as Record<string, unknown>[]) : [];
         });
       }
@@ -242,7 +242,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
         return;
       }
       const pageSize = parsePageSize(req.query.PageSize);
-      const resolved = resolveEntityData(profile, 'androidEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'operatingSystem'] });
+      const resolved = resolveEntityData(profile, 'androidEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'operatingSystem'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'No Android endpoints available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -260,7 +260,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
         if (!item) { res.status(404).json({ error: 'Android endpoint not found' }); return; }
         res.status(200).json(item); return;
       }
-      const resolved = resolveEntityData(profile, 'androidEndpoints', { page: 0, pageSize: 0 });
+      const resolved = resolveEntityData(profile, 'androidEndpoints', { page: 0, pageSize: 0 }, app.locals.stateManager);
       const data = resolved ? resolved.data as Record<string, unknown>[] : [];
       const item = data.find((e) => e['id'] === id || e['guid'] === id);
       if (!item) { res.status(404).json({ error: 'Android endpoint not found' }); return; }
@@ -356,7 +356,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
       const orderBy = req.query.OrderBy as string | undefined;
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'iosEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'operatingSystem', 'primaryUser'] });
+      const resolved = resolveEntityData(profile, 'iosEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'operatingSystem', 'primaryUser'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'No iOS endpoints available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -374,7 +374,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
         if (!item) { res.status(404).json({ error: 'iOS endpoint not found' }); return; }
         res.status(200).json(item); return;
       }
-      const resolved = resolveEntityData(profile, 'iosEndpoints', { page: 0, pageSize: 0 });
+      const resolved = resolveEntityData(profile, 'iosEndpoints', { page: 0, pageSize: 0 }, app.locals.stateManager);
       const data = resolved ? resolved.data as Record<string, unknown>[] : [];
       const item = data.find((e) => e['id'] === id || e['guid'] === id);
       if (!item) { res.status(404).json({ error: 'iOS endpoint not found' }); return; }
@@ -400,7 +400,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
       const orderBy = req.query.OrderBy as string | undefined;
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'networkEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'deviceType', 'primaryIP'] });
+      const resolved = resolveEntityData(profile, 'networkEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'deviceType', 'primaryIP'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'No Network endpoints available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -412,7 +412,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
     try {
       const id = req.params.id as string;
       if (!id || Array.isArray(id)) { res.status(400).json({ error: 'Invalid ID' }); return; }
-      const resolved = resolveEntityData(profile, 'networkEndpoints', { page: 0, pageSize: 0 });
+      const resolved = resolveEntityData(profile, 'networkEndpoints', { page: 0, pageSize: 0 }, app.locals.stateManager);
       const data = resolved ? resolved.data as Record<string, unknown>[] : [];
       const item = data.find((e) => e['id'] === id || e['guid'] === id);
       if (!item) { res.status(404).json({ error: 'Network endpoint not found' }); return; }
@@ -439,7 +439,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
       const orderBy = req.query.OrderBy as string | undefined;
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'industrialEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'deviceType', 'zone'] });
+      const resolved = resolveEntityData(profile, 'industrialEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'deviceType', 'zone'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'No Industrial endpoints available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -451,7 +451,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
     try {
       const id = req.params.id as string;
       if (!id || Array.isArray(id)) { res.status(400).json({ error: 'Invalid ID' }); return; }
-      const resolved = resolveEntityData(profile, 'industrialEndpoints', { page: 0, pageSize: 0 });
+      const resolved = resolveEntityData(profile, 'industrialEndpoints', { page: 0, pageSize: 0 }, app.locals.stateManager);
       const data = resolved ? resolved.data as Record<string, unknown>[] : [];
       const item = data.find((e) => e['id'] === id || e['guid'] === id);
       if (!item) { res.status(404).json({ error: 'Industrial endpoint not found' }); return; }
