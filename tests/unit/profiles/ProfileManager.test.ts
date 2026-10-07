@@ -308,11 +308,25 @@ describe('ProfileManager', () => {
       expect(result).toHaveLength(0);
     });
 
-    it('should return empty array for any entity type in largescale-readonly (generator path)', () => {
+    it('largescale-readonly: getFixture returns the generated list for a generated entity type', () => {
       const profile = ProfileManager.loadProfile(ProfileMode.LARGESCALE_READONLY);
-      const result = profile.getFixture('windowsEndpoints');
-      expect(Array.isArray(result)).toBe(true);
-      expect(result).toHaveLength(0);
+      const result = profile.getFixture('jobs') as Array<{ id: string }>;
+      const generator = profile.getGenerator?.('jobs');
+      expect(result).toHaveLength(generator?.totalItems ?? -1);
+      expect(result[0]?.id).toBe((generator?.generateItem(0) as { id: string }).id);
+      expect(profile.getFixture('jobs')).toBe(result); // built once, then cached
+    });
+
+    it('largescale-readonly: getFixture falls back to standard fixtures without a generator', () => {
+      const large = ProfileManager.loadProfile(ProfileMode.LARGESCALE_READONLY);
+      const standard = ProfileManager.loadProfile(ProfileMode.STANDARD_READONLY);
+      expect(large.getFixture('securityGroups')).toEqual(standard.getFixture('securityGroups'));
+      expect(large.getFixture('securityGroups').length).toBeGreaterThan(0);
+    });
+
+    it('largescale-readwrite: getFixture serves generated data too', () => {
+      const profile = ProfileManager.loadProfile(ProfileMode.LARGESCALE_READWRITE);
+      expect(profile.getFixture('logicalGroups').length).toBeGreaterThan(0);
     });
   });
 
