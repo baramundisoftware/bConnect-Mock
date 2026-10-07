@@ -6,7 +6,7 @@
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
 import type { StateManager } from '../state/StateManager';
-import { GUID_REGEX, parsePage, applyMultiKeywordSearch } from './utils';
+import { GUID_REGEX, parsePage, applyMultiKeywordSearch, parsePageSize } from './utils';
 import { registerGetById } from './factories/getById';
 import { registerCrudRoutes } from './factories/crudRoutes';
 import { validateGenericUpdate, validateWriteBody } from '../middleware/validateBody';
@@ -23,7 +23,7 @@ export function registerCatalogRoutes(app: Express, profile: IProfile): void {
         : (profile.getFixture('kioskReleases') as Record<string, unknown>[]);
       const searchQuery = req.query.SearchQuery as string | undefined;
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'version', 'status', 'description']); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
@@ -91,7 +91,7 @@ export function registerCatalogRoutes(app: Express, profile: IProfile): void {
         : (profile.getFixture('assetTypes') as Record<string, unknown>[]);
       const searchQuery = req.query.SearchQuery as string | undefined;
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'description']); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
@@ -106,7 +106,7 @@ export function registerCatalogRoutes(app: Express, profile: IProfile): void {
         : (profile.getFixture('assetTypeFolders') as Record<string, unknown>[]);
       const searchQuery = req.query.SearchQuery as string | undefined;
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'comment']); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }

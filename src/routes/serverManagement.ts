@@ -7,7 +7,7 @@
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
 import { BmsVersion } from '../profiles/ProfileManager';
-import { resolveEntityData, applyMultiKeywordSearch, parsePage } from './utils';
+import { resolveEntityData, applyMultiKeywordSearch, parsePage, parsePageSize } from './utils';
 import { registerSingleton } from './factories/singleton';
 
 /**
@@ -40,7 +40,7 @@ export function registerServerManagementRoutes(app: Express, profile: IProfile):
       let data = profile.getFixture('microservices') as Record<string, unknown>[];
       const searchQuery = req.query.SearchQuery as string | undefined;
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'state', 'message']); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const startIndex = page * pageSize;
       res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
@@ -113,7 +113,7 @@ export function registerServerManagementRoutes(app: Express, profile: IProfile):
       let data = profile.getFixture('cloudConnectors') as Record<string, unknown>[];
       const searchQuery = req.query.SearchQuery as string | undefined;
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'state', 'region']); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const startIndex = page * pageSize;
       res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
@@ -125,7 +125,7 @@ export function registerServerManagementRoutes(app: Express, profile: IProfile):
       let data = profile.getFixture('pxeRelays') as Record<string, unknown>[];
       const searchQuery = req.query.SearchQuery as string | undefined;
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'state', 'ipAddress']); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const startIndex = page * pageSize;
       res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
@@ -163,11 +163,11 @@ export function registerServerManagement26R1Routes(app: Express, profile: IProfi
   app.get('/v2.0/ApiKeys', (req: Request, res: Response) => {
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const resolved = resolveEntityData(profile, 'apiKeys', { searchQuery, page, pageSize, searchFields: ['name', 'comment'] });
       if (!resolved) { res.status(404).json({ error: 'ApiKeys not available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
@@ -176,11 +176,11 @@ export function registerServerManagement26R1Routes(app: Express, profile: IProfi
   app.get('/v2.0/DownloadJobs', (req: Request, res: Response) => {
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const resolved = resolveEntityData(profile, 'downloadJobs', { searchQuery, page, pageSize, searchFields: ['name', 'stateValue', 'stateMessage'] });
       if (!resolved) { res.status(404).json({ error: 'DownloadJobs not available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });

@@ -7,7 +7,7 @@ import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
 import type { StateManager } from '../state/StateManager';
 import { BmsVersion } from '../profiles/ProfileManager';
-import { resolveEntityData, applyMultiKeywordSearch, applyMultiFieldSort, parsePage, GUID_REGEX } from './utils';
+import { resolveEntityData, applyMultiKeywordSearch, applyMultiFieldSort, parsePage, GUID_REGEX, parsePageSize } from './utils';
 import { validateGenericUpdate, validateWriteBody } from '../middleware/validateBody';
 
 export function registerMiscRoutes(app: Express, profile: IProfile): void {
@@ -20,7 +20,7 @@ export function registerMiscRoutes(app: Express, profile: IProfile): void {
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'comment']); }
       const orderBy = req.query.OrderBy as string | undefined;
       if (orderBy?.trim()) { data = applyMultiFieldSort(data, orderBy); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const startIndex = page * pageSize;
       res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
@@ -45,10 +45,10 @@ export function registerMiscRoutes(app: Express, profile: IProfile): void {
     app.get('/v2.0/EntraIdData', (req: Request, res: Response) => {
       try {
         const page = parsePage(req.query.Page);
-        const pageSize = parseInt(req.query.PageSize as string) || 0;
+        const pageSize = parsePageSize(req.query.PageSize);
         const resolved = resolveEntityData(profile, 'entraIdData', { page, pageSize, searchFields: [] });
         if (!resolved) { res.status(200).json({ data: [], pageSize: 0, page: 0, totalItems: 0 }); return; }
-        const eff = pageSize > 0 ? pageSize : resolved.data.length;
+        const eff = pageSize;
         res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
       } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
     });
@@ -93,7 +93,7 @@ export function registerFolderRoutes(app: Express, profile: IProfile, config: Fo
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'comment']); }
       const orderBy = req.query.OrderBy as string | undefined;
       if (orderBy?.trim()) { data = applyMultiFieldSort(data, orderBy); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }

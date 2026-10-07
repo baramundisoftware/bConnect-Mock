@@ -160,18 +160,20 @@ describe('A04 — Insecure Design', () => {
       expect([200]).toContain(res.status);
     });
 
-    it('PageSize=-1 → 400', async () => {
+    it('PageSize=-1 → default page size 20, as on a live bMS', async () => {
       const res = await request(rw)
         .get('/v2.0/WindowsEndpoints')
         .query({ PageSize: -1 });
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(200);
+      expect(res.body.pageSize).toBe(20);
     });
 
-    it('PageSize=10001 → 400', async () => {
+    it('PageSize=10001 → capped at 1000, as on a live bMS', async () => {
       const res = await request(rw)
         .get('/v2.0/WindowsEndpoints')
         .query({ PageSize: 10001 });
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(200);
+      expect(res.body.pageSize).toBe(1000);
     });
 
     it('Page=-1 → 400', async () => {
@@ -242,7 +244,7 @@ describe('A05 — Security Misconfiguration', () => {
     it('400 response has no stack trace', async () => {
       const res = await request(rw)
         .get('/v2.0/WindowsEndpoints')
-        .query({ PageSize: -1 });
+        .query({ Page: -1 });
       expect(res.status).toBe(400);
       const body = JSON.stringify(res.body);
       expect(body).not.toMatch(/at\s+\w+\s+\(/);

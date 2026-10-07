@@ -10,7 +10,7 @@
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
 import type { StateManager } from '../state/StateManager';
-import { GUID_REGEX, applyMultiKeywordSearch, applyMultiFieldSort, parsePage } from './utils';
+import { GUID_REGEX, applyMultiKeywordSearch, applyMultiFieldSort, parsePage, parsePageSize } from './utils';
 import { validateGenericUpdate } from '../middleware/validateBody';
 import { registerFolderRoutes } from './misc';
 
@@ -109,7 +109,7 @@ export function registerOperatingSystemsRoutes(app: Express, profile: IProfile):
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['endpointName']); }
       const orderBy = req.query.OrderBy as string | undefined;
       if (orderBy?.trim()) { data = applyMultiFieldSort(data, orderBy); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }

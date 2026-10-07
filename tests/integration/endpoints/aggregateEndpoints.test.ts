@@ -27,7 +27,7 @@ describe('GET /v2.0/Endpoints (aggregate)', () => {
   });
 
   it('contains endpoints from multiple types', async () => {
-    const res = await request(app).get('/v2.0/Endpoints');
+    const res = await request(app).get('/v2.0/Endpoints?PageSize=1000');
     const types = new Set(res.body.data.map((e: { type?: string }) => e.type));
     // At least Windows and iOS endpoint types should be present
     expect(types.size).toBeGreaterThanOrEqual(2);

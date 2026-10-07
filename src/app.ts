@@ -15,7 +15,7 @@ import { runAndLogFixtureIntegrity } from './validateFixtureIntegrity';
 import { apiKeyGuard } from './middleware/apiKeyGuard';
 import { registerAllRoutes } from './routes/index';
 import { createModuleRoutingGuard, MOCK_REASON_HEADER } from './middleware/moduleRouting';
-import { pagedListEnvelope } from './middleware/pagedList';
+import { pagedListEnvelope, pageSizeDefaults } from './middleware/pagedList';
 
 /**
  * Windows endpoint interface (used for StateManager initialization)
@@ -233,21 +233,16 @@ export function createApp(
   // Store profile in app.locals for access in routes
   app.locals.profile = profile;
 
+  // PageSize as a live bMS uses it: 20 when missing, 0 or invalid, at most 1000, no error
+  app.use(pageSizeDefaults);
+
   // Input validation middleware (P6.11 / P10.10 / P8.8)
-  const MAX_PAGE_SIZE = 10_000;
   const MAX_SEARCH_QUERY_LENGTH = 500;
   const MAX_SEARCH_KEYWORDS = 10;
   const MAX_ORDER_BY_LENGTH = 200;
 
   app.use((req: Request, res: Response, next) => {
-    const { PageSize, Page, SearchQuery, OrderBy } = req.query;
-    if (PageSize !== undefined) {
-      const ps = parseInt(PageSize as string, 10);
-      if (isNaN(ps) || ps < 0 || ps > MAX_PAGE_SIZE) {
-        res.status(400).json({ error: `PageSize must be between 0 and ${MAX_PAGE_SIZE}` });
-        return;
-      }
-    }
+    const { Page, SearchQuery, OrderBy } = req.query;
     if (Page !== undefined) {
       const pg = parseInt(Page as string, 10);
       if (isNaN(pg) || pg < 0) {

@@ -25,10 +25,13 @@ export default defineConfig({
       ],
       // Coverage thresholds — ratchet at current measured levels
       // Lowered lines from 92 → 91 after cleanup reduced covered line count slightly
+      // Lowered branches from 72 → 71 when PageSize got a fixed default (20): ~150 covered
+      // fallback branches for "no PageSize" became dead code and were removed. Uncovered
+      // branches went from 592 to 591; only the denominator shrank (73.7% → 71.7%).
       thresholds: {
         lines: 91,
         functions: 97,
-        branches: 72,
+        branches: 71,
         statements: 82,
       },
       all: true,

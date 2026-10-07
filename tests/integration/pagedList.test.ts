@@ -9,7 +9,7 @@ import request from 'supertest';
 import { createApp } from '../../src/app';
 import { ProfileMode, BmsVersion } from '../../src/profiles/ProfileManager';
 import { MODULE_ROUTES } from '../../src/generated/moduleRoutes';
-import { toPagedListEnvelope } from '../../src/middleware/pagedList';
+import { toPagedListEnvelope, effectivePageSize } from '../../src/middleware/pagedList';
 import type { Express } from 'express';
 
 const ENVELOPE_KEYS = ['currentPage', 'pageSize', 'totalPages', 'totalItems', 'hasPreviousPage', 'hasNextPage', 'data'];
@@ -41,6 +41,52 @@ describe('toPagedListEnvelope', () => {
       expect(out).toEqual({ currentPage, pageSize, totalPages, totalItems, hasPreviousPage, hasNextPage, data: [] });
       expect(Object.keys(out)).toEqual(ENVELOPE_KEYS);
     });
+});
+
+describe('effectivePageSize (live bMS: default 20, at most 1000, never an error)', () => {
+  it.each([
+    [undefined, 20], ['', 20], ['0', 20], ['-1', 20], ['abc', 20], ['2.5', 20],
+    ['1', 1], ['20', 20], ['999', 999], ['1000', 1000], ['1001', 1000], ['5000', 1000],
+  ])('%j → %i', (raw, expected) => {
+    expect(effectivePageSize(raw)).toBe(expected);
+  });
+});
+
+describe('PageSize defaults over HTTP', () => {
+  let app: Express;
+  const LIST = '/bconnect/endpoints/v2.0/Endpoints'; // 31 endpoints in standard-readonly 26R1
+
+  beforeAll(() => {
+    const previous = process.env.BCONNECT_MODULE_ROUTING;
+    process.env.BCONNECT_MODULE_ROUTING = 'strict';
+    try { app = createApp(ProfileMode.STANDARD_READONLY, BmsVersion.BMS_26R1); } finally {
+      if (previous === undefined) { delete process.env.BCONNECT_MODULE_ROUTING; } else { process.env.BCONNECT_MODULE_ROUTING = previous; }
+    }
+  });
+
+  it.each([
+    ['', 20], ['?PageSize=0', 20], ['?PageSize=-5', 20], ['?PageSize=x', 20],
+    ['?PageSize=5000', 1000], ['?pagesize=3', 3], ['?PAGESIZE=4', 4],
+  ])('%s → pageSize %i', async (query, pageSize) => {
+    const res = await request(app).get(`${LIST}${query}`);
+    expect(res.status).toBe(200);
+    expect(res.body.pageSize).toBe(pageSize);
+    expect(res.body.data).toHaveLength(Math.min(pageSize, res.body.totalItems));
+  });
+
+  it('pages a list longer than 20 by default', async () => {
+    const res = await request(app).get(LIST);
+    expect(res.body.totalItems).toBeGreaterThan(20);
+    expect(res.body).toMatchObject({ currentPage: 0, pageSize: 20, hasNextPage: true });
+    expect(res.body.totalPages).toBe(Math.ceil(res.body.totalItems / 20));
+  });
+
+  it('keeps the other query parameters when it adds PageSize', async () => {
+    const sorted = await request(app).get(`${LIST}?OrderBy=DisplayName%20desc&SearchQuery=NYC`);
+    const explicit = await request(app).get(`${LIST}?OrderBy=DisplayName%20desc&SearchQuery=NYC&PageSize=20`);
+    expect(sorted.body.data.length).toBeGreaterThan(0);
+    expect(sorted.body).toEqual(explicit.body);
+  });
 });
 
 describe.each([BmsVersion.BMS_25R2, BmsVersion.BMS_26R1])('Paged lists on every list route (%s)', (version) => {

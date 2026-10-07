@@ -5,6 +5,7 @@
  * All functions are pure (no side effects) and independently testable.
  */
 
+import { effectivePageSize } from '../middleware/pagedList';
 import type { IProfile } from '../profiles/ProfileManager';
 
 /** Shared GUID format regex */
@@ -88,6 +89,15 @@ export function applyMultiKeywordSearch<T extends Record<string, unknown>>(
 export interface ResolvedEntityData {
   data: Record<string, unknown>[];
   totalItems: number;
+}
+
+/**
+ * Parse the `PageSize` query parameter: the page size a live bMS uses (20 when missing,
+ * 0 or invalid; at most 1000). pageSizeDefaults has already put it into the query string,
+ * so this always yields a positive number.
+ */
+export function parsePageSize(raw: unknown): number {
+  return effectivePageSize(raw);
 }
 
 /**

@@ -11,7 +11,7 @@
 import type { Express, Request, Response, RequestHandler } from 'express';
 import type { IProfile } from '../../profiles/ProfileManager';
 import type { StateManager } from '../../state/StateManager';
-import { GUID_REGEX, resolveEntityData, parsePage } from '../utils';
+import { GUID_REGEX, resolveEntityData, parsePage, parsePageSize } from '../utils';
 
 /** Minimal write interface required by the factory */
 interface WritableEntityStore {
@@ -70,7 +70,7 @@ export function registerCrudRoutes(
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
 
       const sm = app.locals.stateManager as StateManager | undefined;
@@ -84,7 +84,7 @@ export function registerCrudRoutes(
             })
           );
         }
-        const eff = pageSize > 0 ? pageSize : data.length;
+        const eff = pageSize;
         res.status(200).json({ data: data.slice(page * eff, page * eff + eff), pageSize: eff, page, totalItems: data.length });
         return;
       }
@@ -100,7 +100,7 @@ export function registerCrudRoutes(
         res.status(404).json({ error: `${entityName} not available` });
         return;
       }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));

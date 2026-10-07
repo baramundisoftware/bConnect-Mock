@@ -8,28 +8,31 @@ import { ProfileMode, BmsVersion } from '../../src/profiles/ProfileManager';
 
 const app = createApp(ProfileMode.MINIMAL_READONLY, BmsVersion.BMS_25R2);
 
+// A live bMS never refuses a PageSize: it caps it at 1000 and uses 20 for 0 or invalid values.
+// The cap bounds the work per request, as the old 400 above 10000 did.
 describe('Security: DoS — PageSize upper bound', () => {
-  it('rejects PageSize above MAX_PAGE_SIZE with 400', async () => {
+  it('caps a huge PageSize at 1000', async () => {
     const res = await request(app).get('/v2.0/WindowsEndpoints?PageSize=100001');
-    expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/PageSize/i);
+    expect(res.status).toBe(200);
+    expect(res.body.pageSize).toBe(1000);
   });
 
-  it('rejects PageSize above 10000 (new cap) with 400', async () => {
+  it('caps PageSize 10001 at 1000', async () => {
     const res = await request(app).get('/v2.0/WindowsEndpoints?PageSize=10001');
-    expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/PageSize/i);
+    expect(res.status).toBe(200);
+    expect(res.body.pageSize).toBe(1000);
   });
 
-  it('accepts PageSize at the boundary (10000)', async () => {
-    const res = await request(app).get('/v2.0/WindowsEndpoints?PageSize=10000');
-    expect([200, 404]).toContain(res.status);
+  it('accepts PageSize at the boundary (1000)', async () => {
+    const res = await request(app).get('/v2.0/WindowsEndpoints?PageSize=1000');
+    expect(res.status).toBe(200);
+    expect(res.body.pageSize).toBe(1000);
   });
 
-  it('rejects negative PageSize with 400', async () => {
+  it('uses the default 20 for a negative PageSize', async () => {
     const res = await request(app).get('/v2.0/WindowsEndpoints?PageSize=-1');
-    expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/PageSize/i);
+    expect(res.status).toBe(200);
+    expect(res.body.pageSize).toBe(20);
   });
 
   it('rejects negative Page with 400', async () => {
@@ -62,7 +65,7 @@ describe('Security: Error disclosure', () => {
   });
 
   it('error responses have consistent shape', async () => {
-    const res = await request(app).get('/v2.0/WindowsEndpoints?PageSize=-1');
+    const res = await request(app).get('/v2.0/WindowsEndpoints?Page=-1');
     expect(res.body).toHaveProperty('error');
     expect(res.body.stack).toBeUndefined();
   });
@@ -70,7 +73,7 @@ describe('Security: Error disclosure', () => {
   it('500 responses never include raw error message field', async () => {
     // All 500 catch blocks must not expose error.message to clients
     // We verify the shape: only { error: 'Internal server error' }, no 'message' key
-    const res = await request(app).get('/v2.0/WindowsEndpoints?PageSize=-1');
+    const res = await request(app).get('/v2.0/WindowsEndpoints?Page=-1');
     expect(res.body.message).toBeUndefined();
   });
 
@@ -108,7 +111,7 @@ describe('Security: HTTP security headers', () => {
   });
 
   it('sets security headers on 400 responses', async () => {
-    const res = await request(app).get('/v2.0/WindowsEndpoints?PageSize=-1');
+    const res = await request(app).get('/v2.0/WindowsEndpoints?Page=-1');
     expect(res.headers['x-content-type-options']).toBe('nosniff');
     expect(res.headers['x-frame-options']).toBe('DENY');
   });

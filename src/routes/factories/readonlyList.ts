@@ -10,7 +10,7 @@
 
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../../profiles/ProfileManager';
-import { resolveEntityData, parsePage } from '../utils';
+import { resolveEntityData, parsePage, parsePageSize } from '../utils';
 
 export interface ReadonlyListConfig {
   /** Express route path, e.g. '/v2.0/LinuxEndpoints' */
@@ -41,7 +41,7 @@ export function registerReadonlyList(
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
 
       const resolved = resolveEntityData(profile, entityType, {
@@ -57,7 +57,7 @@ export function registerReadonlyList(
         return;
       }
 
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({
         data: resolved.data,
         pageSize: eff,

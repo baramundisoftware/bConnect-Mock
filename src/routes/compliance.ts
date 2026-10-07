@@ -5,7 +5,7 @@
 
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
-import { resolveEntityData, applyMultiKeywordSearch, parsePage } from './utils';
+import { resolveEntityData, applyMultiKeywordSearch, parsePage, parsePageSize } from './utils';
 
 export function registerComplianceRoutes(app: Express, profile: IProfile): void {
 
@@ -14,11 +14,11 @@ export function registerComplianceRoutes(app: Express, profile: IProfile): void 
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const resolved = resolveEntityData(profile, 'rules', { searchQuery, orderBy, page, pageSize, searchFields: ['ruleName', 'description'] });
       if (!resolved) { res.status(404).json({ error: 'Mobile device rules not available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
@@ -38,11 +38,11 @@ export function registerComplianceRoutes(app: Express, profile: IProfile): void 
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const resolved = resolveEntityData(profile, 'rules', { searchQuery, orderBy, page, pageSize, searchFields: ['ruleName', 'type', 'severity'] });
       if (!resolved) { res.status(404).json({ error: 'Rules not available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
@@ -62,11 +62,11 @@ export function registerComplianceRoutes(app: Express, profile: IProfile): void 
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const resolved = resolveEntityData(profile, 'vulnerabilities', { searchQuery, orderBy, page, pageSize, searchFields: ['cveId', 'severity', 'description'] });
       if (!resolved) { res.status(404).json({ error: 'Vulnerabilities not available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
@@ -87,7 +87,7 @@ export function registerComplianceRoutes(app: Express, profile: IProfile): void 
       let data = profile.getFixture('detectedVulnerabilities') as Record<string, unknown>[];
       const searchQuery = req.query.SearchQuery as string | undefined;
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['cveId', 'endpointName']); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const startIndex = page * pageSize;
       res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
@@ -102,7 +102,7 @@ export function registerComplianceRoutes(app: Express, profile: IProfile): void 
       data = data.filter((d) => d['endpointId'] === id);
       const searchQuery = req.query.SearchQuery as string | undefined;
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['cveId', 'endpointName']); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const startIndex = page * pageSize;
       res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
@@ -117,7 +117,7 @@ export function registerComplianceRoutes(app: Express, profile: IProfile): void 
       data = data.filter((d) => d['endpointId'] === id);
       const searchQuery = req.query.SearchQuery as string | undefined;
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['ruleName', 'endpointName']); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const startIndex = page * pageSize;
       res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
@@ -129,11 +129,11 @@ export function registerComplianceRoutes(app: Express, profile: IProfile): void 
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const resolved = resolveEntityData(profile, 'ruleViolations', { searchQuery, orderBy, page, pageSize, searchFields: ['ruleName', 'endpointName'] });
       if (!resolved) { res.status(404).json({ error: 'Rule violations not available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });

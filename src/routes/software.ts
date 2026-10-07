@@ -6,7 +6,7 @@
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
 import type { StateManager } from '../state/StateManager';
-import { resolveEntityData, applyMultiKeywordSearch, parsePage, GUID_REGEX } from './utils';
+import { resolveEntityData, applyMultiKeywordSearch, parsePage, GUID_REGEX, parsePageSize } from './utils';
 import { validateWriteBody, validateGenericUpdate } from '../middleware/validateBody';
 
 export function registerSoftwareRoutes(app: Express, profile: IProfile): void {
@@ -16,11 +16,11 @@ export function registerSoftwareRoutes(app: Express, profile: IProfile): void {
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const resolved = resolveEntityData(profile, 'software', { searchQuery, orderBy, page, pageSize, searchFields: ['name', 'vendor', 'category'] });
       if (!resolved) { res.status(404).json({ error: 'Software not available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
@@ -30,11 +30,11 @@ export function registerSoftwareRoutes(app: Express, profile: IProfile): void {
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const resolved = resolveEntityData(profile, 'windowsUpdates', { searchQuery, orderBy, page, pageSize, searchFields: ['kbArticle', 'title', 'severity', 'classification'] });
       if (!resolved) { res.status(404).json({ error: 'WindowsUpdates not available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
@@ -47,11 +47,11 @@ export function registerSoftware26R1Routes(app: Express, profile: IProfile): voi
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const resolved = resolveEntityData(profile, 'bundles', { searchQuery, orderBy, page, pageSize, searchFields: ['name', 'type', 'comment'] });
       if (!resolved) { res.status(404).json({ error: 'Bundles not available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
@@ -70,11 +70,11 @@ export function registerSoftware26R1Routes(app: Express, profile: IProfile): voi
   app.get('/v2.0/BundleApplications', (req: Request, res: Response) => {
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const resolved = resolveEntityData(profile, 'bundleApplications', { searchQuery, page, pageSize, searchFields: ['applicationName', 'applicationVendor', 'bundleName'] });
       if (!resolved) { res.status(404).json({ error: 'BundleApplications not available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
@@ -95,7 +95,7 @@ export function registerSoftware26R1Routes(app: Express, profile: IProfile): voi
       let data = profile.getFixture('bundleFolders') as Record<string, unknown>[];
       const searchQuery = req.query.SearchQuery as string | undefined;
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'comment']); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }

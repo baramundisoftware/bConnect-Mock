@@ -5,7 +5,7 @@
 
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
-import { resolveEntityData, applyMultiKeywordSearch, applyMultiFieldSort, parsePage, GUID_REGEX } from './utils';
+import { resolveEntityData, applyMultiKeywordSearch, applyMultiFieldSort, parsePage, GUID_REGEX, parsePageSize } from './utils';
 import { registerReadonlyList } from './factories/readonlyList';
 import { registerGetById } from './factories/getById';
 import { registerSubResourceList } from './factories/subResourceList';
@@ -17,12 +17,12 @@ export function registerActiveDirectoryRoutes(app: Express, profile: IProfile): 
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const resolved = resolveEntityData(profile, 'adGroups', { searchQuery, orderBy, page, pageSize, searchFields: ['name', 'distinguishedName', 'groupType'] });
       const data = resolved?.data ?? [];
       const totalItems = resolved?.totalItems ?? 0;
-      const eff = pageSize > 0 ? pageSize : data.length;
+      const eff = pageSize;
       res.status(200).json({ data, pageSize: eff, page, totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
@@ -45,7 +45,7 @@ export function registerActiveDirectoryRoutes(app: Express, profile: IProfile): 
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'samAccountName', 'userPrincipalName']); }
       const orderBy = req.query.OrderBy as string | undefined;
       if (orderBy?.trim()) { data = applyMultiFieldSort(data, orderBy); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const startIndex = page * pageSize;
       res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });

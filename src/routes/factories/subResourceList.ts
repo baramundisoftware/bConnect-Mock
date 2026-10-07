@@ -20,7 +20,7 @@
 
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../../profiles/ProfileManager';
-import { GUID_REGEX, applyMultiKeywordSearch, applyMultiFieldSort, parsePage } from '../utils';
+import { GUID_REGEX, applyMultiKeywordSearch, applyMultiFieldSort, parsePage, parsePageSize } from '../utils';
 
 export interface SubResourceListConfig {
   /** Parent collection base path, e.g. '/v2.0/LogicalGroups' */
@@ -107,7 +107,7 @@ export function registerSubResourceList(
       // Apply search, sort, pagination
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
 
       if (searchQuery?.trim()) {
@@ -118,7 +118,7 @@ export function registerSubResourceList(
       }
 
       const totalItems = children.length;
-      const eff = pageSize > 0 ? pageSize : totalItems;
+      const eff = pageSize;
       const startIndex = page * eff;
 
       res.status(200).json({

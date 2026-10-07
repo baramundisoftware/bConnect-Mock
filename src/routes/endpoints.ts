@@ -17,6 +17,7 @@ import {
   applyMultiKeywordSearch,
   applyMultiFieldSort,
   parsePage,
+  parsePageSize,
 } from './utils';
 import { registerGetById } from './factories/getById';
 import { registerReadonlyList } from './factories/readonlyList';
@@ -106,14 +107,14 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
         let data = sm.getAll() as Record<string, unknown>[];
         if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['displayName', 'operatingSystem']); }
         if (orderBy?.trim()) { data = applyMultiFieldSort(data, orderBy); }
-        const pageSize = parseInt(req.query.PageSize as string) || data.length;
+        const pageSize = parsePageSize(req.query.PageSize);
         res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
         return;
       }
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const resolved = resolveEntityData(profile, 'windowsEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'operatingSystem'] });
       if (!resolved) { res.status(404).json({ error: 'No Windows endpoints available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
@@ -195,7 +196,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
       const page = parsePage(req.query.Page);
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const sm: StateManager | undefined = app.locals.stateManager;
       let combined: Record<string, unknown>[];
       if (sm) {
@@ -218,7 +219,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
       if (searchQuery?.trim()) { combined = applyMultiKeywordSearch(combined, searchQuery, ['displayName', 'operatingSystem', 'deviceType']); }
       if (orderBy?.trim()) { combined = applyMultiFieldSort(combined, orderBy); }
       const totalItems = combined.length;
-      const eff = pageSize > 0 ? pageSize : totalItems;
+      const eff = pageSize;
       const data = eff > 0 ? combined.slice(page * eff, page * eff + eff) : combined;
       res.status(200).json({ data, pageSize: eff, page, totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
@@ -235,14 +236,14 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
         let data = sm.androidEndpoints.getAll() as Record<string, unknown>[];
         if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['displayName', 'operatingSystem']); }
         if (orderBy?.trim()) { data = applyMultiFieldSort(data, orderBy); }
-        const pageSize = parseInt(req.query.PageSize as string) || data.length;
+        const pageSize = parsePageSize(req.query.PageSize);
         res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
         return;
       }
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const resolved = resolveEntityData(profile, 'androidEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'operatingSystem'] });
       if (!resolved) { res.status(404).json({ error: 'No Android endpoints available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
@@ -288,7 +289,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['displayName', 'operatingSystem']); }
       const orderBy = req.query.OrderBy as string | undefined;
       if (orderBy?.trim()) { data = applyMultiFieldSort(data, orderBy); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
@@ -323,7 +324,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['displayName', 'operatingSystem']); }
       const orderBy = req.query.OrderBy as string | undefined;
       if (orderBy?.trim()) { data = applyMultiFieldSort(data, orderBy); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
@@ -352,11 +353,11 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const resolved = resolveEntityData(profile, 'iosEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'operatingSystem', 'primaryUser'] });
       if (!resolved) { res.status(404).json({ error: 'No iOS endpoints available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
@@ -396,11 +397,11 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const resolved = resolveEntityData(profile, 'networkEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'deviceType', 'primaryIP'] });
       if (!resolved) { res.status(404).json({ error: 'No Network endpoints available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
@@ -435,11 +436,11 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const resolved = resolveEntityData(profile, 'industrialEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'deviceType', 'zone'] });
       if (!resolved) { res.status(404).json({ error: 'No Industrial endpoints available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });

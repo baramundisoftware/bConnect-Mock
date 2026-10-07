@@ -6,7 +6,7 @@
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
 import { BmsVersion } from '../profiles/ProfileManager';
-import { applyMultiKeywordSearch, applyMultiFieldSort, parsePage } from './utils';
+import { applyMultiKeywordSearch, applyMultiFieldSort, parsePage, parsePageSize } from './utils';
 
 export function registerDefenseControlRoutes(app: Express, profile: IProfile): void {
 
@@ -18,7 +18,7 @@ export function registerDefenseControlRoutes(app: Express, profile: IProfile): v
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['endpointName', 'conversionStatus', 'protectionStatus']); }
       const orderBy = req.query.OrderBy as string | undefined;
       if (orderBy?.trim()) { data = applyMultiFieldSort(data, orderBy); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const startIndex = page * pageSize;
       res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
@@ -100,7 +100,7 @@ export function registerDefenseControlRoutes(app: Express, profile: IProfile): v
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'severity', 'category', 'status']); }
       const orderBy = req.query.OrderBy as string | undefined;
       if (orderBy?.trim()) { data = applyMultiFieldSort(data, orderBy); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const startIndex = page * pageSize;
       res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
@@ -125,7 +125,7 @@ export function registerDefenseControlRoutes(app: Express, profile: IProfile): v
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['endpointName', 'defenderStatus']); }
       const orderBy = req.query.OrderBy as string | undefined;
       if (orderBy?.trim()) { data = applyMultiFieldSort(data, orderBy); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const startIndex = page * pageSize;
       res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
