@@ -216,7 +216,7 @@ Set `BCONNECT_MODULE_ROUTING=lenient` to accept any module prefix, or none, as i
 |-----------|-------------|---------|
 | `SearchQuery` | Filter by name (substring match) | `?SearchQuery=NYC` |
 | `OrderBy` | Sort results | `?OrderBy=DisplayName asc` |
-| `PageSize` | Items per page | `?PageSize=50` |
+| `PageSize` | Items per page: 20 by default, at most 1000 (larger values are capped, as on a live bMS) | `?PageSize=50` |
 | `Page` | Page number (zero-based) | `?Page=2` |
 
 Lists answer with the spec's paged envelope, as a live bMS does:

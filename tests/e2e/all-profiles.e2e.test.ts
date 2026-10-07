@@ -619,15 +619,16 @@ describe('E2E: Security validation — all profiles', () => {
   ];
 
   for (const endpoint of endpoints) {
-    it(`${endpoint}: rejects PageSize=-1 with 400`, async () => {
+    it(`${endpoint}: PageSize=-1 falls back to the default 20`, async () => {
       const res = await request(app).get(`${endpoint}?PageSize=-1`);
-      expect(res.status).toBe(400);
-      expect(res.body).toHaveProperty('error');
+      expect(res.status).toBe(200);
+      expect(res.body.pageSize).toBe(20);
     });
 
-    it(`${endpoint}: rejects PageSize=200000 with 400`, async () => {
+    it(`${endpoint}: PageSize=200000 is capped at 1000`, async () => {
       const res = await request(app).get(`${endpoint}?PageSize=200000`);
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(200);
+      expect(res.body.pageSize).toBe(1000);
     });
   }
 

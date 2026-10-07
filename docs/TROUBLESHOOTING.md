@@ -124,18 +124,13 @@ curl -X POST http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints \
   -d '{"displayName": "MY-PC-001"}'
 ```
 
-### Problem: `GET` returns `400` about `PageSize`
+### Problem: a list returns only 20 items, or at most 1000
 
-**Cause:** `PageSize` is outside the allowed range (0–10,000) or is negative.
+**Cause:** like a live bMS, the mock pages every list. Without `PageSize`, or with `0` or an invalid value, a page has **20** items. A `PageSize` above 1000 is capped at **1000**, without an error.
 
-```json
-{ "error": "PageSize must be between 0 and 10000" }
-```
-
-**Fix:** Use a valid PageSize:
+**Fix:** set `PageSize` (up to 1000) and follow `hasNextPage`:
 ```bash
-# Valid: omit for all, or use 1–10000
-curl "http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints?PageSize=50"
+curl "http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints?PageSize=50&Page=0"
 ```
 
 ### Problem: `GET` returns `400` about `Page`
@@ -227,9 +222,9 @@ To preserve test state across server restarts, use the fixture files directly (`
 
 ### Problem: Getting the same items on every page
 
-**Cause:** `Page` is not being incremented, or `PageSize` is set to a value larger than `totalCount`.
+**Cause:** `Page` is not being incremented. Pages count from zero: `Page=0` is the first page, `Page=1` the second. Before 0.7.0 the mock read `Page` as 1-based, so `Page=1` returned the first page again.
 
-**Fix:** Increment `Page` and ensure `PageSize` is smaller than `totalCount`:
+**Fix:** start at `Page=0` and increment it while `hasNextPage` is `true`:
 ```bash
 # Page 0 of 3 (5 items per page, 15 total)
 curl "http://localhost:3433/bconnect/endpoints/v2.0/WindowsEndpoints?PageSize=5&Page=0"

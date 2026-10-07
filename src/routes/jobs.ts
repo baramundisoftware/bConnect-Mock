@@ -11,7 +11,7 @@ import {
   validateJobPatch,
   validateJobInstanceCreate,
 } from '../middleware/validateBody';
-import { resolveEntityData, applyMultiKeywordSearch, applyMultiFieldSort, parsePage } from './utils';
+import { resolveEntityData, applyMultiKeywordSearch, applyMultiFieldSort, parsePage, parsePageSize } from './utils';
 
 export function registerJobRoutes(app: Express, profile: IProfile): void {
 
@@ -21,18 +21,18 @@ export function registerJobRoutes(app: Express, profile: IProfile): void {
       const sm: StateManager | undefined = app.locals.stateManager;
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       if (sm) {
         let data = sm.jobs.getAll() as Record<string, unknown>[];
         if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'type']); }
-        const eff = pageSize > 0 ? pageSize : data.length;
+        const eff = pageSize;
         res.status(200).json({ data: data.slice(page * eff, page * eff + eff), pageSize: eff, page, totalItems: data.length });
       } else {
         const resolved = resolveEntityData(profile, 'jobs', { searchQuery, orderBy, page, pageSize, searchFields: ['name', 'type'] });
         const data = resolved?.data ?? [];
         const totalItems = resolved?.totalItems ?? 0;
-        const eff = pageSize > 0 ? pageSize : data.length;
+        const eff = pageSize;
         res.status(200).json({ data, pageSize: eff, page, totalItems });
       }
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
@@ -108,14 +108,14 @@ export function registerJobRoutes(app: Express, profile: IProfile): void {
         let data = sm.jobInstances.getAll() as Record<string, unknown>[];
         if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['jobDefinitionName', 'endpointName', 'state']); }
         if (orderBy?.trim()) { data = applyMultiFieldSort(data, orderBy); }
-        const pageSize = parseInt(req.query.PageSize as string) || data.length;
+        const pageSize = parsePageSize(req.query.PageSize);
         res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
         return;
       }
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const resolved = resolveEntityData(profile, 'jobInstances', { searchQuery, orderBy, page, pageSize, searchFields: ['jobDefinitionName', 'endpointName', 'state'] });
       if (!resolved) { res.status(404).json({ error: 'No job instances available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });

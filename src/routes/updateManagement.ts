@@ -7,7 +7,7 @@
 
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
-import { GUID_REGEX, resolveEntityData, parsePage } from './utils';
+import { GUID_REGEX, resolveEntityData, parsePage, parsePageSize } from './utils';
 
 /**
  * Deterministic hash from endpoint ID string → small integer for field generation.
@@ -74,12 +74,12 @@ export function registerUpdateManagementRoutes(app: Express, profile: IProfile):
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const resolved = resolveEntityData(profile, 'windowsEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'hostName'] });
       if (!resolved) { res.status(404).json({ error: 'Windows endpoints not available' }); return; }
       const projections = (resolved.data as Record<string, unknown>[]).map(toUpdateProjection);
-      const eff = pageSize > 0 ? pageSize : projections.length;
+      const eff = pageSize;
       res.status(200).json({ data: projections, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });

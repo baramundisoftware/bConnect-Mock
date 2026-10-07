@@ -14,7 +14,7 @@ import {
   validateGenericUpdate,
   validateWriteBody,
 } from '../middleware/validateBody';
-import { resolveEntityData, applyMultiKeywordSearch, parsePage, GUID_REGEX } from './utils';
+import { resolveEntityData, applyMultiKeywordSearch, parsePage, GUID_REGEX, parsePageSize } from './utils';
 import { registerReadonlyList } from './factories/readonlyList';
 import { registerGetById } from './factories/getById';
 
@@ -26,18 +26,18 @@ export function registerAssetRoutes(app: Express, profile: IProfile): void {
       const sm: StateManager | undefined = app.locals.stateManager;
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       if (sm) {
         let data = sm.assets.getAll() as Record<string, unknown>[];
         if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['assetTag', 'department', 'location']); }
-        const eff = pageSize > 0 ? pageSize : data.length;
+        const eff = pageSize;
         res.status(200).json({ data: data.slice(page * eff, page * eff + eff), pageSize: eff, page, totalItems: data.length });
       } else {
         const resolved = resolveEntityData(profile, 'assets', { searchQuery, orderBy, page, pageSize, searchFields: ['assetTag', 'department', 'location'] });
         const data = resolved?.data ?? [];
         const totalItems = resolved?.totalItems ?? 0;
-        const eff = pageSize > 0 ? pageSize : data.length;
+        const eff = pageSize;
         res.status(200).json({ data, pageSize: eff, page, totalItems });
       }
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
@@ -104,7 +104,7 @@ export function registerAssetStockRoutes(app: Express, profile: IProfile): void 
       if (stockFolderId?.trim()) { data = data.filter((a) => a['assetStockFolderId'] === stockFolderId); }
       const searchQuery = req.query.SearchQuery as string | undefined;
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['assetTag', 'type', 'location']); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
@@ -119,7 +119,7 @@ export function registerAssetStockRoutes(app: Express, profile: IProfile): void 
         : (profile.getFixture('assetStockFolders') as Record<string, unknown>[]);
       const searchQuery = req.query.SearchQuery as string | undefined;
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'comment']); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
@@ -187,7 +187,7 @@ export function registerVariableRoutes(app: Express, profile: IProfile): void {
         : (profile.getFixture('variables') as Record<string, unknown>[]);
       const searchQuery = req.query.SearchQuery as string | undefined;
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'description']); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
@@ -243,7 +243,7 @@ export function registerVariableRoutes(app: Express, profile: IProfile): void {
       data = sm ? (sm.variables.getAll() as Record<string, unknown>[]) : (profile.getFixture('variables') as Record<string, unknown>[]);
       const searchQuery = req.query.SearchQuery as string | undefined;
       if (searchQuery?.trim()) { data = data.filter(v => JSON.stringify(v).includes(searchQuery)); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const startIndex = page * pageSize;
       res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });

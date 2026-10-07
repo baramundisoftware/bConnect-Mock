@@ -11,7 +11,7 @@ import { validateWriteBody, validateGenericUpdate } from '../middleware/validate
 // Spec LogicalGroupForCreation (25R2 + 26R1) requires `name`; there is no `displayName`.
 const validateLogicalGroupCreate = validateWriteBody(['name']);
 const LOGICAL_GROUP_SEARCH_FIELDS = ['name', 'comment', 'displayName', 'description'];
-import { resolveEntityData, applyMultiKeywordSearch, applyMultiFieldSort, parsePage, GUID_REGEX } from './utils';
+import { resolveEntityData, applyMultiKeywordSearch, applyMultiFieldSort, parsePage, GUID_REGEX, parsePageSize } from './utils';
 import { registerReadonlyList } from './factories/readonlyList';
 import { registerGetById } from './factories/getById';
 import { registerSubResourceList } from './factories/subResourceList';
@@ -29,14 +29,14 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
         let data = sm.logicalGroups.getAll() as Record<string, unknown>[];
         if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, LOGICAL_GROUP_SEARCH_FIELDS); }
         if (orderBy?.trim()) { data = applyMultiFieldSort(data, orderBy); }
-        const pageSize = parseInt(req.query.PageSize as string) || data.length;
+        const pageSize = parsePageSize(req.query.PageSize);
         res.status(200).json({ data: data.slice(page * pageSize, page * pageSize + pageSize), pageSize, page, totalItems: data.length });
         return;
       }
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const resolved = resolveEntityData(profile, 'logicalGroups', { searchQuery, orderBy, page, pageSize, searchFields: LOGICAL_GROUP_SEARCH_FIELDS });
       if (!resolved) { res.status(200).json({ data: [], pageSize: 0, page: 0, totalItems: 0 }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
@@ -144,12 +144,12 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
       }
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       if (searchQuery?.trim()) { combined = applyMultiKeywordSearch(combined, searchQuery, ['displayName', 'hostName', 'primaryIP', 'operatingSystem']); }
       if (orderBy?.trim()) { combined = applyMultiFieldSort(combined, orderBy); }
       const totalItems = combined.length;
-      const eff = pageSize > 0 ? pageSize : totalItems;
+      const eff = pageSize;
       const data = eff > 0 ? combined.slice(page * eff, page * eff + eff) : combined;
       res.status(200).json({ data, pageSize: eff, page, totalItems });
     } catch (error) {
@@ -217,10 +217,10 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
         const searchQuery = req.query.SearchQuery as string | undefined;
         const orderBy = req.query.OrderBy as string | undefined;
         const page = parsePage(req.query.Page);
-        const pageSize = parseInt(req.query.PageSize as string) || 0;
+        const pageSize = parsePageSize(req.query.PageSize);
         const resolved = resolveEntityData(profile, 'unmanagedEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'primaryIP', 'detectedOS'] });
         if (!resolved) { res.status(200).json({ data: [], pageSize: 0, page: 0, totalItems: 0 }); return; }
-        const eff = pageSize > 0 ? pageSize : resolved.data.length;
+        const eff = pageSize;
         res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
       } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
     });
@@ -310,11 +310,11 @@ export function registerUniversalDynamicGroupRoutes(app: Express, profile: IProf
     try {
       const searchQuery = req.query.SearchQuery as string | undefined;
       const orderBy = req.query.OrderBy as string | undefined;
-      const pageSize = parseInt(req.query.PageSize as string) || 0;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const resolved = resolveEntityData(profile, 'universalDynamicGroups', { searchQuery, orderBy, page, pageSize, searchFields: ['name', 'folderName', 'comment'] });
       if (!resolved) { res.status(404).json({ error: 'UniversalDynamicGroups not available' }); return; }
-      const eff = pageSize > 0 ? pageSize : resolved.data.length;
+      const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
@@ -335,7 +335,7 @@ export function registerUniversalDynamicGroupRoutes(app: Express, profile: IProf
       let data = profile.getFixture('folders') as Record<string, unknown>[];
       const searchQuery = req.query.SearchQuery as string | undefined;
       if (searchQuery?.trim()) { data = applyMultiKeywordSearch(data, searchQuery, ['name', 'parent']); }
-      const pageSize = parseInt(req.query.PageSize as string) || data.length;
+      const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
       const startIndex = page * pageSize;
       res.status(200).json({ data: data.slice(startIndex, startIndex + pageSize), pageSize, page, totalItems: data.length });
