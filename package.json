@@ -1,6 +1,6 @@
 {
   "name": "bconnect-mock",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Mock server for baramundi bConnect V2.0 REST API - supports multiple data profiles for testing and development",
   "main": "build/index.js",
   "types": "build/index.d.ts",
