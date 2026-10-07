@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-07
+
 ### Added
 - Assets carry the spec's identifier `assetId`, asset types `guid` (both equal to `id`); `POST /v2.0/Assets` sets `assetId` too. Spec-conformant clients couldn't find an asset's ID before
 - The spec conformance test also covers the `largescale-readonly` profile (generated data)
