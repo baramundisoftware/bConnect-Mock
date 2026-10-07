@@ -687,6 +687,29 @@ class StandardReadwriteProfile extends BaseProfile {
 }
 
 /**
+ * Data for a large-scale profile's getFixture(): the generated list for entity types with a
+ * generator (built once on first use, then cached; all generators together take ~0.5 s and
+ * ~100 MB), and the standard-readonly fixtures for everything else. Before, getFixture()
+ * returned [] here, so every handler that reads fixtures (get by ID, sub-resources, lists
+ * without a generator) answered 404 or an empty list on large-scale profiles.
+ */
+function largeScaleFixture(
+  profile: { getGenerator(entityType: string): import('../generators/IDataGenerator').IDataGenerator | null },
+  entityType: string,
+  cache: Map<string, unknown[]>,
+  standard: () => IProfile,
+): unknown[] {
+  const cached = cache.get(entityType);
+  if (cached) { return cached; }
+  const generator = profile.getGenerator(entityType);
+  const data = generator
+    ? generator.generatePage({ page: 0, pageSize: generator.totalItems })
+    : (standard().getFixture(entityType) as unknown[]);
+  cache.set(entityType, data);
+  return data;
+}
+
+/**
  * Large-Scale Readonly Profile - 70,000 entities, GET only, lazy loading
  */
 class LargeScaleReadonlyProfile extends BaseProfile {
@@ -722,16 +745,12 @@ class LargeScaleReadonlyProfile extends BaseProfile {
     ],
   };
 
-  getFixture(entityType: string): unknown[] | (() => unknown[]) {
-    // Large-scale profile uses generators exclusively — return empty array as fallback.
-    // Exception: installedWindowsSoftware has no generator, so fall back to standard-readonly fixture.
-    if (entityType === 'installedWindowsSoftware') {
-      try {
-        const root = getFixturesRoot();
-        return loadFixtureFile(path.join(root, 'standard-readonly'), 'installedWindowsSoftware.json');
-      } catch { return []; }
-    }
-    return [];
+  private readonly _largeScaleData = new Map<string, unknown[]>();
+  private _standard?: IProfile;
+
+  getFixture(entityType: string): unknown[] {
+    return largeScaleFixture(this, entityType, this._largeScaleData,
+      () => (this._standard ??= new StandardReadonlyProfile(this.bmsVersion)));
   }
 
   getGenerator(entityType: string): import('../generators/IDataGenerator').IDataGenerator | null {
@@ -808,9 +827,12 @@ class LargeScaleReadwriteProfile extends BaseProfile {
     ],
   };
 
-  getFixture(_entityType: string): unknown[] {
-    // Large-scale profile uses generators exclusively — return empty array as fallback
-    return [];
+  private readonly _largeScaleData = new Map<string, unknown[]>();
+  private _standard?: IProfile;
+
+  getFixture(entityType: string): unknown[] {
+    return largeScaleFixture(this, entityType, this._largeScaleData,
+      () => (this._standard ??= new StandardReadonlyProfile(this.bmsVersion)));
   }
 
   getGenerator(entityType: string): import('../generators/IDataGenerator').IDataGenerator | null {
