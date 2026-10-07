@@ -17,6 +17,7 @@ import { registerAllRoutes } from './routes/index';
 import { createModuleRoutingGuard } from './middleware/moduleRouting';
 import { bmsErrorBodies, bodyErrors, MOCK_REASON_HEADER, ROUTE_LOCAL, sendProblem, sendValidationProblem, type MatchedRoute } from './middleware/bmsErrors';
 import { pagedListEnvelope, pageSizeDefaults } from './middleware/pagedList';
+import { specProjection } from './middleware/specProjection';
 
 /**
  * Windows endpoint interface (used for StateManager initialization)
@@ -367,6 +368,10 @@ export function createApp(
     }
     next();
   });
+
+  // Successful answers carry exactly the spec's fields (strict routing). Registered before the
+  // paged-list envelope, so it runs after it: the envelope is built first, then projected.
+  app.use(specProjection);
 
   // List responses get the spec's PagedList envelope (currentPage, totalPages, hasNextPage, …)
   app.use(pagedListEnvelope);

@@ -24,7 +24,7 @@
 
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import type { BmsVersion } from '../profiles/ProfileManager';
-import { MODULE_ROUTES, ROUTE_DETAILS } from '../generated/moduleRoutes';
+import { MODULE_ROUTES, ROUTE_DETAILS, RESPONSE_SHAPES, type ResponseShape } from '../generated/moduleRoutes';
 import { MOCK_REASON_HEADER, ROUTE_LOCAL, sendProblem, sendValidationProblem, type MatchedRoute } from './bmsErrors';
 
 export { MOCK_REASON_HEADER } from './bmsErrors';
@@ -59,6 +59,8 @@ interface CompiledRoute {
   paramNames: readonly string[];
   /** The spec's request body schema, if any */
   body?: string;
+  /** The spec's response shape, if the route answers with JSON */
+  shape?: ResponseShape;
 }
 
 /** decodeURIComponent that keeps a malformed escape as it is instead of throwing */
@@ -69,7 +71,7 @@ function safeDecode(value: string): string {
 const GUID_VALUE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Compile 'GET /v2.0/WindowsEndpoints/{}' into a method plus a case-insensitive path regex. */
-function compileRoute(route: string, detail: { params?: readonly string[]; body?: string } = {}): CompiledRoute {
+function compileRoute(route: string, detail: { params?: readonly string[]; body?: string } = {}, shape?: ResponseShape): CompiledRoute {
   const [method = '', routePath = ''] = route.split(' ');
   const source = routePath
     .split('{}')
@@ -81,6 +83,7 @@ function compileRoute(route: string, detail: { params?: readonly string[]; body?
     params: routePath.split('{}').length - 1,
     paramNames: detail.params ?? [],
     ...(detail.body ? { body: detail.body } : {}),
+    ...(shape !== undefined ? { shape } : {}),
   };
 }
 
@@ -101,7 +104,8 @@ export function createModuleRoutingGuard(
   const modules = new Map<string, CompiledRoute[]>();
   for (const [moduleName, routes] of Object.entries(MODULE_ROUTES[bmsVersion] ?? {})) {
     const details = ROUTE_DETAILS[bmsVersion]?.[moduleName] ?? {};
-    modules.set(moduleName, routes.map((route) => compileRoute(route, details[route])));
+    const shapes = RESPONSE_SHAPES[bmsVersion]?.[moduleName] ?? {};
+    modules.set(moduleName, routes.map((route) => compileRoute(route, details[route], shapes[route])));
   }
 
   return (req: Request, res: Response, next: NextFunction) => {
@@ -159,7 +163,11 @@ export function createModuleRoutingGuard(
       return;
     }
 
-    const matched: MatchedRoute = { params, ...(route.body ? { body: route.body } : {}) };
+    const matched: MatchedRoute = {
+      params,
+      ...(route.body ? { body: route.body } : {}),
+      ...(route.shape !== undefined ? { shape: route.shape } : {}),
+    };
     res.locals[ROUTE_LOCAL] = matched;
     next();
   };

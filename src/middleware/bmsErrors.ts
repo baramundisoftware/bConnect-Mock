@@ -28,6 +28,8 @@ export const ROUTE_LOCAL = 'bconnectRoute';
 export interface MatchedRoute {
   params: Record<string, string>;
   body?: string;
+  /** The spec's response shape of the route (specProjection) */
+  shape?: import('../generated/moduleRoutes').ResponseShape;
 }
 
 const GUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
