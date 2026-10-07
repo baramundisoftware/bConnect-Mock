@@ -9,6 +9,7 @@ import type { StateManager } from '../state/StateManager';
 import { BmsVersion } from '../profiles/ProfileManager';
 import { resolveEntityData, applyMultiKeywordSearch, applyMultiFieldSort, parsePage, GUID_REGEX, parsePageSize } from './utils';
 import { validateGenericUpdate, validateWriteBody } from '../middleware/validateBody';
+import { withTreeParent } from './factories/treeParent';
 
 export function registerMiscRoutes(app: Express, profile: IProfile): void {
 
@@ -133,7 +134,7 @@ export function registerFolderRoutes(app: Express, profile: IProfile, config: Fo
   app.post(basePath, validateWriteBody(['name']), (req: Request, res: Response) => {
     const sm = app.locals.stateManager as StateManager | undefined;
     if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
-    res.status(201).json(sm.addStore(fixtureKey, profile.getFixture(fixtureKey) as { id: string }[]).create(req.body as Record<string, unknown>));
+    res.status(201).json(sm.addStore(fixtureKey, profile.getFixture(fixtureKey) as { id: string }[]).create(withTreeParent(app, profile, fixtureKey, req.body as Record<string, unknown>, 'create')));
   });
 
   app.patch(`${basePath}/:id`, validateGenericUpdate, (req: Request, res: Response) => {
@@ -141,7 +142,7 @@ export function registerFolderRoutes(app: Express, profile: IProfile, config: Fo
     if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
     const id = req.params.id as string;
     if (!id || !GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid GUID format' }); return; }
-    const updated = sm.addStore(fixtureKey, profile.getFixture(fixtureKey) as { id: string }[]).patch(id, req.body as Record<string, unknown>);
+    const updated = sm.addStore(fixtureKey, profile.getFixture(fixtureKey) as { id: string }[]).patch(id, withTreeParent(app, profile, fixtureKey, req.body as Record<string, unknown>, 'update'));
     if (!updated) { res.status(404).json({ error: 'Folder not found' }); return; }
     res.status(200).json(updated);
   });

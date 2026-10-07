@@ -11,6 +11,7 @@ import { registerGetById } from './factories/getById';
 import { currentRecords } from './factories/currentRecords';
 import { registerCrudRoutes } from './factories/crudRoutes';
 import { validateGenericUpdate, validateWriteBody } from '../middleware/validateBody';
+import { withTreeParent } from './factories/treeParent';
 
 /** Kiosk release search fields (spec KioskRelease) */
 export const KIOSK_SEARCH_FIELDS = ['jobDefinitionName', 'jobDefinitionDisplayName', 'assignmentTargetName'];
@@ -168,6 +169,8 @@ export function registerCatalogRoutes(app: Express, profile: IProfile): void {
       const data: Record<string, unknown>[] = sm
         ? sm.addStore('assetTypeFolders', profile.getFixture('assetTypeFolders') as { id: string }[]).getAll()
         : (profile.getFixture('assetTypeFolders') as Record<string, unknown>[]);
+      // An unknown folder (also the module's hidden root) is a 404, as on a live bMS
+      if (!data.some((f) => f['id'] === folderId)) { res.status(404).json({ error: 'Asset type folder not found' }); return; }
       const children = data.filter((f) => f['parentId'] === folderId);
       res.status(200).json({ data: children, pageSize: children.length, page: 0, totalItems: children.length });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
@@ -177,7 +180,7 @@ export function registerCatalogRoutes(app: Express, profile: IProfile): void {
   app.post('/v2.0/AssetTypes/Folders', validateWriteBody(['name']), (req: Request, res: Response) => {
     const sm = app.locals.stateManager as StateManager | undefined;
     if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
-    res.status(201).json(sm.addStore('assetTypeFolders', profile.getFixture('assetTypeFolders') as { id: string }[]).create(req.body as Record<string, unknown>));
+    res.status(201).json(sm.addStore('assetTypeFolders', profile.getFixture('assetTypeFolders') as { id: string }[]).create(withTreeParent(app, profile, 'assetTypeFolders', req.body as Record<string, unknown>, 'create')));
   });
 
   // PATCH /v2.0/AssetTypes/Folders/:id
@@ -186,7 +189,7 @@ export function registerCatalogRoutes(app: Express, profile: IProfile): void {
     if (!sm) { res.status(403).json({ error: 'Write operations not supported in read-only profile mode' }); return; }
     const id = req.params.id as string;
     if (!id || !GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid GUID format' }); return; }
-    const updated = sm.addStore('assetTypeFolders', profile.getFixture('assetTypeFolders') as { id: string }[]).patch(id, req.body as Record<string, unknown>);
+    const updated = sm.addStore('assetTypeFolders', profile.getFixture('assetTypeFolders') as { id: string }[]).patch(id, withTreeParent(app, profile, 'assetTypeFolders', req.body as Record<string, unknown>, 'update'));
     if (!updated) { res.status(404).json({ error: 'Asset type folder not found' }); return; }
     res.status(200).json(updated);
   });

@@ -45,9 +45,9 @@ describe('Folders/jobs context (standard-readonly)', () => {
   });
 
   it('GET /v2.0/Folders/:id/Folders returns children', async () => {
-    // The root folder (parentId: null) should have children
+    // The top folder (its parent is the jobs module's hidden root) should have children
     const listRes = await request(app).get('/v2.0/Folders').expect(200);
-    const root = listRes.body.data.find((f: Record<string, unknown>) => f['parentId'] === null);
+    const root = listRes.body.data.find((f: Record<string, unknown>) => f['parentId'] === '8e5102e3-c2e1-47ba-ad76-295d3df9ef31');
     expect(root).toBeDefined();
     const res = await request(app).get(`/v2.0/Folders/${root.id}/Folders`).expect(200);
     expect(Array.isArray(res.body.data)).toBe(true);

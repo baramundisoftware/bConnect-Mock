@@ -47,10 +47,12 @@ describe('LogicalGroups (standard-readonly)', () => {
   it('returns hierarchical structure with root and children', async () => {
     const res = await request(app).get('/v2.0/LogicalGroups');
     const groups = res.body.data;
-    const root = groups.find((g: { parentId: unknown }) => g.parentId === null);
-    expect(root).toBeDefined();
-    const children = groups.filter((g: { parentId: unknown }) => g.parentId !== null);
+    // As on a live bMS, the top group's parent is the module's hidden root, not null
+    const root = groups.find((g: { parentId: unknown }) => g.parentId === '299d0b30-d384-430c-875a-63c3ef73a150');
+    expect(root).toMatchObject({ parent: '[environment]' });
+    const children = groups.filter((g: { parentId: unknown }) => g.parentId === root.id);
     expect(children.length).toBeGreaterThan(0);
+    for (const child of children) { expect(child.parent).toBe(root.name); }
   });
 
   it('POST /v2.0/LogicalGroups returns 403 in read-only profile', async () => {

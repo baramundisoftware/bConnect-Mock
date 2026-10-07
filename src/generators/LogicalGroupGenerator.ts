@@ -6,6 +6,7 @@
  */
 
 import { BaseGenerator } from './BaseGenerator';
+import { HIDDEN_TREE_ROOTS, type HiddenRoot } from '../profiles/treeRoots';
 
 const GROUP_NAMES = [
   'Windows Endpoints', 'Linux Endpoints', 'Mac Endpoints', 'Android Devices',
@@ -41,13 +42,19 @@ function indexToGuid(index: number): string {
   return `${seg1}-${seg2}-${seg3}-${seg4}-${toHex(hi, 6)}${toHex(lo, 6)}`;
 }
 
+function groupName(index: number): string {
+  const baseName = pick(GROUP_NAMES, index);
+  return index < GROUP_NAMES.length ? baseName : `${baseName} ${Math.floor(index / GROUP_NAMES.length) + 1}`;
+}
+
 export interface LogicalGroupRecord {
   id: string;
   guid: string;
   name: string;
   type: 'LogicalGroup';
   displayName: string;
-  parentId: string | null;
+  parentId: string;
+  parent: string;
   description: string;
   isBuiltIn: boolean;
   memberCount: number;
@@ -65,9 +72,10 @@ export class LogicalGroupGenerator extends BaseGenerator<LogicalGroupRecord> {
     }
 
     const guid        = indexToGuid(index);
-    const baseName    = pick(GROUP_NAMES, index);
-    const displayName = index < GROUP_NAMES.length ? baseName : `${baseName} ${Math.floor(index / GROUP_NAMES.length) + 1}`;
-    const parentGuid  = index === 0 ? null : indexToGuid(Math.floor(index / 10));
+    const displayName = groupName(index);
+    // The top group's parent is the hidden root of the endpoints module, as on a live bMS
+    const root        = HIDDEN_TREE_ROOTS['logicalGroups'] as HiddenRoot;
+    const parentIndex = Math.floor(index / 10);
 
     return {
       id: guid,
@@ -75,7 +83,8 @@ export class LogicalGroupGenerator extends BaseGenerator<LogicalGroupRecord> {
       name: displayName,
       type: 'LogicalGroup',
       displayName,
-      parentId: parentGuid,
+      parentId: index === 0 ? root.id : indexToGuid(parentIndex),
+      parent: index === 0 ? root.name : groupName(parentIndex),
       description: `Logical group: ${displayName}`,
       isBuiltIn: index < 5,
       memberCount: (index * 19 + 3) % 500,
