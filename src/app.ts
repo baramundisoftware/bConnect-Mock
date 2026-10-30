@@ -151,7 +151,9 @@ export function createApp(
 
   // Body parsing runs after the routing guard, so a body the bMS can't read is reported
   // with the matched route's body parameter (see the entity.parse.failed handler below).
-  app.use(express.json({ type: ['application/json', 'application/json-patch+json'] }));
+  // inflate: false — compressed bodies get 415 and never reach zlib, so no unauthenticated
+  // request can feed the Brotli decoder (CVE-2026-111497, "Node2Shell").
+  app.use(express.json({ type: ['application/json', 'application/json-patch+json'], inflate: false }));
   // Convert JSON Patch arrays (RFC 6902) to plain merge-patch objects for state store compatibility.
   // Connectors send PATCH as [{op:'replace',path:'/field',value:'x'},...] but the state store
   // expects a plain object {field: 'x'}.
@@ -379,6 +381,10 @@ export function createApp(
     }
     if (err.type === 'entity.too.large') {
       sendProblem(res, 413, `request body too large: ${err.message}`);
+      return;
+    }
+    if (err.type === 'encoding.unsupported') {
+      sendProblem(res, 415, `compressed request bodies are not accepted: ${err.message}`);
       return;
     }
     next(err);

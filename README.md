@@ -12,7 +12,7 @@ A mock server for the **baramundi bConnect REST API**. Use it to develop and tes
 
 ## What You Need
 
-- **Node.js 20 or later** ([download](https://nodejs.org/)) — or use Docker
+- **Node.js 22.23.4 or later** ([download](https://nodejs.org/)) — or use Docker
 - No baramundi server required — that's the point of a mock
 
 ---
