@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Tagged releases are published as regular GitHub releases and marked Latest (were all pre-releases, so Latest stayed on v0.3.2)
+- Dependabot also watches the Docker base image (`node:22.23.4-alpine`)
+
 ## [0.8.1] - 2026-10-30
 
 ### Removed

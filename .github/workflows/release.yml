@@ -96,4 +96,4 @@ jobs:
             ${{ env.ARCHIVE }}
             ${{ env.ARCHIVE }}.sha256
           draft: false
-          prerelease: true
+          prerelease: false
