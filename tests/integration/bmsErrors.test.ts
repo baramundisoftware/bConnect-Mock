@@ -89,6 +89,14 @@ describe('error answers (strict, read-write)', () => {
     expect(res.headers[REASON]).toMatch(/invalid JSON body/);
   });
 
+  it.each(['br', 'gzip', 'deflate'])('a %s-compressed body: 415, never decompressed (CVE-2026-111497)', async (encoding) => {
+    const res = await request(app).post('/bconnect/endpoints/v2.0/LogicalGroups')
+      .set('Content-Type', 'application/json').set('Content-Encoding', encoding).send('{"name":"x"}');
+    expect(res.status).toBe(415);
+    expect(json(res)).toMatchObject({ status: 415 });
+    expect(res.headers[REASON]).toMatch(/compressed request bodies are not accepted/);
+  });
+
   it('required field missing: 400 naming the type and the field', async () => {
     const res = await request(app).post('/bconnect/endpoints/v2.0/LogicalGroups').send({});
     expect(res.status).toBe(400);

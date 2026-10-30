@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- CVE-2026-111497 ("Node2Shell", Brotli out-of-bounds write in Node.js): the Docker image runs on `node:22.23.4-alpine` (was `node:20-alpine`; Node 20 is end-of-life and gets no fix), CI and release build on Node 22, `.nvmrc` and `engines.node` require 22.23.4
+- Compressed request bodies (`Content-Encoding: br`, `gzip`, `deflate`) are no longer decompressed and answer 415 `problem+json`. The JSON parser runs before the API key check, so before this any unauthenticated request could reach the Brotli decoder
+- Dependencies: `zod` 4.6.7 (GHSA-mrhx-c7xc-m3w5, high), `body-parser` 2.4.0 (GHSA-27r3-jxmh-p828, high), `qs` 6.17.1 (GHSA-6pq8-jhm2-2vcw)
+
 ## [0.8.0] - 2026-10-07
 
 ### Added
