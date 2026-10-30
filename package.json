@@ -65,9 +65,6 @@
     "url": "https://github.com/baramundisoftware/bConnect-Mock/issues"
   },
   "homepage": "https://github.com/baramundisoftware/bConnect-Mock#readme",
-  "optionalDependencies": {
-    "@rolldown/binding-linux-arm64-gnu": "^1.1.5"
-  },
   "dependencies": {
     "@types/swagger-ui-express": "^4.1.8",
     "cors": "^2.8.6",
@@ -84,7 +81,7 @@
     "@types/supertest": "^7.2.1",
     "@typescript-eslint/eslint-plugin": "^8.64.0",
     "@typescript-eslint/parser": "^8.72.1",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^5.0.5",
     "eslint": "^10.12.0",
     "eslint-config-prettier": "^10.1.8",
     "openapi-typescript": "^7.13.0",
@@ -92,6 +89,6 @@
     "supertest": "^7.3.1",
     "tsx": "^4.23.1",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.11"
+    "vitest": "^5.0.5"
   }
 }
