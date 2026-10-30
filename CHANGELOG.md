@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-10-30
+
 ### Removed
 - The `optionalDependencies` entry `@rolldown/binding-linux-arm64-gnu`, a workaround from the initial commit: npm installs the matching native binding through rolldown itself, also on arm64 Linux
 
