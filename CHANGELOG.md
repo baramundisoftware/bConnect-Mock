@@ -15,7 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Network endpoints: `operatingSystem` "Unknown", `snmpPort` 0, `totalRAM` 0, `sshAuthenticationMethod`, `sshConfiguration`, `hostName`, `macList`
   - `activity` is a sentence, as on the live bMS (was `Active`/`Idle`/`Updating`); the large-scale Windows endpoints no longer carry a three-part `osVersionString` unrelated to their OS
   - Values the live bMS could not show (no enrolled mobile devices there) follow the spec; enum values chosen by their length in the probe are marked in the code
-- The spec conformance test no longer reports fields a live bMS leaves null on every endpoint too (`assignedScannerId`, `registeredUserId`, Windows `customState`, `logicalMAC`, ...). Baseline 2234 -> 1185 lines
+- Assets, asset types, job definitions, job instances and installed Windows software carry the fields a live bMS fills, in the probe's formats (`src/profiles/recordFields.ts`):
+  - Assets: `assetTypeId` (the asset type of that name), three `additionalProperties` from location, department and warranty, empty `assetReferenceList`, `energyOn`/`energyOff` -1, zero costs, `url` "http://" (the live default), `lastChanged`, `comments` on some
+  - Asset types: parent folder (`guidParent`, `parentName`), `energyOptions` "0", `iconChanged`, `purchaseDate`, zero costs, `url`
+  - Job instances: `delays` 0 and `steps` (type, description, state, last action) that match the instance's state
+  - Installed Windows software: half managed (`source`/`category` ManagedSoftware, `applicationId`), half `Inventoried`; `detectionRuleId`, `lastFound`, `autUsage` AutDeactivated
+  - Job definitions: a `comment` on about a third
+- The spec conformance test no longer reports fields a live bMS leaves null on every item too (endpoints: `assignedScannerId`, `registeredUserId`, Windows `customState`, `logicalMAC`, ...; asset types: `contact`, `costCenter`, `encodedIcon`, `summary`, ...; job instances `nextExecution`, job definitions `validity`, software `autFirstUse`/`autLastUse`/`autLastData`). Baseline 2234 -> 815 lines
+- Synthetic values decide each choice (inventoried, managed, has a comment, ...) independently and in the live bMS's proportions (`roll()` in `src/profiles/seeded.ts`)
 
 ## [0.9.1] - 2026-11-02
 

@@ -116,12 +116,16 @@ function itemFields(route: SpecRoute | undefined): Set<string> | undefined {
  * Spec fields a live bMS leaves null on every item too, so the mock's null is right: keyed by
  * module and the list's last path segment (`*`: every list of the module). From a read-only probe
  * of a live 26R1 bMS (26.1.161.0, probe version 7, 2026-11-02: 32 endpoints, 20 of them Windows,
- * 5 Linux).
+ * 5 Linux; 13 asset types, 66 job definitions, 156 job instances, 122 installed software entries).
  */
 const LIVE_NULL: Record<string, readonly string[]> = {
   'endpoints *': ['assignedScannerId', 'assignedScannerName', 'registeredUserId'],
   'endpoints WindowsEndpoints': ['customState', 'ipNetworkId', 'ipNetworkName', 'logicalMAC', 'opcuaInformation'],
   'endpoints LinuxEndpoints': ['activity', 'comment', 'osVersionString', 'primarySubnetMask', 'opcuaInformation'],
+  'assets AssetTypes': ['additionalProperties', 'contact', 'costCenter', 'encodedIcon', 'inventoryNumber', 'summary'],
+  'jobs JobDefinitions': ['validity'],
+  'jobs JobInstances': ['nextExecution'],
+  'software InstalledWindowsSoftware': ['autFirstUse', 'autLastData', 'autLastUse'],
 };
 
 /**

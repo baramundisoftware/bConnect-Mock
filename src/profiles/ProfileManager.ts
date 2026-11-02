@@ -10,6 +10,7 @@
 
 import { HIDDEN_TREE_ROOTS, withHiddenTreeRoot } from './treeRoots';
 import { INVENTORY_KINDS, withInventory } from './endpointInventory';
+import { RECORD_TYPES, withRecordFields } from './recordFields';
 import fs from 'fs';
 import path from 'path';
 
@@ -148,17 +149,17 @@ export class ProfileManager {
   static loadProfile(mode: ProfileMode, version: BmsVersion = BmsVersion.BMS_25R2): IProfile {
     switch (mode) {
       case ProfileMode.MINIMAL_READONLY:
-        return withTreeRoots(withEndpointInventory(new MinimalReadonlyProfile(version)));
+        return withTreeRoots(withLiveFields(new MinimalReadonlyProfile(version)));
       case ProfileMode.MINIMAL_READWRITE:
-        return withTreeRoots(withEndpointInventory(new MinimalReadwriteProfile(version)));
+        return withTreeRoots(withLiveFields(new MinimalReadwriteProfile(version)));
       case ProfileMode.STANDARD_READONLY:
-        return withTreeRoots(withEndpointInventory(new StandardReadonlyProfile(version)));
+        return withTreeRoots(withLiveFields(new StandardReadonlyProfile(version)));
       case ProfileMode.STANDARD_READWRITE:
-        return withTreeRoots(withEndpointInventory(new StandardReadwriteProfile(version)));
+        return withTreeRoots(withLiveFields(new StandardReadwriteProfile(version)));
       case ProfileMode.LARGESCALE_READONLY:
-        return withTreeRoots(withEndpointInventory(new LargeScaleReadonlyProfile(version)));
+        return withTreeRoots(withLiveFields(new LargeScaleReadonlyProfile(version)));
       case ProfileMode.LARGESCALE_READWRITE:
-        return withTreeRoots(withEndpointInventory(new LargeScaleReadwriteProfile(version)));
+        return withTreeRoots(withLiveFields(new LargeScaleReadwriteProfile(version)));
       default:
         throw new Error(`Unknown profile mode: ${mode}`);
     }
@@ -271,19 +272,27 @@ function withTreeRoots(profile: IProfile): IProfile {
 }
 
 /**
- * Every profile answers its endpoints with the inventory a live bMS has (IP, OS build, CPU,
- * disks, time zone, ...; src/profiles/endpointInventory.ts), for fixtures and generated data
- * alike: each fixture list once, each generated item as it is made.
+ * Every profile answers with the fields a live bMS fills: the endpoints' inventory (IP, OS build,
+ * CPU, disks, time zone, ...; src/profiles/endpointInventory.ts) and those of assets, asset
+ * types, jobs and installed software (src/profiles/recordFields.ts), for fixtures and generated
+ * data alike: each fixture list once, each generated item as it is made.
  */
-function withEndpointInventory(profile: IProfile): IProfile {
+function withLiveFields(profile: IProfile): IProfile {
   const load = profile.getFixture.bind(profile);
+  const related = (entityType: string): Record<string, unknown>[] => {
+    const data = load(entityType);
+    return Array.isArray(data) ? (data as Record<string, unknown>[]) : [];
+  };
+  const fills = (entityType: string): boolean => Boolean(INVENTORY_KINDS[entityType]) || RECORD_TYPES.has(entityType);
+  const fill = (entityType: string, item: Record<string, unknown>): Record<string, unknown> =>
+    (INVENTORY_KINDS[entityType] ? withInventory(entityType, item) : withRecordFields(entityType, item, related));
   const done = new WeakMap<object, unknown[]>();
   profile.getFixture = (entityType: string) => {
     const data = load(entityType);
-    if (!INVENTORY_KINDS[entityType] || !Array.isArray(data)) { return data; }
+    if (!fills(entityType) || !Array.isArray(data)) { return data; }
     let items = done.get(data);
     if (!items) {
-      items = (data as Record<string, unknown>[]).map((item) => withInventory(entityType, item));
+      items = (data as Record<string, unknown>[]).map((item) => fill(entityType, item));
       done.set(data, items);
     }
     return items;
@@ -292,9 +301,9 @@ function withEndpointInventory(profile: IProfile): IProfile {
   if (generatorOf) {
     profile.getGenerator = (entityType: string) => {
       const generator = generatorOf(entityType);
-      if (generator && INVENTORY_KINDS[entityType]) {
+      if (generator && fills(entityType)) {
         const make = generator.generateItem.bind(generator);
-        generator.generateItem = (index: number) => withInventory(entityType, make(index) as Record<string, unknown>);
+        generator.generateItem = (index: number) => fill(entityType, make(index) as Record<string, unknown>);
       }
       return generator;
     };
