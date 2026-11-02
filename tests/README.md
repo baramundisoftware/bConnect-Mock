@@ -44,7 +44,8 @@ spec doesn't define. Path parameters get real IDs from the parent list.
 For list answers it also reports spec fields that **no item sets** (missing or `null` in all of
 them), e.g. `26r1 GET /servermanagement/v2.0/SecurityGroups data[*].groupName: never set`. Such
 a field is either one the mock has no data for, or one its data keeps under another name; the
-latter belongs in `src/middleware/specFields.ts` (#86).
+latter belongs in `src/middleware/specFields.ts` (#86). Fields a live bMS leaves `null` on every
+item too are not reported (`LIVE_NULL` in the test, from a live-bMS probe).
 
 Known differences are listed in `spec-conformance.baseline.json`, one line each, e.g.
 `26r1 GET /jobs/v2.0/JobDefinitions data[*].type: not in enum: "SoftwareDeployment"`.

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Endpoints carry the inventory a live bMS answers, in the formats a read-only probe of a live 26R1 bMS showed (`src/profiles/endpointInventory.ts`, values synthetic and fixed per endpoint, for fixtures, generators and the read-write store):
+  - Windows: about a third inventoried (`cpu`, `totalRAM`, `storageMedia` with EFI/Windows/recovery volumes, `primaryIP`/`ipList`, `osVersionString` such as `10.0.22631.4317`, `osVersionText`, `lastBoot`, `lastUser`, `timeZone` such as `UTC+01:00 Europe/Berlin`, `bootMode`, `energyScheme`, `uuid`); every endpoint has `clientAgentLink`, `clientAgentState`, `coManagement`, `modernManagementState`, `lastChange`, an empty `entraIdDeviceId` and `storageMedia` (empty when not inventoried). Date-times without fractions of a second, as on the live bMS
+  - Linux: `managementMode` SSH, `sshConfiguration` (version, port 22, authentication method, user, host key), `hostName`, `osVersionText`, `primaryIP`, `timeZone`
+  - Mac, iOS, Android: enrollment and ownership fields (`managementState`, `enrollmentType`, `owner`, `appleDEP`, `androidEnterpriseProfileType`, ...); enrolled devices also their network and OS details
+  - Network endpoints: `operatingSystem` "Unknown", `snmpPort` 0, `totalRAM` 0, `sshAuthenticationMethod`, `sshConfiguration`, `hostName`, `macList`
+  - `activity` is a sentence, as on the live bMS (was `Active`/`Idle`/`Updating`); the large-scale Windows endpoints no longer carry a three-part `osVersionString` unrelated to their OS
+  - Values the live bMS could not show (no enrolled mobile devices there) follow the spec; enum values chosen by their length in the probe are marked in the code
+- The spec conformance test no longer reports fields a live bMS leaves null on every endpoint too (`assignedScannerId`, `registeredUserId`, Windows `customState`, `logicalMAC`, ...). Baseline 2234 -> 1185 lines
+
 ## [0.9.1] - 2026-11-02
 
 ### Fixed

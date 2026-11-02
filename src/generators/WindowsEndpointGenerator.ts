@@ -33,16 +33,6 @@ const OS_VERSIONS = [
   'Microsoft Windows Server 2019 Datacenter',
 ];
 
-const OS_VERSION_STRINGS = [
-  '10.0.22631', // Win11 23H2
-  '10.0.22621', // Win11 22H2
-  '10.0.19045', // Win10 22H2
-  '10.0.19044', // Win10 21H2
-  '10.0.14393', // LTSC
-  '10.0.20348', // Server 2022
-  '10.0.17763', // Server 2019
-];
-
 const MANUFACTURERS = [
   'Dell Technologies',
   'HP Inc.',
@@ -83,8 +73,6 @@ const LOGICAL_GROUPS = [
   'IT',
   'Operations',
 ];
-
-const ACTIVITIES = ['Active', 'Active', 'Active', 'Idle', 'Active', 'Active', 'Updating'];
 
 const ENROLLMENT_TYPES = ['Native', 'Native', 'SSH', 'SSHAndNative', 'Native'];
 
@@ -257,10 +245,8 @@ export interface WindowsEndpointRecord {
   primaryIP: string;
   primarySubnetMask: string;
   comment: string | null;
-  activity: string;
   lastSeen: string;
   operatingSystem: string;
-  osVersionString: string;
   logicalGroupId: string;
   logicalGroup: string;
   manufacturer: string;
@@ -318,7 +304,6 @@ export class WindowsEndpointGenerator extends BaseGenerator<WindowsEndpointRecor
     const hostName = displayName;
 
     const os = pick(OS_VERSIONS, index);
-    const osVersion = pick(OS_VERSION_STRINGS, index);
     const manufacturer = pick(MANUFACTURERS, index);
     const modelPool = MODELS[manufacturer] ?? ['Generic Workstation'];
     const modelName = pick(modelPool, index >> 1);
@@ -350,10 +335,8 @@ export class WindowsEndpointGenerator extends BaseGenerator<WindowsEndpointRecor
       primaryIP: indexToIP(index),
       primarySubnetMask: '255.255.0.0',
       comment: null,
-      activity: pick(ACTIVITIES, index),
       lastSeen: indexToLastSeen(index),
       operatingSystem: os,
-      osVersionString: osVersion,
       logicalGroupId,
       logicalGroup,
       manufacturer,

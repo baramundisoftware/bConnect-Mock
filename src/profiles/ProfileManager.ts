@@ -9,6 +9,7 @@
  */
 
 import { HIDDEN_TREE_ROOTS, withHiddenTreeRoot } from './treeRoots';
+import { INVENTORY_KINDS, withInventory } from './endpointInventory';
 import fs from 'fs';
 import path from 'path';
 
@@ -147,17 +148,17 @@ export class ProfileManager {
   static loadProfile(mode: ProfileMode, version: BmsVersion = BmsVersion.BMS_25R2): IProfile {
     switch (mode) {
       case ProfileMode.MINIMAL_READONLY:
-        return withTreeRoots(new MinimalReadonlyProfile(version));
+        return withTreeRoots(withEndpointInventory(new MinimalReadonlyProfile(version)));
       case ProfileMode.MINIMAL_READWRITE:
-        return withTreeRoots(new MinimalReadwriteProfile(version));
+        return withTreeRoots(withEndpointInventory(new MinimalReadwriteProfile(version)));
       case ProfileMode.STANDARD_READONLY:
-        return withTreeRoots(new StandardReadonlyProfile(version));
+        return withTreeRoots(withEndpointInventory(new StandardReadonlyProfile(version)));
       case ProfileMode.STANDARD_READWRITE:
-        return withTreeRoots(new StandardReadwriteProfile(version));
+        return withTreeRoots(withEndpointInventory(new StandardReadwriteProfile(version)));
       case ProfileMode.LARGESCALE_READONLY:
-        return withTreeRoots(new LargeScaleReadonlyProfile(version));
+        return withTreeRoots(withEndpointInventory(new LargeScaleReadonlyProfile(version)));
       case ProfileMode.LARGESCALE_READWRITE:
-        return withTreeRoots(new LargeScaleReadwriteProfile(version));
+        return withTreeRoots(withEndpointInventory(new LargeScaleReadwriteProfile(version)));
       default:
         throw new Error(`Unknown profile mode: ${mode}`);
     }
@@ -266,6 +267,38 @@ function withTreeRoots(profile: IProfile): IProfile {
     }
     return items;
   };
+  return profile;
+}
+
+/**
+ * Every profile answers its endpoints with the inventory a live bMS has (IP, OS build, CPU,
+ * disks, time zone, ...; src/profiles/endpointInventory.ts), for fixtures and generated data
+ * alike: each fixture list once, each generated item as it is made.
+ */
+function withEndpointInventory(profile: IProfile): IProfile {
+  const load = profile.getFixture.bind(profile);
+  const done = new WeakMap<object, unknown[]>();
+  profile.getFixture = (entityType: string) => {
+    const data = load(entityType);
+    if (!INVENTORY_KINDS[entityType] || !Array.isArray(data)) { return data; }
+    let items = done.get(data);
+    if (!items) {
+      items = (data as Record<string, unknown>[]).map((item) => withInventory(entityType, item));
+      done.set(data, items);
+    }
+    return items;
+  };
+  const generatorOf = profile.getGenerator?.bind(profile);
+  if (generatorOf) {
+    profile.getGenerator = (entityType: string) => {
+      const generator = generatorOf(entityType);
+      if (generator && INVENTORY_KINDS[entityType]) {
+        const make = generator.generateItem.bind(generator);
+        generator.generateItem = (index: number) => withInventory(entityType, make(index) as Record<string, unknown>);
+      }
+      return generator;
+    };
+  }
   return profile;
 }
 
