@@ -113,6 +113,18 @@ function itemFields(route: SpecRoute | undefined): Set<string> | undefined {
 }
 
 /**
+ * Spec fields a live bMS leaves null on every item too, so the mock's null is right: keyed by
+ * module and the list's last path segment (`*`: every list of the module). From a read-only probe
+ * of a live 26R1 bMS (26.1.161.0, probe version 7, 2026-11-02: 32 endpoints, 20 of them Windows,
+ * 5 Linux).
+ */
+const LIVE_NULL: Record<string, readonly string[]> = {
+  'endpoints *': ['assignedScannerId', 'assignedScannerName', 'registeredUserId'],
+  'endpoints WindowsEndpoints': ['customState', 'ipNetworkId', 'ipNetworkName', 'logicalMAC', 'opcuaInformation'],
+  'endpoints LinuxEndpoints': ['activity', 'comment', 'osVersionString', 'primarySubnetMask', 'opcuaInformation'],
+};
+
+/**
  * Spec fields of a list's items that no item sets (missing or null in all of them). The
  * validator can't see these, since optional and nullable fields may be absent; but when no
  * item has a value, the mock's data usually names the field differently (#86: `name` for
@@ -123,7 +135,9 @@ function neverSet(route: SpecRoute, body: unknown): string[] {
   const fields = itemFields(route);
   if (!Array.isArray(items) || items.length === 0 || !fields) { return []; }
   const prefix = Array.isArray(body) ? '[*]' : 'data[*]';
-  return [...fields].filter((f) => items.every((i) => { const v = (i as Record<string, unknown> | null)?.[f]; return v === null || v === undefined; }))
+  const liveNull = new Set([...(LIVE_NULL[`${route.module} *`] ?? []), ...(LIVE_NULL[`${route.module} ${route.path.split('/').pop() ?? ''}`] ?? [])]);
+  return [...fields].filter((f) => !liveNull.has(f))
+    .filter((f) => items.every((i) => { const v = (i as Record<string, unknown> | null)?.[f]; return v === null || v === undefined; }))
     .map((f) => `${prefix}.${f}: never set`);
 }
 
