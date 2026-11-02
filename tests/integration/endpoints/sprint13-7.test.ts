@@ -112,14 +112,18 @@ describe('Objects PATCH + Rights GET (P13.7.4)', () => {
     expect(res.body).toHaveProperty('displayName', 'Updated Name');
   });
 
-  it('GET /v2.0/Objects/:id/Rights returns 200 with rights array', async () => {
+  it('GET /v2.0/Objects/:id/Rights answers the spec\'s ObjectPermissions for a known object', async () => {
     const res = await request(app)
-      .get('/v2.0/Objects/some-object-id/Rights')
+      .get('/v2.0/Objects/d0000001-0001-0001-0001-000000000001/Rights')
       .expect(200);
-    expect(res.body).toHaveProperty('objectId');
-    expect(Array.isArray(res.body.rights)).toBe(true);
-    expect(res.body.rights.length).toBeGreaterThan(0);
-    expect(res.body.rights[0]).toHaveProperty('principal');
-    expect(res.body.rights[0]).toHaveProperty('permission');
+    expect(res.body).toMatchObject({ objectId: 'd0000001-0001-0001-0001-000000000001', objectName: expect.any(String), inheritRights: true });
+    expect(res.body.securityProfilePermissions.length).toBeGreaterThan(0);
+    expect(res.body.securityProfilePermissions[0]).toEqual({
+      securityProfileId: expect.any(String), securityProfileName: expect.any(String), permissions: ['Full'],
+    });
+  });
+
+  it('GET /v2.0/Objects/:id/Rights answers 404 for an unknown object', async () => {
+    await request(app).get('/v2.0/Objects/00000000-0000-0000-0000-000000000000/Rights').expect(404);
   });
 });

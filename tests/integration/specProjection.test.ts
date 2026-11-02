@@ -157,6 +157,22 @@ describe('spec fields the mock keeps under other names are answered (#86)', () =
     expect((all.body.data as Array<{ state: string }>).map((v) => v.state)).toContain('Ignored');
   });
 
+  it('25R2 answers the sub-resources of universal dynamic groups (its spec lists no UDGs)', async () => {
+    const app25 = strictApp(ProfileMode.STANDARD_READONLY, BmsVersion.BMS_25R2);
+    const res = await request(app25).get('/bconnect/jobs/v2.0/UniversalDynamicGroups/d0011111-0000-0000-0000-000000000001/JobInstances');
+    expect(res.status).toBe(200);
+    expect(res.body.data.length).toBeGreaterThan(0);
+  });
+
+  it('Objects/{id}/Rights answers ObjectPermissions, and a large-scale Windows endpoint has its local admin account', async () => {
+    const res = await request(app).get('/bconnect/servermanagement/v2.0/Objects/d0000001-0001-0001-0001-000000000001/Rights');
+    expect(Object.keys(res.body).sort()).toEqual(['inheritRights', 'objectId', 'objectName', 'securityProfilePermissions']);
+    const large = strictApp(ProfileMode.LARGESCALE_READONLY);
+    const endpoint = (await request(large).get('/bconnect/endpoints/v2.0/WindowsEndpoints?PageSize=1')).body.data[0] as { id: string };
+    const account = await request(large).get(`/bconnect/defensecontrol/v2.0/LocalAdministrativeAccounts/WindowsEndpoints/${endpoint.id}`);
+    expect(account.status).toBe(200);
+  });
+
   it('a value the item has under the spec\'s name wins over the derived one', () => {
     const lookup = (): undefined => undefined;
     expect(fillSpecFields('SecurityGroup', { name: 'old', groupName: 'kept' }, lookup)).toMatchObject({ groupName: 'kept' });

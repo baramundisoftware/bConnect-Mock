@@ -526,7 +526,9 @@ class StandardReadonlyProfile extends BaseProfile {
 
     let result: unknown[] = [];
 
-    if (this.bmsVersion === BmsVersion.BMS_26R1) {
+    // UDGs exist in 25R2 too: its spec has their sub-resource routes (not their list), and the
+    // 25R2 child fixtures (job instances, installed software, endpoints) point to these groups
+    if (this.bmsVersion === BmsVersion.BMS_26R1 || entityType === 'universalDynamicGroups') {
       const fixtureMap26r1: Record<string, string> = {
         rules: 'rules.json', vulnerabilities: 'vulnerabilities.json',
         detectedVulnerabilities: 'detectedVulnerabilities.json',
@@ -635,7 +637,9 @@ class StandardReadwriteProfile extends BaseProfile {
 
     let result: unknown[] = [];
 
-    if (this.bmsVersion === BmsVersion.BMS_26R1) {
+    // UDGs exist in 25R2 too: its spec has their sub-resource routes (not their list), and the
+    // 25R2 child fixtures (job instances, installed software, endpoints) point to these groups
+    if (this.bmsVersion === BmsVersion.BMS_26R1 || entityType === 'universalDynamicGroups') {
       const fixtureMap26r1: Record<string, string> = {
         rules: 'rules.json', vulnerabilities: 'vulnerabilities.json',
         detectedVulnerabilities: 'detectedVulnerabilities.json',
@@ -748,6 +752,7 @@ function largeScaleFixture(
 const WINDOWS_ENDPOINT_LINKS: Record<string, { id: string; name?: string }> = {
   microsoftDefenderStates: { id: 'endpointId', name: 'endpointName' },
   microsoftDefenderThreats: { id: 'windowsEndpointId' },
+  localAdminAccounts: { id: 'endpointId', name: 'endpointName' },
 };
 
 /**
