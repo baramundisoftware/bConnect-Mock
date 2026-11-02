@@ -1,0 +1,126 @@
+/**
+ * Record fields — what a live bMS fills for assets, asset types, job definitions, job instances
+ * and installed Windows software
+ *
+ * The mock's data for these lacked fields a live bMS answers, so the spec conformance test
+ * listed them as never set. The formats come from a read-only probe of a live 26R1 bMS
+ * (26.1.161.0, probe version 7, 2026-11-02), which reported each field's shape, never its values:
+ * - Assets: three `additionalProperties` of type String, an empty `assetReferenceList`,
+ *   `energyOn`/`energyOff` -1, `operatingCost` and `purchasePrice` 0, `url` "http://" (the
+ *   empty default), `lastChanged` without a fraction of a second.
+ * - Asset types: a parent folder (`guidParent`, `parentName`), `energyOptions` "0",
+ *   `iconChanged`, `purchaseDate`, the same zero costs and default `url`.
+ * - Job instances: `delays` 0 and `steps`, each with a type, description, state and last action.
+ * - Installed Windows software: half of it managed software (`source` and `category`
+ *   ManagedSoftware, with an `applicationId`), half `Inventoried`; every entry has a
+ *   `detectionRuleId`, `lastFound` and `autUsage` AutDeactivated (usage tracking off).
+ * - Job definitions: a `comment` on about a third of them.
+ *
+ * withRecordFields() fills these where an item has none; values are synthetic and fixed per item
+ * (src/profiles/seeded.ts). Links (an asset's type, an asset type's folder) point to items the
+ * profile has.
+ */
+
+import { type Item, seedOf, roll, pick, str, moment, guidOf, fillMissing } from './seeded';
+
+/** Another entity type's items of the same profile */
+export type Related = (entityType: string) => Item[];
+type Fill = (item: Item, h: number, related: Related) => Item;
+
+const STEP_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  WindowsInventory: 'Hardware and software inventory',
+  WindowsApplicationInstallation: 'Install application',
+  WindowsMicrosoftUpdateInventory: 'Scan for Microsoft updates',
+  WindowsMicrosoftUpdateInstallation: 'Install Microsoft updates',
+  NetworkAndOTDeviceSSHMiniInventory: 'SSH mini inventory',
+  LinuxAndOTScriptExecution: 'Execute script',
+  MacOsAndMobileSoftwareInventory: 'Software inventory',
+};
+
+/** The step types a job definition of each type runs */
+function stepTypes(jobType: string, h: number): string[] {
+  if (/^Network/.test(jobType)) { return ['NetworkAndOTDeviceSSHMiniInventory']; }
+  if (/^MacOS|Mobile/.test(jobType)) { return ['MacOsAndMobileSoftwareInventory']; }
+  return pick([['WindowsInventory'], ['WindowsApplicationInstallation', 'WindowsInventory'], ['WindowsMicrosoftUpdateInventory', 'WindowsMicrosoftUpdateInstallation']], h >>> 3);
+}
+
+/** Steps that match the instance's state: done, failed at the last step, still queued or running */
+function steps(item: Item, h: number): Item[] {
+  const state = str(item['state']) ?? 'FinishedSuccessfully';
+  const types = stepTypes(str(item['jobDefinitionType']) ?? 'WindowsJobDefinition', h);
+  return types.map((type, i) => {
+    const last = i === types.length - 1;
+    const stepState = state === 'FinishedWithError' && last ? 'FinishedWithError'
+      : state === 'Queued' || (state === 'Running' && last) ? 'Queued'
+        : state === 'Cancelled' && last ? 'RequirementsNotMet' : 'FinishedSuccessfully';
+    return {
+      type,
+      description: STEP_DESCRIPTIONS[type] ?? type,
+      state: stepState,
+      stateDescription: stepState === 'FinishedWithError' ? 'The step failed with exit code 1603.' : stepState === 'FinishedSuccessfully' ? 'Step finished successfully' : null,
+      lastAction: stepState === 'Queued' ? null : moment(h, 90 - i * 5, 'ticks'),
+    };
+  });
+}
+
+const ASSET_COMMENTS = ['Leased device, return to the vendor at the end of the term', 'Inventoried during the annual stocktaking', 'Moved to a new desk, update the location'];
+const JOB_COMMENTS = ['Rolls out the current package to all Windows endpoints, created 15.03.2026', 'Runs nightly between 22:00 and 04:00, see change request CR-2041', 'Pilot group first, then all endpoints after one week'];
+
+const FILL: Readonly<Record<string, Fill>> = {
+  assets: (item, h, related) => {
+    const types = related('assetTypes');
+    const byName = types.find((t) => str(t['name'])?.toLowerCase() === str(item['type'])?.toLowerCase());
+    const assetType = byName ?? (types.length ? pick(types, h) : undefined);
+    const properties = [['Location', item['location']], ['Department', item['department']], ['Warranty until', item['warrantyExpires']]]
+      .filter(([, value]) => str(value)).map(([name, value]) => ({ name, type: 'String', value }));
+    return {
+      assetTypeId: assetType?.['id'] ?? assetType?.['guid'],
+      additionalProperties: properties,
+      assetReferenceList: [],
+      comments: roll(h, 20) < 35 ? pick(ASSET_COMMENTS, h >>> 2) : undefined,
+      energyOn: -1,
+      energyOff: -1,
+      operatingCost: 0,
+      purchasePrice: 0,
+      url: 'http://',
+      lastChanged: moment(h, 300, 'none'),
+    };
+  },
+  assetTypes: (_item, h, related) => {
+    const folders = related('assetTypeFolders');
+    const folder = folders.length ? pick(folders, h) : undefined;
+    return {
+      guidParent: folder?.['id'],
+      parentName: folder?.['name'],
+      energyOptions: '0',
+      iconChanged: moment(h, 20_000, 'none'),
+      purchaseDate: moment(h, 30_000, 'none'),
+      operatingCost: 0,
+      purchasePrice: 0,
+      url: 'http://',
+    };
+  },
+  jobInstances: (item, h) => ({ delays: 0, steps: steps(item, h) }),
+  jobs: (_item, h) => ({ comment: roll(h, 21) < 38 ? pick(JOB_COMMENTS, h >>> 2) : undefined }), // 25 of 66 on the live bMS
+  installedWindowsSoftware: (_item, h) => {
+    const managed = roll(h, 22) < 50; // 50 of 100 on the live bMS
+    return {
+      source: managed ? 'ManagedSoftware' : 'Inventoried',
+      category: managed ? 'ManagedSoftware' : undefined,
+      applicationId: managed ? guidOf(h, 21) : undefined,
+      detectionRuleId: guidOf(h, 22),
+      autUsage: 'AutDeactivated',
+      lastFound: moment(h, 120, 'none'),
+    };
+  },
+};
+
+/** Fixture and store names of the entity types this module fills */
+export const RECORD_TYPES: ReadonlySet<string> = new Set(Object.keys(FILL));
+
+/** The item with the record fields it has none of (missing or null) */
+export function withRecordFields(entityType: string, item: Item, related: Related): Item {
+  const fill = FILL[entityType];
+  if (!fill || !item) { return item; }
+  return fillMissing(item, fill(item, seedOf(item['id'] ?? item['guid'] ?? item['assetId']), related));
+}

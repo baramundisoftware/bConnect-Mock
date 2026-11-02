@@ -23,7 +23,8 @@
  * endpoints get none, like a newly added endpoint on a live bMS before its first inventory.
  */
 
-type Item = Record<string, unknown>;
+import { type Item, seedOf, roll, pick, str, moment, shortDate, guidOf, fillMissing } from './seeded';
+
 type Kind = 'windows' | 'linux' | 'mac' | 'android' | 'ios' | 'network';
 
 /** Fixture and store names of the endpoint types this module fills */
@@ -32,40 +33,9 @@ export const INVENTORY_KINDS: Readonly<Record<string, Kind>> = {
   androidEndpoints: 'android', iosEndpoints: 'ios', networkEndpoints: 'network',
 };
 
-/** FNV-1a over the item's ID: the seed of all its values */
-function seedOf(id: unknown): number {
-  let h = 0x811c9dc5;
-  for (const c of String(id)) { h ^= c.charCodeAt(0); h = Math.imul(h, 0x01000193); }
-  return h >>> 0;
-}
-
-const pick = <T>(pool: readonly T[], h: number): T => pool[h % pool.length] as T;
-const str = (v: unknown): string | undefined => (typeof v === 'string' && v !== '' ? v : undefined);
-
-const BASE = Date.UTC(2026, 9, 30, 8, 0, 0);
-const MINUTES = 30 * 24 * 60;
-/** The ISO strings of the minutes before BASE, made once each (a full scan fills 60,000 items) */
-const minuteIso: string[] = [];
-/** A moment up to 30 days before 2026-10-30, in the live bMS's format for the endpoint type */
-function moment(h: number, minutesBack: number, fraction: 'none' | 'ticks'): string {
-  const m = (h + minutesBack) % MINUTES;
-  const iso = (minuteIso[m] ??= new Date(BASE - m * 60_000).toISOString().slice(0, 19));
-  return fraction === 'none' ? `${iso}Z` : `${iso}.${String(h % 10_000_000).padStart(7, '0')}Z`;
-}
-/** dd.MM.yyyy HH:mm, as the activity texts show dates */
-function shortDate(iso: string): string {
-  return `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)} ${iso.slice(11, 16)}`;
-}
-
 const ip = (h: number): string => `172.${16 + (h % 16)}.${(h >>> 4) & 0xff}.${((h >>> 12) % 253) + 1}`;
 const mac = (h: number): string =>
   [0x00, 0x15, 0x5d, (h >>> 16) & 0xff, (h >>> 8) & 0xff, h & 0xff].map((b) => b.toString(16).padStart(2, '0').toUpperCase()).join(':');
-const guidOf = (h: number, salt: number): string => {
-  const hex = (n: number, len: number): string => (n >>> 0).toString(16).padStart(8, '0').slice(-len);
-  const a = Math.imul(h ^ salt, 0x9e3779b1) >>> 0;
-  const b = Math.imul(a ^ 0x5bd1e995, 0x27d4eb2d) >>> 0;
-  return `${hex(a, 8)}-${hex(b, 4)}-4${hex(b >>> 4, 3)}-a${hex(a >>> 8, 3)}-${hex(a ^ b, 8)}${hex(b, 4)}`;
-};
 const GIB = 1024 ** 3;
 
 const TIME_ZONES = ['UTC+01:00 Europe/Berlin', 'UTC+01:00 Europe/Berlin', 'UTC+01:00 Europe/Berlin', 'UTC+00:00 Europe/London', 'UTC-05:00 America/New_York', 'UTC-08:00 America/Los_Angeles', 'UTC+08:00 Asia/Singapore'];
@@ -126,24 +96,24 @@ function windowsDisk(h: number, volumeGuid: (salt: number) => string): Item[] {
 }
 
 function windows(item: Item, h: number): Item {
-  const inventoried = h % 10 < 4;
+  const inventoried = roll(h, 1) < 35; // 6 of 20 on the live bMS
   const os = str(item['operatingSystem']) ?? 'Microsoft Windows 11 Enterprise 23H2';
   const build = windowsBuild(os);
   const address = str(item['primaryIP']) ?? ip(h);
   const user = str(item['primaryUser'])?.split('@')[0];
   const always: Item = {
-    activity: h % 3 === 0 ? pick(PC_ACTIVITIES, h >>> 2)(shortDate(moment(h, 30, 'none'))) : undefined,
-    comment: h % 5 < 2 ? pick(COMMENTS, h >>> 3) : undefined,
-    clientAgentLink: { extendedInternetMode: false, networkMode: h % 6 === 0 ? 'Internet' : 'LAN', lastNetworkMode: h % 6 === 0 ? 'Internet' : 'LAN' },
+    activity: roll(h, 2) < 35 ? pick(PC_ACTIVITIES, h >>> 2)(shortDate(moment(h, 30, 'none'))) : undefined,
+    comment: roll(h, 3) < 40 ? pick(COMMENTS, h >>> 3) : undefined,
+    clientAgentLink: { extendedInternetMode: false, networkMode: roll(h, 4) < 15 ? 'Internet' : 'LAN', lastNetworkMode: roll(h, 4) < 15 ? 'Internet' : 'LAN' },
     clientAgentState: inventoried ? 'Running' : 'Unknown', // length
     coManagement: 'None',
     entraIdDeviceId: '',
     isAutopilotDevice: false,
     isDeactivated: false,
-    isEnergyManagementActive: h % 2 === 0,
+    isEnergyManagementActive: roll(h, 5) < 55,
     lastChange: moment(h, 0, 'none'),
     modernManagementState: 'NotManaged',
-    registeredUserUpdateMode: h % 3 === 0 ? 'EnterManually' : 'UseNextLogonUser', // length
+    registeredUserUpdateMode: roll(h, 6) < 30 ? 'EnterManually' : 'UseNextLogonUser', // length
     userRelatedJobExecution: 'ForRegisteredUser', // length
     storageMedia: inventoried ? windowsDisk(h, (salt) => guidOf(h, salt)) : [],
   };
@@ -182,8 +152,8 @@ function linux(item: Item, h: number): Item {
     timeZone: pick(TIME_ZONES, h >>> 9),
     sshConfiguration: {
       sshVersion, port: 22, discoveryDate: null,
-      authenticationMethod: h % 5 < 3 ? 'Key' : 'Password',
-      username: h % 2 === 0 ? 'bmsadmin' : 'root',
+      authenticationMethod: roll(h, 7) < 60 ? 'Key' : 'Password',
+      username: roll(h, 8) < 50 ? 'bmsadmin' : 'root',
       hostKeys: [{ hostKeyType: 'ssh-ed25519', hostKey: `AAAAC3NzaC1lZDI1NTE5AAAAI${key}` }],
     },
   };
@@ -191,17 +161,17 @@ function linux(item: Item, h: number): Item {
 
 /** Fields of a mobile device or Mac; enrolled ones also carry their network and OS details (spec) */
 function apple(item: Item, h: number, kind: 'mac' | 'ios'): Item {
-  const enrolled = kind === 'ios' ? item['managementState'] !== 'Unmanaged' : h % 10 < 7;
+  const enrolled = kind === 'ios' ? item['managementState'] !== 'Unmanaged' : roll(h, 9) < 70;
   const common: Item = {
-    activity: h % 3 === 0 ? `(${shortDate(moment(h, 45, 'none'))}:00) ${pick(MOBILE_ACTIVITIES, h >>> 2)}` : undefined,
-    comment: h % 4 === 0 ? pick(COMMENTS, h >>> 3) : undefined,
+    activity: roll(h, 10) < 75 ? `(${shortDate(moment(h, 45, 'none'))}:00) ${pick(MOBILE_ACTIVITIES, h >>> 2)}` : undefined,
+    comment: roll(h, 11) < 75 ? pick(COMMENTS, h >>> 3) : undefined,
     appleDEP: item['isSupervised'] === true,
     dedicatedDeviceModeEnabled: false,
     owner: 'Company', // length
     manufacturer: 'Apple',
     ...(kind === 'mac'
       ? { enrollmentType: enrolled ? 'Native' : 'Unenrolled', managementState: enrolled ? 'Managed' : 'Enrollable', supervised: item['isSupervised'] === true }
-      : { appleManagementMode: 'DeviceEnrollment', hasAppleAppUpdates: h % 4 === 1 }),
+      : { appleManagementMode: 'DeviceEnrollment', hasAppleAppUpdates: roll(h, 12) < 25 }),
   };
   if (!enrolled) { return common; }
   return {
@@ -216,11 +186,11 @@ function apple(item: Item, h: number, kind: 'mac' | 'ios'): Item {
 }
 
 function android(item: Item, h: number): Item {
-  const enrolled = h % 10 < 7;
+  const enrolled = roll(h, 9) < 70;
   const address = mac(h);
   const common: Item = {
-    activity: h % 3 === 0 ? `(${shortDate(moment(h, 45, 'none'))}:00) ${pick(MOBILE_ACTIVITIES, h >>> 2)}` : undefined,
-    comment: h % 4 === 0 ? pick(COMMENTS, h >>> 3) : undefined,
+    activity: roll(h, 10) < 75 ? `(${shortDate(moment(h, 45, 'none'))}:00) ${pick(MOBILE_ACTIVITIES, h >>> 2)}` : undefined,
+    comment: roll(h, 11) < 75 ? pick(COMMENTS, h >>> 3) : undefined,
     managementState: enrolled ? 'Managed' : 'Enrollable',
     androidEnterpriseProfileType: enrolled ? 'WorkProfile' : 'None',
     dedicatedDeviceModeEnabled: false,
@@ -244,9 +214,9 @@ function android(item: Item, h: number): Item {
 }
 
 function network(item: Item, h: number): Item {
-  const ssh = h % 4 !== 0;
+  const ssh = roll(h, 13) < 75; // 3 of 4 on the live bMS
   return {
-    comment: h % 4 < 3 ? `Discovered by network scan on ${shortDate(moment(h, 2000, 'none'))}` : undefined,
+    comment: roll(h, 14) < 75 ? `Discovered by network scan on ${shortDate(moment(h, 2000, 'none'))}` : undefined,
     hostName: str(item['displayName']),
     operatingSystem: 'Unknown',
     macList: str(item['primaryMAC']),
@@ -267,13 +237,5 @@ const FILL: Record<Kind, (item: Item, h: number) => Item> = {
 export function withInventory(entityType: string, item: Item): Item {
   const kind = INVENTORY_KINDS[entityType];
   if (!kind || !item) { return item; }
-  const derived = FILL[kind](item, seedOf(item['id'] ?? item['guid']));
-  let out: Item | undefined;
-  for (const key in derived) {
-    const value = derived[key];
-    if (value === undefined || (item[key] !== undefined && item[key] !== null)) { continue; }
-    out ??= { ...item };
-    out[key] = value;
-  }
-  return out ?? item;
+  return fillMissing(item, FILL[kind](item, seedOf(item['id'] ?? item['guid'])));
 }
