@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-02
+
 ### Fixed
 - Strict routing no longer drops spec fields the mock's data keeps under other names (#86). Before the projection, `src/middleware/specFields.ts` derives them per spec schema; a value stored under the spec's name wins, and the data itself is unchanged:
   - SecurityGroups: `groupName` (from `name`), `assignedSecurityProfiles` (`{ id, name }` from the write model's `profiles`)
@@ -22,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Tagged releases are published as regular GitHub releases and marked Latest (were all pre-releases, so Latest stayed on v0.3.2)
+- Runtime dependency express 5.2.1 → 5.3.0 (#101)
 - Dependabot also watches the Docker base image (`node:22.23.4-alpine`); it proposes no major updates of the Node image and `@types/node`, which move with the Node version by hand
 
 ### Removed
