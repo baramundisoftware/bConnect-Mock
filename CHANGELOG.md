@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-11-02
+
 ### Fixed
 - 26R1 `GET /compliance/v2.0/DetectedRuleViolations` and `/Endpoints/{endpointId}/DetectedRuleViolations` answer the spec's required `state` in strict routing: `Active`, or `Ignored` for the violations the mock flags as ignored. The spec leaves the values open; `Active` is what bMCWeb's client expects, not yet checked against a live bMS. The conformance baseline has no spec violations left
 - 25R2 answers the sub-resources of universal dynamic groups (`UniversalDynamicGroups/{id}/…Endpoints`, `JobInstances`, `InstalledWindowsSoftware`): the groups were loaded for 26R1 only, so every group ID answered 404, though the 25R2 fixtures link endpoints, job instances and software to them
