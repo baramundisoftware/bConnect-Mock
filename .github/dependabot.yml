@@ -21,6 +21,10 @@ updates:
     labels:
       - "dependencies"
       - "npm"
+    ignore:
+      # The types follow the Node major the mock runs on (.nvmrc), moved by hand with it
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "docker"
     directory: "/"
@@ -32,3 +36,7 @@ updates:
     labels:
       - "dependencies"
       - "docker"
+    ignore:
+      # Patches of the current major only; a Node major moves Dockerfile, CI, .nvmrc and engines together
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
