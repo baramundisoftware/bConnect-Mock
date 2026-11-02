@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Strict routing no longer drops spec fields the mock's data keeps under other names (#86). Before the projection, `src/middleware/specFields.ts` derives them per spec schema; a value stored under the spec's name wins, and the data itself is unchanged:
+  - SecurityGroups: `groupName` (from `name`), `assignedSecurityProfiles` (`{ id, name }` from the write model's `profiles`)
+  - InstalledWindowsSoftware: `name`, `vendor`, `installed`, `endpointName`
+  - AD users, groups and objects: `name`, `firstName`/`lastName`, `mail`, `principalName`, `ldapPath`, `domain`, `objectGuid`, `type`, `orgUnit` (the org unit's name)
+  - Endpoints (all types): `modelName`, `clientAgentVersion`, `registeredUser`, `macList`, `logicalGroup` (the group's name), `supervised`, `uniqueDeviceId`
+  - Assets: `name`, `inventoryNumber`, owner (`ownerId`, `ownerName`, `ownerType`); asset types: `comments`
+  - Microsoft Defender threats: `detectionTime`, `endpointId`, `endpointName`, `threatStatus`, `isActive`; Defender endpoints: `isMicrosoftDefenderActive`
+  - Job definitions: `displayName`, `folder`; variable instances: `name`, `type`, `category`, `scope`, `ownerId`, `ownerName`, `isDefault`
+  - Logical groups, security profiles, variable definitions: `comment` (from `description`); unmanaged endpoints: `osVersionText`, `networkHostname`, `macAddresses`
+  **Clients see more fields filled than before**; fields the mock has no data for stay `null`
+- The spec conformance test reports spec fields that no item of a list sets (`never set`), which catches this kind of difference; the response shapes carry their schema name (`n`) for it
+
 ### Changed
 - Tagged releases are published as regular GitHub releases and marked Latest (were all pre-releases, so Latest stayed on v0.3.2)
 - Dependabot also watches the Docker base image (`node:22.23.4-alpine`)

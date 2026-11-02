@@ -8,6 +8,7 @@ import request from 'supertest';
 import { createApp } from '../../src/app';
 import { ProfileMode, BmsVersion } from '../../src/profiles/ProfileManager';
 import { projectOntoShape } from '../../src/middleware/specProjection';
+import { fillSpecFields } from '../../src/middleware/specFields';
 import { RESPONSE_SHAPES, type ResponseShape } from '../../src/generated/moduleRoutes';
 import type { Express } from 'express';
 
@@ -52,7 +53,8 @@ describe('strict routing projects answers onto the spec', () => {
     const specFields = Object.keys(spec.o.data.a.o);
     for (const key of Object.keys(group)) { expect(specFields).toContain(key); }
     expect(group).not.toHaveProperty('displayName');
-    expect(group).toMatchObject({ comment: null, dip: null, defaultDomain: null });
+    expect(group).toMatchObject({ dip: null, defaultDomain: null });
+    expect(group['comment']).toEqual(expect.any(String)); // the mock's description (#86)
   });
 
   it('a single item is projected too', async () => {
@@ -97,6 +99,55 @@ describe('strict routing projects answers onto the spec', () => {
     const res = await request(app).get('/bconnect/endpoints/v2.0/LogicalGroups/00000000-0000-0000-0000-000000000000');
     expect(res.status).toBe(404);
     expect(JSON.parse(res.text)).toHaveProperty('traceId');
+  });
+});
+
+describe('spec fields the mock keeps under other names are answered (#86)', () => {
+  let app: Express;
+  beforeAll(() => { app = strictApp(ProfileMode.STANDARD_READWRITE); });
+
+  it('SecurityGroups: groupName and assignedSecurityProfiles, for fixtures and created groups', async () => {
+    const list = await request(app).get('/bconnect/servermanagement/v2.0/SecurityGroups?PageSize=50');
+    expect(list.body.data[0]).toEqual({ id: expect.any(String), groupName: 'Default Security Group', assignedSecurityProfiles: [] });
+    const profiles = await request(app).get('/bconnect/servermanagement/v2.0/SecurityProfiles');
+    const profile = profiles.body.data[0] as { id: string; name: string };
+    // The write model is { name, profiles }, the read model { groupName, assignedSecurityProfiles }
+    const created = await request(app).post('/bconnect/servermanagement/v2.0/SecurityGroups').send({ name: 'probe', profiles: [profile.id] });
+    expect(created.status).toBe(201);
+    const read = await request(app).get(`/bconnect/servermanagement/v2.0/SecurityGroups/${created.body.id as string}`);
+    expect(read.body).toEqual({ id: created.body.id, groupName: 'probe', assignedSecurityProfiles: [{ id: profile.id, name: profile.name }] });
+  });
+
+  it('InstalledWindowsSoftware: name, vendor, installed and the endpoint\'s name', async () => {
+    const res = await request(app).get('/bconnect/software/v2.0/InstalledWindowsSoftware?PageSize=1');
+    expect(res.body.data[0]).toMatchObject({
+      name: 'Microsoft Office 365', vendor: 'Microsoft Corporation', installed: '2026-01-15T00:00:00Z', endpointName: expect.any(String),
+    });
+  });
+
+  it('ADUsers: name, mail, principalName, objectGuid, domain and the org unit\'s name', async () => {
+    const res = await request(app).get('/bconnect/activedirectory/v2.0/ADUsers?PageSize=1');
+    expect(res.body.data[0]).toMatchObject({
+      name: 'John Smith', firstName: 'John', lastName: 'Smith', mail: 'jsmith@corp.test', principalName: 'jsmith@corp.test',
+      objectGuid: expect.any(String), domain: 'corp.test', orgUnit: 'Root', type: 'User',
+    });
+  });
+
+  it('a renamed group (JSON Patch on the write model\'s name) reads back with the new groupName', async () => {
+    const list = await request(app).get('/bconnect/servermanagement/v2.0/SecurityGroups?PageSize=1');
+    const id = list.body.data[0].id as string;
+    const patched = await request(app).patch(`/bconnect/servermanagement/v2.0/SecurityGroups/${id}`)
+      .set('Content-Type', 'application/json-patch+json').send([{ op: 'replace', path: '/name', value: 'Renamed' }]);
+    expect(patched.status).toBeLessThan(300);
+    const read = await request(app).get(`/bconnect/servermanagement/v2.0/SecurityGroups/${id}`);
+    expect(read.body.groupName).toBe('Renamed');
+  });
+
+  it('a value the item has under the spec\'s name wins over the derived one', () => {
+    const lookup = (): undefined => undefined;
+    expect(fillSpecFields('SecurityGroup', { name: 'old', groupName: 'kept' }, lookup)).toMatchObject({ groupName: 'kept' });
+    expect(fillSpecFields('SecurityGroup', { name: 'old', groupName: null }, lookup)).toMatchObject({ groupName: 'old' });
+    expect(fillSpecFields('NoFiller', { name: 'x' }, lookup)).toEqual({ name: 'x' });
   });
 });
 
