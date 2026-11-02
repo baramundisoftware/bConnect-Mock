@@ -103,6 +103,21 @@ function itemFields(route: SpecRoute | undefined): Set<string> | undefined {
   return props ? new Set(Object.keys(props)) : undefined;
 }
 
+/**
+ * Spec fields of a list's items that no item sets (missing or null in all of them). The
+ * validator can't see these, since optional and nullable fields may be absent; but when no
+ * item has a value, the mock's data usually names the field differently (#86: `name` for
+ * `groupName`), and the strict projection drops it.
+ */
+function neverSet(route: SpecRoute, body: unknown): string[] {
+  const items = Array.isArray(body) ? body : (body as { data?: unknown } | undefined)?.data;
+  const fields = itemFields(route);
+  if (!Array.isArray(items) || items.length === 0 || !fields) { return []; }
+  const prefix = Array.isArray(body) ? '[*]' : 'data[*]';
+  return [...fields].filter((f) => items.every((i) => { const v = (i as Record<string, unknown> | null)?.[f]; return v === null || v === undefined; }))
+    .map((f) => `${prefix}.${f}: never set`);
+}
+
 /** All findings of one version, as baseline lines */
 async function findings(app: Express, version: string, dirName: string, profileLabel = ''): Promise<string[]> {
   const routes = specRoutes(dirName);
@@ -157,6 +172,7 @@ async function findings(app: Express, version: string, dirName: string, profileL
     if (res.status !== 200) { out.push(`${label} answered ${res.status}`); continue; }
     if (!route.schema) { continue; }
     for (const f of route.validator.validate(route.schema, res.body)) { out.push(`${label} ${f}`); }
+    out.push(...neverSet(route, res.body).map((f) => `${label} ${f}`));
   }
   return out;
 }

@@ -35,7 +35,8 @@ function refName(node) {
 /**
  * The response shape of a schema, for projecting answers onto the spec's fields:
  *   0                 a leaf: keep the value as it is
- *   { o, z }          an object: o = its properties' shapes, z = the nullable ones
+ *   { o, z, n? }      an object: o = its properties' shapes, z = the nullable ones,
+ *                     n = its schema name when it is a named schema (specFields fills by name)
  *   { a }             an array of items of shape a
  * $ref and allOf are resolved; oneOf/anyOf, maps (additionalProperties as a schema) and
  * recursive references become leaves.
@@ -45,7 +46,8 @@ function shapeOf(schema, schemas, seen = new Set()) {
   if (schema.$ref) {
     const name = schema.$ref.split('/').pop();
     if (seen.has(name)) return 0;
-    return shapeOf(schemas[name], schemas, new Set([...seen, name]));
+    const shape = shapeOf(schemas[name], schemas, new Set([...seen, name]));
+    return shape && shape.o ? { ...shape, n: name } : shape;
   }
   if (Array.isArray(schema.allOf)) {
     const parts = schema.allOf.map((part) => shapeOf(part, schemas, seen)).filter((x) => x && x.o);
@@ -174,10 +176,10 @@ function render({ table, details, shapes }) {
   lines.push('};', '');
   lines.push(
     '/**',
-    ' * Response shape per route (first 2xx JSON answer): 0 = leaf, {o, z} = object with its',
-    ' * properties and the nullable ones, {a} = array. Used to project answers onto the spec.',
+    ' * Response shape per route (first 2xx JSON answer): 0 = leaf, {o, z, n?} = object with its',
+    ' * properties, the nullable ones and its schema name, {a} = array. Used to project answers onto the spec.',
     ' */',
-    'export type ResponseShape = 0 | { readonly o: Readonly<Record<string, ResponseShape>>; readonly z: readonly string[] } | { readonly a: ResponseShape };',
+    'export type ResponseShape = 0 | { readonly o: Readonly<Record<string, ResponseShape>>; readonly z: readonly string[]; readonly n?: string } | { readonly a: ResponseShape };',
     '',
     'export const RESPONSE_SHAPES: Record<string, Record<string, Record<string, ResponseShape>>> = {',
   );
