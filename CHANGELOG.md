@@ -22,7 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Tagged releases are published as regular GitHub releases and marked Latest (were all pre-releases, so Latest stayed on v0.3.2)
-- Dependabot also watches the Docker base image (`node:22.23.4-alpine`)
+- Dependabot also watches the Docker base image (`node:22.23.4-alpine`); it proposes no major updates of the Node image and `@types/node`, which move with the Node version by hand
+
+### Removed
+- The unused runtime dependency `dotenv` (nothing imported it); `@types/node` now matches the Node 22 runtime (was 25)
 
 ## [0.8.1] - 2026-10-30
 
