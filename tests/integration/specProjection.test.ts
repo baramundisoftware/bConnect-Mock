@@ -143,6 +143,20 @@ describe('spec fields the mock keeps under other names are answered (#86)', () =
     expect(read.body.groupName).toBe('Renamed');
   });
 
+  it('DetectedRuleViolations carry the required state (Active, or Ignored for ignored violations)', async () => {
+    for (const path of ['/bconnect/compliance/v2.0/DetectedRuleViolations?PageSize=50', '/bconnect/compliance/v2.0/Endpoints/d0000002-0001-0001-0001-000000000001/DetectedRuleViolations']) {
+      const res = await request(app).get(path);
+      expect(res.status).toBe(200);
+      expect(res.body.data.length).toBeGreaterThan(0);
+      for (const v of res.body.data as Array<Record<string, unknown>>) {
+        expect(['Active', 'Ignored']).toContain(v['state']);
+        expect(v).not.toHaveProperty('ignored');
+      }
+    }
+    const all = await request(app).get('/bconnect/compliance/v2.0/DetectedRuleViolations?PageSize=50');
+    expect((all.body.data as Array<{ state: string }>).map((v) => v.state)).toContain('Ignored');
+  });
+
   it('a value the item has under the spec\'s name wins over the derived one', () => {
     const lookup = (): undefined => undefined;
     expect(fillSpecFields('SecurityGroup', { name: 'old', groupName: 'kept' }, lookup)).toMatchObject({ groupName: 'kept' });

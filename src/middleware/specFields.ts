@@ -166,6 +166,10 @@ export const FILLERS: Record<string, Filler> = {
     threatStatus: THREAT_STATUS[item['status'] as string],
     isActive: typeof item['status'] === 'string' ? item['status'] === 'Active' : undefined,
   }),
+  // The spec requires `state` (free text); the mock keeps a flag. "Active" as in bMCWeb's client
+  RuleViolation: (item) => ({
+    state: typeof item['ignored'] === 'boolean' ? (item['ignored'] ? 'Ignored' : 'Active') : 'Active',
+  }),
   MicrosoftDefenderWindowsEndpoint: (item) => ({
     isMicrosoftDefenderActive: typeof item['defenderStatus'] === 'string' ? item['defenderStatus'] === 'Enabled' : undefined,
   }),
