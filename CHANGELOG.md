@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - 26R1 `GET /compliance/v2.0/DetectedRuleViolations` and `/Endpoints/{endpointId}/DetectedRuleViolations` answer the spec's required `state` in strict routing: `Active`, or `Ignored` for the violations the mock flags as ignored. The spec leaves the values open; `Active` is what bMCWeb's client expects, not yet checked against a live bMS. The conformance baseline has no spec violations left
+- 25R2 answers the sub-resources of universal dynamic groups (`UniversalDynamicGroups/{id}/…Endpoints`, `JobInstances`, `InstalledWindowsSoftware`): the groups were loaded for 26R1 only, so every group ID answered 404, though the 25R2 fixtures link endpoints, job instances and software to them
+- `GET /servermanagement/v2.0/Objects/{id}/Rights` answers the spec's `ObjectPermissions` (`objectId`, `objectName`, `inheritRights`, `securityProfilePermissions` per security profile) for a known object (endpoint, group, job, folder), and 404 for an unknown one. Before, it answered a made-up `rights` list for any ID, which strict routing cut down to `objectId`
+- Large-scale profiles answer the local administrative account of a generated Windows endpoint (was 404)
+- The spec conformance test checks all GET routes: it takes the IDs for 14 more routes from another module's list or the fixtures (UDGs in 25R2, Windows applications and job definitions, Entra devices, objects, local admin accounts, UDG folders). The baseline holds only `never set` fields now
 
 ## [0.9.0] - 2026-11-02
 

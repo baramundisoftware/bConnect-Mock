@@ -46,6 +46,12 @@ function registerPlainList(app: Express, profile: IProfile, path: string, entity
   });
 }
 
+/** Entity types whose items have access rights (Objects/{id}/Rights) */
+const RIGHTS_OBJECT_TYPES = [
+  'windowsEndpoints', 'macEndpoints', 'linuxEndpoints', 'androidEndpoints', 'iosEndpoints', 'networkEndpoints', 'industrialEndpoints',
+  'logicalGroups', 'staticGroups', 'dynamicGroups', 'universalDynamicGroups', 'jobs', 'jobFolders',
+];
+
 export function registerServerManagementRoutes(app: Express, profile: IProfile): void {
 
   // GET /v2.0/Microservices — a plain array in the spec (no paging, no search)
@@ -127,16 +133,27 @@ export function registerServerManagementRoutes(app: Express, profile: IProfile):
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
 
+  // GET /v2.0/Objects/{id}/Rights — the spec's ObjectPermissions: each security profile's
+  // permissions on a known object (endpoint, group, job, folder); an unknown object is a 404
   app.get('/v2.0/Objects/:id/Rights', (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
-      if (!id) { res.status(400).json({ error: 'Invalid ID' }); return; }
+      const id = String(req.params.id).toLowerCase();
+      let object: Record<string, unknown> | undefined;
+      for (const entityType of RIGHTS_OBJECT_TYPES) {
+        const data = profile.getFixture(entityType) as Record<string, unknown>[];
+        object = data.find((o) => String(o['id']).toLowerCase() === id || String(o['guid']).toLowerCase() === id);
+        if (object) { break; }
+      }
+      if (!object) { res.status(404).json({ error: 'Object not found' }); return; }
+      const profiles = profile.getFixture('securityProfiles') as Record<string, unknown>[];
       res.status(200).json({
-        objectId: id,
-        rights: [
-          { principal: 'Domain Admins', permission: 'FullControl', inherited: false },
-          { principal: 'Domain Users', permission: 'Read', inherited: true },
-        ],
+        objectId: object['id'] ?? object['guid'],
+        objectName: object['name'] ?? object['displayName'],
+        inheritRights: true,
+        // The first profile has full control, the others read access
+        securityProfilePermissions: profiles.map((p, i) => ({
+          securityProfileId: p['id'], securityProfileName: p['name'], permissions: i === 0 ? ['Full'] : ['Read'],
+        })),
       });
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });

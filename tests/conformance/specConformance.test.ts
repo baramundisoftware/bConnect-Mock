@@ -59,17 +59,26 @@ const PARAM_LISTS: Record<string, string> = {
 const NO_GUESS = new Set(['folderId', 'deviceId', 'windowsApplicationId', 'windowsJobDefinitionId']);
 
 /**
- * Routes whose parameter must come from a specific list: rule violations exist only for iOS,
- * Android and Mac endpoints, so the first item of /v2.0/Endpoints (a Windows endpoint) answers 404.
+ * Routes whose parameter must come from a specific list, as `/path` in the route's module or
+ * `module /path` in another: rule violations exist only for iOS, Android and Mac endpoints, so the
+ * first item of /v2.0/Endpoints (a Windows endpoint) answers 404; a Windows endpoint's local admin
+ * account and an object's rights take the ID of an item another module lists.
  */
 const ROUTE_ID_LISTS: Record<string, string> = {
   'compliance /v2.0/Endpoints/{endpointId}/DetectedRuleViolations': '/v2.0/DetectedRuleViolations',
+  'defensecontrol /v2.0/LocalAdministrativeAccounts/WindowsEndpoints/{id}': 'endpoints /v2.0/WindowsEndpoints',
+  'servermanagement /v2.0/Objects/{id}/Rights': 'endpoints /v2.0/WindowsEndpoints',
+  'universaldynamicgroups /v2.0/Folders/{folderId}/UniversalDynamicGroups': '/v2.0/UniversalDynamicGroupsFolder',
 };
 
-/** IDs for entities the specs have no list route for (fixtures/standard-readonly) */
+/** IDs for entities the specs have no list route for (fixtures/standard-readonly, standard-26r1) */
 const FIXTURE_IDS: Record<string, string> = {
   staticGroupId: 'e1000001-0001-0001-0001-000000000001',
   dynamicGroupId: 'e2000001-0001-0001-0001-000000000001',
+  universalDynamicGroupId: 'd0011111-0000-0000-0000-000000000001', // 25R2 lists no UDGs
+  windowsApplicationId: 'ca000001-0001-0001-0001-000000000001',
+  windowsJobDefinitionId: 'def00001-0001-0001-0001-000000000001',
+  deviceId: 'a0000001-0001-0001-0001-000000000001', // an Entra device of standard-26r1
 };
 
 /** The list path for a parameter: an explicit one, or its name pluralized (logicalGroupId → /v2.0/LogicalGroups) */
@@ -146,9 +155,10 @@ async function findings(app: Express, version: string, dirName: string, profileL
       if (!part.startsWith('{')) { resolved += part; specSoFar += part; continue; }
       const param = part.slice(1, -1);
       const parentSpec = specSoFar.replace(/\/$/, '');
-      const idList = ROUTE_ID_LISTS[`${module} ${specPath}`];
+      const source = ROUTE_ID_LISTS[`${module} ${specPath}`]?.split(' ');
+      const [idModule, idList] = source?.length === 2 ? source : [module, source?.[0]];
       let id = idList
-        ? await firstId(`/bconnect/${module}${idList}`, param, routeAt(module, idList))
+        ? await firstId(`/bconnect/${idModule}${idList}`, param, routeAt(idModule ?? module, idList))
         : await firstId(`/bconnect/${module}${resolved.replace(/\/$/, '')}`, param, routeAt(module, parentSpec));
       const named = paramListPath(param);
       for (const owner of id || !named ? [] : listModules(named)) {

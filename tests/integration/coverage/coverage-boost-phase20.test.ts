@@ -148,9 +148,8 @@ describe('serverManagement.ts branch coverage', () => {
     await request(ro26).patch(`/v2.0/Objects/${FAKE_GUID}`).set('Content-Type', 'application/json').send({ name: 'test' }).expect(403);
   });
 
-  it('GET /v2.0/Objects/:id/Rights — returns rights', async () => {
-    const res = await request(ro26).get(`/v2.0/Objects/${FAKE_GUID}/Rights`).expect(200);
-    expect(res.body.rights).toBeDefined();
+  it('GET /v2.0/Objects/:id/Rights — 404 for nonexistent', async () => {
+    await request(ro26).get(`/v2.0/Objects/${FAKE_GUID}/Rights`).expect(404);
   });
 
   it('GET /v2.0/DownloadJobs/:id — 404 for nonexistent', async () => {
