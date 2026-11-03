@@ -1,13 +1,15 @@
 /**
- * ServerManagement routes — Microservices, ApiKeys, DownloadJobs, Dips,
+ * ServerManagement routes — Microservices, ApiKeys (management since 26R2), DownloadJobs, Dips,
  * Gateway, ManagementServer, VpnAppliance, CloudConnectors, PxeRelays, Objects.
  * Extracted from app.ts (P13.0.8). Extended P13.7.2–P13.7.4.
  */
 
+import { randomBytes } from 'crypto';
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
+import type { StateManager } from '../state/StateManager';
 import { BmsVersion } from '../profiles/ProfileManager';
-import { resolveEntityData, parsePage, parsePageSize } from './utils';
+import { GUID_REGEX, resolveEntityData, parsePage, parsePageSize } from './utils';
 import { registerSingleton } from './factories/singleton';
 import { sendNotFoundDetail } from '../middleware/bmsErrors';
 
@@ -197,5 +199,99 @@ export function registerServerManagement26R1Routes(app: Express, profile: IProfi
   // POST /v2.0/Dips/MSWCleanup
   app.post('/v2.0/Dips/MSWCleanup', (_req: Request, res: Response) => {
     res.status(200).json({ message: 'MSW cleanup triggered' });
+  });
+}
+
+const API_KEY_FIELDS = ['name', 'expirationDate', 'comment', 'isActive', 'isAvailableViaGateway', 'securityProfiles'];
+
+/** The reason an API key's values are not valid (ApiKeyForCreation's limits), if any */
+function invalidApiKey(body: Record<string, unknown>): string | undefined {
+  const { name, expirationDate, comment, securityProfiles } = body;
+  if (name !== undefined && (typeof name !== 'string' || name.length < 1 || name.length > 256)) { return 'The name must have 1 to 256 characters.'; }
+  if (expirationDate !== undefined && expirationDate !== null && !(typeof expirationDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(expirationDate))) { return 'The expiration date must have the format yyyy-MM-dd.'; }
+  if (comment !== undefined && comment !== null && (typeof comment !== 'string' || comment.length > 4000)) { return 'The comment must have at most 4000 characters.'; }
+  for (const flag of ['isActive', 'isAvailableViaGateway']) {
+    if (body[flag] !== undefined && typeof body[flag] !== 'boolean') { return `${flag} must be true or false.`; }
+  }
+  if (securityProfiles !== undefined && !(Array.isArray(securityProfiles) && securityProfiles.length > 0 && securityProfiles.every((id) => typeof id === 'string' && GUID_REGEX.test(id)))) {
+    return 'At least one security profile id is required.';
+  }
+  return undefined;
+}
+
+/**
+ * API key management (since 26R2): get, create, update (JSON Patch), delete. A created key's
+ * secret is answered once, by the POST, and never stored. Writes need a read-write profile.
+ */
+export function registerServerManagement26R2Routes(app: Express, profile: IProfile): void {
+  const READ_ONLY = 'Write operations not supported in read-only profile mode';
+  const keys = (): Record<string, unknown>[] =>
+    (resolveEntityData(profile, 'apiKeys', { page: 0, pageSize: 0 }, app.locals.stateManager as StateManager | undefined)?.data ?? []) as Record<string, unknown>[];
+  const store = (): ReturnType<StateManager['addStore']> | undefined => (app.locals.stateManager as StateManager | undefined)?.addStore('apiKeys', keys() as { id: string }[]);
+  const find = (id: string): Record<string, unknown> | undefined => keys().find((k) => String(k['id']).toLowerCase() === id.toLowerCase());
+  const nameTaken = (name: unknown, except?: unknown): boolean =>
+    typeof name === 'string' && keys().some((k) => k['id'] !== except && String(k['name']).toLowerCase() === name.toLowerCase());
+
+  app.get('/v2.0/ApiKeys/:id', (req: Request, res: Response) => {
+    try {
+      const id = req.params['id'] as string;
+      if (!GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid API key ID format' }); return; }
+      const key = find(id);
+      if (!key) { res.status(404).json({ error: 'API key not found' }); return; }
+      res.status(200).json(key);
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  app.post('/v2.0/ApiKeys', (req: Request, res: Response) => {
+    try {
+      const writable = store();
+      if (!writable) { res.status(403).json({ error: READ_ONLY }); return; }
+      const body = (req.body ?? {}) as Record<string, unknown>;
+      if (!body['name']) { res.status(400).json({ error: 'Missing required field: name' }); return; }
+      const reason = invalidApiKey(body);
+      if (reason) { res.status(400).json({ error: reason }); return; }
+      if (nameTaken(body['name'])) { res.status(409).json({ error: `An API key with the name '${String(body['name'])}' already exists` }); return; }
+      const created = writable.create({
+        name: body['name'],
+        expirationDate: body['expirationDate'] ?? null,
+        comment: body['comment'] ?? '',
+        isActive: body['isActive'] ?? true,
+        isAvailableViaGateway: body['isAvailableViaGateway'] ?? false,
+        securityProfiles: body['securityProfiles'] ?? [],
+      });
+      const { guid: _guid, ...key } = created;
+      res.status(201).json({ ...key, apiKeySecret: randomBytes(32).toString('base64url') });
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  // PATCH — JSON Patch (converted to a plain object by app.ts) of the key's settings
+  app.patch('/v2.0/ApiKeys/:id', (req: Request, res: Response) => {
+    try {
+      const writable = store();
+      if (!writable) { res.status(403).json({ error: READ_ONLY }); return; }
+      const id = req.params['id'] as string;
+      if (!GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid API key ID format' }); return; }
+      const body = (req.body ?? {}) as Record<string, unknown>;
+      const fixed = Object.keys(body).find((k) => !API_KEY_FIELDS.includes(k));
+      if (fixed) { res.status(400).json({ error: `The field '${fixed}' of an API key cannot be modified.` }); return; }
+      const reason = invalidApiKey(body);
+      if (reason) { res.status(400).json({ error: reason }); return; }
+      const key = find(id);
+      if (!key) { res.status(404).json({ error: 'API key not found' }); return; }
+      if (nameTaken(body['name'], key['id'])) { res.status(409).json({ error: `An API key with the name '${String(body['name'])}' already exists` }); return; }
+      res.status(200).json(writable.patch(String(key['id']), body));
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+
+  app.delete('/v2.0/ApiKeys/:id', (req: Request, res: Response) => {
+    try {
+      const writable = store();
+      if (!writable) { res.status(403).json({ error: READ_ONLY }); return; }
+      const id = req.params['id'] as string;
+      if (!GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid API key ID format' }); return; }
+      const key = find(id);
+      if (!key || !writable.delete(String(key['id']))) { res.status(404).json({ error: 'API key not found' }); return; }
+      res.status(204).send();
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
 }

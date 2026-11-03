@@ -8,12 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- bMS 26R2 (`BCONNECT_BMS_VERSION=26r2`): everything since 26R1, answered with the fields of the 26R2 spec. Network endpoints lose the inventory fields 26R2 removed (`macList`, `operatingSystem`, `totalRAM`, `cpu`, `networkInfo`, `industrialDeviceInfo`, ...), `GET …/servermanagement/v2.0/CloudConnectors` answers 404 as the route is gone, and `GET …/ManagementServer` reports `26.2.0.0` (not yet confirmed on a live 26R2). The new routes (Thresholds, API key management, Intune remote actions) follow in the next pull request; the spec conformance baseline lists them
+- bMS 26R2 (`BCONNECT_BMS_VERSION=26r2`): everything since 26R1, answered with the fields of the 26R2 spec. Network endpoints lose the inventory fields 26R2 removed (`macList`, `operatingSystem`, `totalRAM`, `cpu`, `networkInfo`, `industrialDeviceInfo`, ...), `GET …/servermanagement/v2.0/CloudConnectors` answers 404 as the route is gone, and `GET …/ManagementServer` reports `26.2.0.0` (not yet confirmed on a live 26R2)
 - 26R2 data, values synthetic and fixed per item, formats from the spec (no live 26R2 probed yet):
   - AD users, groups and objects have the 26R2 `type` values `ADUser` and `ADGroup` (26R1 and 25R2 keep `User` and `Group`); the projection renames enum values per release (`RELEASE_VALUES` in `src/middleware/specFields.ts`)
   - Network endpoints carry `deviceInfo` (manufacturer, module type, firmware version, serial number) from the mock's model, firmware and serial number
   - Unmanaged endpoints: `computerGroupName` (`corp.test` or `WORKGROUP`), `isPartOfDomain`, a Kerberos identity on most domain members (`isKerberosAuthenticated`, `kerberosPrincipal`, `endpointSid`, `adDnsName`; empty strings without one), `tokenExpirationDate` and `publicKeySha1Fingerprint`. 26R1 gets the same group as `networkGroupName`
   - Update management Windows endpoints: the cumulative update an endpoint is patched to (`osUpdateVersion` such as `KB5071541`, `osUpdateReleaseDate`) and `requiredOSUpdateInstalled` (`Yes` for patched endpoints, `No` otherwise, `Unknown` without an inventory)
+- The routes 26R2 added (formats from the spec):
+  - Thresholds of universal dynamic groups: `GET`/`POST …/universaldynamicgroups/v2.0/Thresholds`, `GET`/`PATCH`/`DELETE …/Thresholds/{id}`, `GET …/UniversalDynamicGroups/{id}/Thresholds`. Five thresholds derived from the profile's first groups and security profiles; one per group and security profile (409 otherwise), PATCH changes only the modifiable values
+  - API key management: `POST …/servermanagement/v2.0/ApiKeys` answers the new key with its `apiKeySecret`, once (it is not stored); `GET`/`PATCH`/`DELETE …/ApiKeys/{id}`; names are unique (409)
+  - Intune remote actions: `POST …/WindowsEndpoints/{id}/IntuneRemoteAction{Sync,Reboot,Retire,WindowsAutopilotReset,FreshRestart,Wipe}` answer `true` for an endpoint co-managed with Intune, 409 for others
+  - Some inventoried Windows endpoints are co-managed with Intune (`coManagement` Intune, `modernManagementState` ManagedAndBaramundiAgentInstalled, an `entraIdDeviceId`), in every release; the probed live bMS had none
 - Spec conformance covers 26R2, and its validator follows a `discriminator` to the subtype a value names
 
 ### Fixed
