@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-03
+
+26R2 mode follows the 26R2 OpenAPI specs and is not yet checked against a live 26R2 bMS; its management server reports the placeholder build `26.2.0.0`. Corrections from a live 26R2 probe will follow in a patch release.
+
 ### Added
 - bMS 26R2 (`BCONNECT_BMS_VERSION=26r2`): everything since 26R1, answered with the fields of the 26R2 spec. Network endpoints lose the inventory fields 26R2 removed (`macList`, `operatingSystem`, `totalRAM`, `cpu`, `networkInfo`, `industrialDeviceInfo`, ...), `GET …/servermanagement/v2.0/CloudConnectors` answers 404 as the route is gone, and `GET …/ManagementServer` reports `26.2.0.0` (not yet confirmed on a live 26R2)
 - 26R2 data, values synthetic and fixed per item, formats from the spec (no live 26R2 probed yet):
