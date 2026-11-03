@@ -15,6 +15,7 @@ import { runAndLogFixtureIntegrity } from './validateFixtureIntegrity';
 import { apiKeyGuard } from './middleware/apiKeyGuard';
 import { registerAllRoutes } from './routes/index';
 import { createModuleRoutingGuard } from './middleware/moduleRouting';
+import { jsonPatchBodies } from './middleware/jsonPatch';
 import { bmsErrorBodies, bodyErrors, MOCK_REASON_HEADER, ROUTE_LOCAL, sendProblem, sendValidationProblem, type MatchedRoute } from './middleware/bmsErrors';
 import { pagedListEnvelope, pageSizeDefaults } from './middleware/pagedList';
 import { specProjection } from './middleware/specProjection';
@@ -154,22 +155,9 @@ export function createApp(
   // inflate: false — compressed bodies get 415 and never reach zlib, so no unauthenticated
   // request can feed the Brotli decoder (CVE-2026-111497, "Node2Shell").
   app.use(express.json({ type: ['application/json', 'application/json-patch+json'], inflate: false }));
-  // Convert JSON Patch arrays (RFC 6902) to plain merge-patch objects for state store compatibility.
-  // Connectors send PATCH as [{op:'replace',path:'/field',value:'x'},...] but the state store
-  // expects a plain object {field: 'x'}.
-  app.use((req: Request, _res: Response, next) => {
-    if (['PATCH', 'PUT'].includes(req.method) && Array.isArray(req.body)) {
-      const merged: Record<string, unknown> = {};
-      for (const op of req.body as Array<{op?: string; path?: string; value?: unknown}>) {
-        if (op.op === 'replace' || op.op === 'add') {
-          const key = (op.path ?? '').replace(/^\//, '');
-          if (key) {merged[key] = op.value;}
-        }
-      }
-      req.body = merged;
-    }
-    next();
-  });
+  // Convert JSON Patch arrays (RFC 6902) to plain merge objects, with the bMS's case-insensitive
+  // paths mapped onto the patched resource's property names (src/middleware/jsonPatch.ts)
+  app.use(jsonPatchBodies);
 
   // Trust first proxy for accurate IP detection behind reverse proxies/Docker (P10.7)
   app.set('trust proxy', 1);
