@@ -142,7 +142,7 @@ function zeroPad(n: number, len: number): string {
 /** Derive a deterministic GUID from an index.
  *  Format: 88888888-8888-8888-8888-888888888888 (8-4-4-4-12 hex chars)
  */
-function indexToGuid(index: number): string {
+export function indexToGuid(index: number): string {
   // Each segment must have exactly the right number of hex digits.
   // We spread the index across all segments using bitwise ops + prime mixing.
   const toHex = (n: number, len: number): string =>

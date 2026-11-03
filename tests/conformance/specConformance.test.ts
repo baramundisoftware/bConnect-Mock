@@ -129,6 +129,7 @@ const LIVE_NULL: Record<string, readonly string[]> = {
   'endpoints NetworkEndpoints': ['activity', 'description', 'firstSeen', 'manufacturer', 'opcuaInformation', 'ouiVendor', 'registeredUser', 'snmpConfiguration', 'snmpName', 'snmpProperties', 'upTime', 'vendorId', 'webInterfaceUrl'],
   'endpoints LogicalGroups': ['defaultDomain'],
   'activedirectory OrgUnits': ['comment'],
+  'assets *': ['contact'],
   'assets AssetTypes': ['additionalProperties', 'contact', 'costCenter', 'encodedIcon', 'inventoryNumber', 'summary'],
   'jobs JobDefinitions': ['validity'],
   'jobs JobInstances': ['nextExecution'],

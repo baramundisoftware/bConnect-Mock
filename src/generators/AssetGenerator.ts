@@ -6,6 +6,7 @@
  */
 
 import { BaseGenerator } from './BaseGenerator';
+import { indexToGuid as windowsEndpointId } from './WindowsEndpointGenerator';
 
 const ASSET_TYPES = ['Desktop', 'Laptop', 'Server', 'Tablet', 'Printer', 'Monitor'];
 
@@ -67,6 +68,7 @@ export interface AssetRecord {
   purchaseDate: string;
   warrantyExpires: string;
   costCenter: string;
+  endpointId: string;
 }
 
 export class AssetGenerator extends BaseGenerator<AssetRecord> {
@@ -91,6 +93,7 @@ export class AssetGenerator extends BaseGenerator<AssetRecord> {
       purchaseDate: `${indexToDate(index, 2)}T00:00:00Z`, // spec: date-time
       warrantyExpires: indexToDate(index, -1),
       costCenter: pick(COST_CENTERS, index),
+      endpointId: windowsEndpointId(index), // the owner: the Windows endpoint of the same index
     };
   }
 }

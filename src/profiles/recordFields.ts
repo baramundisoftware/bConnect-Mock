@@ -14,7 +14,10 @@
  * - Installed Windows software: half of it managed software (`source` and `category`
  *   ManagedSoftware, with an `applicationId`), half `Inventoried`; every entry has a
  *   `detectionRuleId`, `lastFound` and `autUsage` AutDeactivated (usage tracking off).
- * - Job definitions: a `comment` on about a third of them.
+ * - Job definitions: a `comment` on about a third of them, all in a folder, a `category` and a
+ *   `description` on few.
+ * - DIPs: empty `details` and a `lastUpdate`; security profiles: the two display flags.
+ * - Variable definitions (not probed): the `scopes` of their instances.
  * - BitLocker and Microsoft Defender states: src/profiles/defenseControlFields.ts.
  *
  * withRecordFields() fills these where an item has none; values are synthetic and fixed per item
@@ -68,6 +71,12 @@ function steps(item: Item, h: number): Item[] {
 const ASSET_COMMENTS = ['Leased device, return to the vendor at the end of the term', 'Inventoried during the annual stocktaking', 'Moved to a new desk, update the location'];
 const JOB_COMMENTS = ['Rolls out the current package to all Windows endpoints, created 15.03.2026', 'Runs nightly between 22:00 and 04:00, see change request CR-2041', 'Pilot group first, then all endpoints after one week'];
 
+/** An instance's owner field and the scope it gives (the order of specFields' OWNER_SCOPES) */
+const INSTANCE_SCOPES: ReadonlyArray<[string, string]> = [
+  ['endpointId', 'Endpoint'], ['logicalGroupId', 'LogicalGroup'], ['adObjectId', 'ADObject'],
+  ['windowsApplicationId', 'WindowsApplication'], ['windowsJobDefinitionId', 'WindowsJobDefinition'],
+];
+
 const FILL: Readonly<Record<string, Fill>> = {
   assets: (item, h, related) => {
     const types = related('assetTypes');
@@ -103,7 +112,24 @@ const FILL: Readonly<Record<string, Fill>> = {
     };
   },
   jobInstances: (item, h) => ({ delays: 0, steps: steps(item, h) }),
-  jobs: (_item, h) => ({ comment: roll(h, 21) < 38 ? pick(JOB_COMMENTS, h >>> 2) : undefined }), // 25 of 66 on the live bMS
+  jobs: (_item, h, related) => {
+    const folders = related('jobFolders');
+    const folder = folders.length ? pick(folders, h) : undefined;
+    return {
+      comment: roll(h, 21) < 38 ? pick(JOB_COMMENTS, h >>> 2) : undefined, // 25 of 66 on the live bMS
+      folderId: folder?.['id'], // every job definition is in a folder (66 of 66)
+      category: roll(h, 23) < 3 ? 'software' : undefined, // 1 of 66
+      description: roll(h, 24) < 3 ? 'Deploys the standard client software' : undefined, // 1 of 66
+    };
+  },
+  dips: (_item, h) => ({ details: '', lastUpdate: moment(h, 60, 'none') }),
+  securityProfiles: (_item, h) => ({ displayAdministratorIdentities: roll(h, 25) < 67, displayEndpointUserIdentities: true }), // 2 and 3 of 3
+  // A definition's scopes: those of its instances (an instance's scope is its owner's kind)
+  variables: (item, _h, related) => {
+    const own = related('variableInstances').filter((i) => i['variableDefinitionId'] === item['id']);
+    const scopes = [...new Set(own.map((i) => INSTANCE_SCOPES.find(([field]) => str(i[field]))?.[1]).filter((s): s is string => Boolean(s)))];
+    return { scopes: scopes.length ? scopes : ['Endpoint'] };
+  },
   bitLockerStates: (item) => bitLockerFields(item),
   microsoftDefenderStates: (item, _h, related) => defenderFields(item, related('microsoftDefenderThreats')),
   installedWindowsSoftware: (_item, h) => {
