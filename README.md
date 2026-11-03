@@ -129,7 +129,7 @@ Verify: `curl http://localhost:3433/health`
 
 - **25R2 mode** (default): 172 routes covering all standard bConnect V2.0 endpoints
 - **26R1 mode**: 264 routes — adds Compliance, Universal Dynamic Groups, Bundles, and more
-- **26R2 mode**: everything since 26R1, answered with the 26R2 spec's fields (e.g. network endpoints without the inventory fields 26R2 removed, no `CloudConnectors`). Routes new in 26R2 (Thresholds, API key management, Intune remote actions) are not served yet
+- **26R2 mode**: everything since 26R1, answered with the 26R2 spec's fields and values (e.g. network endpoints with `deviceInfo` instead of the inventory fields 26R2 removed, AD object types `ADUser`/`ADGroup`, no `CloudConnectors`). Routes new in 26R2 (Thresholds, API key management, Intune remote actions) are not served yet
 
 ```bash
 # 25R2 (default)

@@ -1,6 +1,6 @@
 /**
- * 26R2: everything since 26R1 is there, the spec's removals are gone, and discriminator schemas
- * keep the fields of their subtypes.
+ * 26R2: everything since 26R1 is there, the spec's removals are gone, discriminator schemas
+ * keep the fields of their subtypes, and the data has what 26R2 changed and added.
  */
 
 import { describe, it, expect, beforeAll, vi } from 'vitest';
@@ -60,6 +60,71 @@ describe('26R2', () => {
     const jobs = (await request(r2).get('/bconnect/servermanagement/v2.0/DownloadJobs')).body.data as Item[];
     const weekly = jobs.flatMap((j) => j['interval'] as Item[]).find((i) => i['type'] === 'Weekly');
     expect(weekly?.['weekdays']).toEqual(expect.any(Array));
+  });
+});
+
+describe('26R2 data', () => {
+  let r1: Express;
+  let r2: Express;
+  beforeAll(() => { r1 = strictApp(BmsVersion.BMS_26R1); r2 = strictApp(BmsVersion.BMS_26R2); });
+
+  it.each([
+    ['/bconnect/activedirectory/v2.0/ADUsers', 'User', 'ADUser'],
+    ['/bconnect/activedirectory/v2.0/ADGroups', 'Group', 'ADGroup'],
+  ])('AD object types tell AD from Entra ID: %s', async (url, before, after) => {
+    const in26r1 = (await request(r1).get(url)).body.data as Item[];
+    const in26r2 = (await request(r2).get(url)).body.data as Item[];
+    expect(new Set(in26r1.map((i) => i['type']))).toEqual(new Set([before]));
+    expect(new Set(in26r2.map((i) => i['type']))).toEqual(new Set([after]));
+    const id = in26r2[0]?.['id'] as string;
+    expect((await request(r2).get(`${url}/${id}`)).body.type).toBe(after);
+  });
+
+  it('AD objects of both kinds', async () => {
+    const objects = (await request(r2).get('/bconnect/activedirectory/v2.0/ADObjects')).body.data as Item[];
+    for (const o of objects) { expect(['ADUser', 'ADGroup']).toContain(o['type']); }
+  });
+
+  it('network endpoints carry deviceInfo from their model, firmware and serial number', async () => {
+    const endpoints = (await request(r2).get('/bconnect/endpoints/v2.0/NetworkEndpoints')).body.data as Item[];
+    const info = endpoints[0]?.['deviceInfo'] as Item;
+    expect(info).toMatchObject({ manufacturer: 'Cisco', moduleType: 'Cisco Catalyst 9300', serialNumber: expect.any(String), firmwareVersion: expect.any(String) });
+  });
+
+  it('unmanaged endpoints: a Kerberos identity only in a domain, empty without a token', async () => {
+    const endpoints = (await request(r2).get('/bconnect/endpoints/v2.0/UnmanagedEndpoints')).body.data as Item[];
+    expect(endpoints.length).toBeGreaterThan(0);
+    for (const e of endpoints) {
+      expect(e['computerGroupName']).toBe(e['isPartOfDomain'] ? 'corp.test' : 'WORKGROUP');
+      if (e['isKerberosAuthenticated']) {
+        expect(e['isPartOfDomain']).toBe(true);
+        expect(e['kerberosPrincipal']).toMatch(/^[A-Z0-9-]+\$@CORP\.TEST$/);
+        expect(e['endpointSid']).toMatch(/^S-1-5-21-\d+-\d+-\d+-\d+$/);
+        expect(e['adDnsName']).toMatch(/\.corp\.test$/);
+      } else {
+        expect([e['kerberosPrincipal'], e['endpointSid'], e['adDnsName']]).toEqual(['', '', '']);
+      }
+      expect(e['publicKeySha1Fingerprint']).toMatch(/^[0-9A-F]{40}$/);
+      expect(e['tokenExpirationDate']).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+      expect(e).not.toHaveProperty('networkGroupName');
+    }
+    const in26r1 = (await request(r1).get('/bconnect/endpoints/v2.0/UnmanagedEndpoints')).body.data as Item[];
+    expect(in26r1[0]?.['networkGroupName']).toEqual(expect.any(String));
+    expect(in26r1[0]).not.toHaveProperty('computerGroupName');
+  });
+
+  it('update management: the cumulative update an endpoint is patched to', async () => {
+    const endpoints = (await request(r2).get('/bconnect/updatemanagement/v2.0/WindowsEndpoints')).body.data as Item[];
+    const newest = endpoints.filter((e) => e['requiredOSUpdateInstalled'] === 'Yes').map((e) => e['osUpdateVersion']);
+    expect(new Set(newest).size).toBe(1);
+    for (const e of endpoints) {
+      if (e['requiredOSUpdateInstalled'] === 'Unknown') { expect(e['osUpdateVersion']).toBeNull(); continue; }
+      expect(e['osUpdateVersion']).toMatch(/^KB\d{7}$/);
+      expect(e['osUpdateReleaseDate']).toMatch(/T00:00:00Z$/);
+      if (e['requiredOSUpdateInstalled'] === 'No') { expect(e['osUpdateVersion']).not.toBe(newest[0]); }
+    }
+    const in26r1 = (await request(r1).get('/bconnect/updatemanagement/v2.0/WindowsEndpoints')).body.data as Item[];
+    expect(in26r1[0]).not.toHaveProperty('osUpdateVersion');
   });
 });
 
