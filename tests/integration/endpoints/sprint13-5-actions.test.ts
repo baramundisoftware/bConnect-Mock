@@ -6,7 +6,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
 import { createApp } from '../../../src/app';
-import { ProfileMode } from '../../../src/profiles/ProfileManager';
+import { ProfileMode, BmsVersion } from '../../../src/profiles/ProfileManager';
 
 describe('Enrollment action routes (P13.5.1)', () => {
   let app: Express;
@@ -48,6 +48,22 @@ describe('Enrollment action routes (P13.5.1)', () => {
       .post('/v2.0/WindowsEndpoints/not-a-guid/StartEnrollment')
       .expect(400);
     expect(res.headers).toHaveProperty('x-bconnect-mock-reason');
+  });
+});
+
+describe('TriggerInstallationViaIntune (P13.5.2)', () => {
+  it.each([BmsVersion.BMS_25R2, BmsVersion.BMS_26R1, BmsVersion.BMS_26R2])('%s: 200 true for an Intune endpoint, 409 otherwise, 404 unknown, 400 malformed', async (version) => {
+    for (const mode of [ProfileMode.STANDARD_READONLY, ProfileMode.STANDARD_READWRITE]) {
+      const app = createApp(mode, version);
+      const endpoints = (await request(app).get('/v2.0/WindowsEndpoints?PageSize=500')).body.data as Array<Record<string, unknown>>;
+      const intune = endpoints.find((e) => e['coManagement'] === 'Intune')?.['id'] as string;
+      const local = endpoints.find((e) => e['coManagement'] !== 'Intune')?.['id'] as string;
+      const res = await request(app).post(`/v2.0/WindowsEndpoints/${intune}/TriggerInstallationViaIntune`).expect(200);
+      expect(res.body).toBe(true);
+      await request(app).post(`/v2.0/WindowsEndpoints/${local}/TriggerInstallationViaIntune`).expect(409);
+      await request(app).post('/v2.0/WindowsEndpoints/00000000-0000-0000-0000-000000000000/TriggerInstallationViaIntune').expect(404);
+      await request(app).post('/v2.0/WindowsEndpoints/not-a-guid/TriggerInstallationViaIntune').expect(400);
+    }
   });
 });
 

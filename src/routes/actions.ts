@@ -8,6 +8,7 @@
 import type { Express } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
 import { registerActionRoute } from './factories/actionRoute';
+import { registerTriggerInstallationViaIntuneRoute } from './endpoints';
 
 export function registerActionRoutes(app: Express, profile: IProfile): void {
 
@@ -24,13 +25,8 @@ export function registerActionRoutes(app: Express, profile: IProfile): void {
     });
   }
 
-  // P13.5.2 — Trigger installation via Intune (Windows only)
-  registerActionRoute(app, profile, {
-    path: '/v2.0/WindowsEndpoints/:id/TriggerInstallationViaIntune',
-    status: 204,
-    parentFixture: 'windowsEndpoints',
-    parentEntityName: 'Windows endpoint',
-  });
+  // P13.5.2 — Trigger installation via Intune (Windows only): 200 true, 409 without Intune
+  registerTriggerInstallationViaIntuneRoute(app, profile);
 
   // P13.5.3 — AssignJobDefinition for group types
   for (const group of ['LogicalGroups', 'StaticGroups', 'DynamicGroups', 'UniversalDynamicGroups']) {

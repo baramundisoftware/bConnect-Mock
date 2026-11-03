@@ -634,6 +634,36 @@ const INTUNE_REMOTE_ACTIONS: Record<string, readonly string[]> = {
 };
 
 /**
+ * The Windows endpoint an Intune action targets, or false once the answer is sent: 400 for a
+ * malformed ID, 404 for an unknown endpoint, 409 for one not managed by Intune (as the spec says).
+ */
+function intuneEndpoint(app: Express, profile: IProfile, req: Request, res: Response): boolean {
+  const id = req.params.id as string;
+  if (!GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid GUID format' }); return false; }
+  const sm: StateManager | undefined = app.locals.stateManager;
+  const endpoint = sm ? sm.getById(id) : loadWindowsEndpointFixture(profile).find((e) => e.id === id || e.guid === id);
+  if (!endpoint) { res.status(404).json({ error: 'Endpoint not found' }); return false; }
+  if ((endpoint as unknown as Record<string, unknown>)['coManagement'] !== 'Intune') {
+    res.status(409).json({ error: 'The Windows endpoint is not managed by Intune' }); return false;
+  }
+  return true;
+}
+
+/**
+ * POST /v2.0/WindowsEndpoints/{id}/TriggerInstallationViaIntune: installs the baramundi agent
+ * on a Windows endpoint via Intune and answers `true` (200, every version's spec). Nothing
+ * changes in the mock's data.
+ */
+export function registerTriggerInstallationViaIntuneRoute(app: Express, profile: IProfile): void {
+  app.post('/v2.0/WindowsEndpoints/:id/TriggerInstallationViaIntune', (req: Request, res: Response) => {
+    try {
+      if (!intuneEndpoint(app, profile, req, res)) { return; }
+      res.status(200).json(true);
+    } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
+  });
+}
+
+/**
  * POST /v2.0/WindowsEndpoints/{id}/IntuneRemoteAction* (since 26R2): triggers the action on a
  * Windows endpoint co-managed with Intune and answers `true`; an endpoint not managed by Intune
  * gets 409, as the spec says. Nothing changes in the mock's data.
@@ -642,17 +672,11 @@ export function registerIntuneRemoteActionRoutes(app: Express, profile: IProfile
   for (const [action, flags] of Object.entries(INTUNE_REMOTE_ACTIONS)) {
     app.post(`/v2.0/WindowsEndpoints/:id/IntuneRemoteAction${action}`, (req: Request, res: Response) => {
       try {
-        const id = req.params.id as string;
-        if (!GUID_REGEX.test(id)) { res.status(400).json({ error: 'Invalid GUID format' }); return; }
+        if (!GUID_REGEX.test(req.params.id as string)) { res.status(400).json({ error: 'Invalid GUID format' }); return; }
         const body = (req.body ?? {}) as Record<string, unknown>;
         const bad = Object.keys(body).find((k) => !flags.includes(k) || typeof body[k] !== 'boolean');
         if (bad) { res.status(400).json({ error: `The field '${bad}' is not valid for this action.` }); return; }
-        const sm: StateManager | undefined = app.locals.stateManager;
-        const endpoint = sm ? sm.getById(id) : loadWindowsEndpointFixture(profile).find((e) => e.id === id || e.guid === id);
-        if (!endpoint) { res.status(404).json({ error: 'Endpoint not found' }); return; }
-        if ((endpoint as unknown as Record<string, unknown>)['coManagement'] !== 'Intune') {
-          res.status(409).json({ error: 'The Windows endpoint is not managed by Intune' }); return;
-        }
+        if (!intuneEndpoint(app, profile, req, res)) { return; }
         res.status(200).json(true);
       } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
     });
