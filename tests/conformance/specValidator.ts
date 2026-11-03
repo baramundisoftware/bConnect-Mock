@@ -1,8 +1,9 @@
 /**
  * A small OpenAPI 3.0 schema validator for the bConnect specs.
  *
- * Covers exactly the keywords the specs use: $ref, allOf, type, nullable, enum, format,
- * properties, required, additionalProperties, items, minLength, maxLength. Every finding is
+ * Covers exactly the keywords the specs use: $ref, allOf, discriminator (with a mapping), type,
+ * nullable, enum, format, properties, required, additionalProperties, items, minLength,
+ * maxLength. oneOf/anyOf are not checked. Every finding is
  * one stable line ("data[*].type: not in enum: \"X\""), so the findings can be kept in a
  * baseline file and compared run by run.
  */
@@ -57,8 +58,18 @@ export class SpecValidator {
 
   /** All findings for a value, with array indexes normalized to [*] */
   validate(rawSchema: Schema | undefined, value: unknown, path = ''): string[] {
-    const schema = this.resolve(rawSchema);
+    let schema = this.resolve(rawSchema);
     const at = path || '(root)';
+    const discriminator = schema['discriminator'] as { propertyName: string; mapping?: Record<string, string> } | undefined;
+    if (discriminator?.mapping && TYPES['object']?.(value)) {
+      // The subtype the value names (26R2: RepetitionDefinition → Daily/Weekly); a subtype is
+      // allOf [base, own fields], so it carries the base's discriminator, which is dropped here
+      const name = (value as Record<string, unknown>)[discriminator.propertyName];
+      const ref = typeof name === 'string' ? discriminator.mapping[name] : undefined;
+      if (!ref) { return [`${path ? `${path}.` : ''}${discriminator.propertyName}: not in discriminator mapping: ${JSON.stringify(name)}`]; }
+      const { discriminator: _discriminator, ...subtype } = this.resolve({ $ref: ref });
+      schema = subtype;
+    }
     if (value === null || value === undefined) {
       return schema['nullable'] === true || schema['type'] === undefined ? [] : [`${at}: null, but not nullable`];
     }

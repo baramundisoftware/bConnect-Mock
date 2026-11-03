@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- bMS 26R2 (`BCONNECT_BMS_VERSION=26r2`): everything since 26R1, answered with the fields of the 26R2 spec. Network endpoints lose the inventory fields 26R2 removed (`macList`, `operatingSystem`, `totalRAM`, `cpu`, `networkInfo`, `industrialDeviceInfo`, ...), `GET …/servermanagement/v2.0/CloudConnectors` answers 404 as the route is gone, and `GET …/ManagementServer` reports `26.2.0.0` (not yet confirmed on a live 26R2). The 26R2 data changes (AD object types, `deviceInfo`, the new fields of unmanaged endpoints and update management) and the new routes (Thresholds, API key management, Intune remote actions) follow in the next pull requests; the spec conformance baseline lists them
+- Spec conformance covers 26R2, and its validator follows a `discriminator` to the subtype a value names
+
+### Fixed
+- The route generator merges the fields of a discriminator's subtypes (26R2 `DownloadJob.interval`, `JobDefinition.validity.validityPeriods`); before, projection would have dropped a weekly interval's `weekdays`
+
 ## [0.10.0] - 2026-11-02
 
 ### Added

@@ -1,5 +1,5 @@
 /**
- * Spec conformance: every GET route of the 25R2 and 26R1 specs is called against the mock
+ * Spec conformance: every GET route of the 25R2, 26R1 and 26R2 specs is called against the mock
  * (strict routing, standard-readonly profile), and the answer is validated against the 200
  * response schema of the spec.
  *
@@ -19,7 +19,7 @@ import type { Express } from 'express';
 
 const SPECS = path.resolve(__dirname, '../../openapi-specs');
 const BASELINE = path.resolve(__dirname, 'spec-conformance.baseline.json');
-const VERSIONS: Array<[BmsVersion, string]> = [[BmsVersion.BMS_25R2, '25R2'], [BmsVersion.BMS_26R1, '26R1']];
+const VERSIONS: Array<[BmsVersion, string]> = [[BmsVersion.BMS_25R2, '25R2'], [BmsVersion.BMS_26R1, '26R1'], [BmsVersion.BMS_26R2, '26R2']];
 
 interface SpecRoute { module: string; path: string; schema: Schema | undefined; validator: SpecValidator }
 

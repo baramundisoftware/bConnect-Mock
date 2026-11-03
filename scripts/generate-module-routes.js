@@ -11,7 +11,8 @@
  *   node scripts/generate-module-routes.js           # regenerate src/generated/moduleRoutes.ts
  *   node scripts/generate-module-routes.js --check   # exit 1 if the file is out of date
  *
- * Source:  $OPENAPI_BASE/{25R2,26R1}/bConnect_{Module}.json (default: ./openapi-specs/)
+ * Source:  $OPENAPI_BASE/{25R2,26R1}/bConnect_{Module}.json, $OPENAPI_BASE/26R2/{module}.json
+ *          (default: ./openapi-specs/)
  * Output:  src/generated/moduleRoutes.ts
  */
 
@@ -23,7 +24,7 @@ const path = require('path');
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const OPENAPI_BASE = process.env.OPENAPI_BASE || path.join(PROJECT_ROOT, 'openapi-specs');
 const OUTPUT_FILE = path.join(PROJECT_ROOT, 'src', 'generated', 'moduleRoutes.ts');
-const VERSIONS = ['25R2', '26R1'];
+const VERSIONS = ['25R2', '26R1', '26R2'];
 const METHODS = ['get', 'post', 'put', 'patch', 'delete'];
 
 /** The schema name a $ref points to, e.g. '#/components/schemas/LogicalGroupForCreation' → 'LogicalGroupForCreation' */
@@ -38,8 +39,9 @@ function refName(node) {
  *   { o, z, n? }      an object: o = its properties' shapes, z = the nullable ones,
  *                     n = its schema name when it is a named schema (specFields fills by name)
  *   { a }             an array of items of shape a
- * $ref and allOf are resolved; oneOf/anyOf, maps (additionalProperties as a schema) and
- * recursive references become leaves.
+ * $ref and allOf are resolved; a schema with a discriminator gets the fields of all its
+ * subtypes (26R2's DownloadJob.interval: RepetitionDefinition, Daily or Weekly with `weekdays`).
+ * oneOf/anyOf, maps (additionalProperties as a schema) and recursive references become leaves.
  */
 function shapeOf(schema, schemas, seen = new Set()) {
   if (!schema || typeof schema !== 'object') return 0;
@@ -60,6 +62,14 @@ function shapeOf(schema, schemas, seen = new Set()) {
     return { o: Object.assign({}, ...parts.map((x) => x.o)), z: [...new Set(parts.flatMap((x) => x.z || []))].sort() };
   }
   if (schema.oneOf || schema.anyOf) return 0;
+  if (schema.discriminator && schema.discriminator.mapping) {
+    // Each subtype is allOf [this schema, its own fields]; `seen` already holds this schema's
+    // name, so a subtype adds only its own fields
+    const own = shapeOf({ ...schema, discriminator: undefined }, schemas, seen);
+    const parts = [own, ...Object.values(schema.discriminator.mapping).map((ref) => shapeOf({ $ref: ref }, schemas, seen))]
+      .filter((x) => x && x.o);
+    return { o: Object.assign({}, ...parts.map((x) => x.o)), z: [...new Set(parts.flatMap((x) => x.z || []))].sort() };
+  }
   if (schema.type === 'array') return { a: shapeOf(schema.items, schemas, seen) };
   if (schema.properties) {
     const o = {};
@@ -97,7 +107,7 @@ function buildTable() {
     const moduleDetails = {};
     const moduleShapes = {};
     for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.json')).sort()) {
-      // bConnect_Endpoints.json → endpoints (the URL module prefix is the lower-case name)
+      // bConnect_Endpoints.json (26R2: endpoints.json) → endpoints (the URL module prefix is the lower-case name)
       const moduleName = file.replace(/^bConnect_/, '').replace(/\.json$/, '').toLowerCase();
       const spec = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
       const routes = [];

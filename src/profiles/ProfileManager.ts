@@ -48,6 +48,15 @@ import {
 export enum BmsVersion {
   BMS_25R2 = '25r2',
   BMS_26R1 = '26r1',
+  BMS_26R2 = '26r2',
+}
+
+/** The releases in order: what one release brought exists in every later one too */
+const RELEASE_ORDER: readonly BmsVersion[] = [BmsVersion.BMS_25R2, BmsVersion.BMS_26R1, BmsVersion.BMS_26R2];
+
+/** True when `version` is the release `since` or a later one */
+export function isAtLeast(version: BmsVersion, since: BmsVersion): boolean {
+  return RELEASE_ORDER.indexOf(version) >= RELEASE_ORDER.indexOf(since);
 }
 
 /**
@@ -421,7 +430,7 @@ class MinimalReadonlyProfile extends BaseProfile {
       try {
         result = loadFixtureFile(minDir, fixtureMap[entityType] as string);
       } catch { result = []; }
-    } else if (this.bmsVersion === BmsVersion.BMS_26R1) {
+    } else if (isAtLeast(this.bmsVersion, BmsVersion.BMS_26R1)) {
       const fixtureMap26r1: Record<string, string> = {
         rules: 'rules.json', vulnerabilities: 'vulnerabilities.json',
         detectedVulnerabilities: 'detectedVulnerabilities.json',
@@ -570,7 +579,7 @@ class StandardReadonlyProfile extends BaseProfile {
 
     // UDGs exist in 25R2 too: its spec has their sub-resource routes (not their list), and the
     // 25R2 child fixtures (job instances, installed software, endpoints) point to these groups
-    if (this.bmsVersion === BmsVersion.BMS_26R1 || entityType === 'universalDynamicGroups') {
+    if (isAtLeast(this.bmsVersion, BmsVersion.BMS_26R1) || entityType === 'universalDynamicGroups') {
       const fixtureMap26r1: Record<string, string> = {
         rules: 'rules.json', vulnerabilities: 'vulnerabilities.json',
         detectedVulnerabilities: 'detectedVulnerabilities.json',
@@ -681,7 +690,7 @@ class StandardReadwriteProfile extends BaseProfile {
 
     // UDGs exist in 25R2 too: its spec has their sub-resource routes (not their list), and the
     // 25R2 child fixtures (job instances, installed software, endpoints) point to these groups
-    if (this.bmsVersion === BmsVersion.BMS_26R1 || entityType === 'universalDynamicGroups') {
+    if (isAtLeast(this.bmsVersion, BmsVersion.BMS_26R1) || entityType === 'universalDynamicGroups') {
       const fixtureMap26r1: Record<string, string> = {
         rules: 'rules.json', vulnerabilities: 'vulnerabilities.json',
         detectedVulnerabilities: 'detectedVulnerabilities.json',
@@ -741,8 +750,8 @@ function largeScaleGenerator(entityType: string, version: BmsVersion): import('.
     case 'logicalGroups':        return new LogicalGroupGenerator();
   }
 
-  // 26R1-only entities — null in 25R2 mode (caller treats as HTTP 404)
-  if (version === BmsVersion.BMS_26R1) {
+  // Entities since 26R1 — null in 25R2 mode (caller treats as HTTP 404)
+  if (isAtLeast(version, BmsVersion.BMS_26R1)) {
     switch (entityType) {
       case 'vulnerabilities':        return new VulnerabilitiesGenerator();
       case 'rules':                  return new RulesGenerator();

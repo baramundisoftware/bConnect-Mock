@@ -3,7 +3,7 @@
 ## Overview
 
 This directory contains the bConnect Mock V2.0 source code. The mock is a
-version-aware (25R2 / 26R1) Express server that serves generated data and, on
+version-aware (25R2 / 26R1 / 26R2) Express server that serves generated data and, on
 readwrite profiles, maintains in-memory CRUD state.
 
 ## Directory Layout
@@ -34,7 +34,7 @@ src/
 
 ## Request Flow
 
-Routes are registered in `routes/index.ts` (version-aware for 25R2 / 26R1) and
+Routes are registered in `routes/index.ts` (version-aware for 25R2 / 26R1 / 26R2; `isAtLeast()` gates what a release brought) and
 wired up in `app.ts`. A request flows:
 
 ```
@@ -48,7 +48,7 @@ middleware (security headers, apiKeyGuard, validateBody)
 ## Key Design Patterns
 
 1. **Version-aware routing:** `routes/index.ts` registers only the routes valid
-   for the selected `BCONNECT_BMS_VERSION` (25R2 or 26R1).
+   for the selected `BCONNECT_BMS_VERSION` (25R2, 26R1 or 26R2).
 
 2. **Profile strategy:** `ProfileManager` selects the active data profile.
    Readonly profiles reject write methods with **HTTP 403**; readwrite profiles

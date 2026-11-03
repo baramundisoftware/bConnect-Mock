@@ -7,7 +7,7 @@ import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
 import { currentRecords } from './factories/currentRecords';
 import type { StateManager } from '../state/StateManager';
-import { BmsVersion } from '../profiles/ProfileManager';
+import { BmsVersion, isAtLeast } from '../profiles/ProfileManager';
 import { validateWriteBody, validateGenericUpdate } from '../middleware/validateBody';
 // Spec LogicalGroupForCreation (25R2 + 26R1) requires `name`; there is no `displayName`.
 const validateLogicalGroupCreate = validateWriteBody(['name']);
@@ -89,8 +89,8 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
     res.status(204).send();
   });
 
-  // DELETE /v2.0/UnmanagedEndpoints/:id (26R1 only) — P13.4.14
-  if (profile.bmsVersion === BmsVersion.BMS_26R1) {
+  // DELETE /v2.0/UnmanagedEndpoints/:id (since 26R1) — P13.4.14
+  if (isAtLeast(profile.bmsVersion, BmsVersion.BMS_26R1)) {
     app.delete('/v2.0/UnmanagedEndpoints/:id', (req: Request, res: Response) => {
       try {
         const id = req.params.id as string;
@@ -216,8 +216,8 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
     entityName: 'Dynamic group',
   });
 
-  // GET /v2.0/UnmanagedEndpoints (26R1 only)
-  if (profile.bmsVersion === BmsVersion.BMS_26R1) {
+  // GET /v2.0/UnmanagedEndpoints (since 26R1)
+  if (isAtLeast(profile.bmsVersion, BmsVersion.BMS_26R1)) {
     app.get('/v2.0/UnmanagedEndpoints', (req: Request, res: Response) => {
       try {
         const searchQuery = req.query.SearchQuery as string | undefined;
@@ -231,7 +231,7 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
       } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
     });
 
-    // GET /v2.0/UnmanagedEndpoints/:id (26R1 only)
+    // GET /v2.0/UnmanagedEndpoints/:id (since 26R1)
     app.get('/v2.0/UnmanagedEndpoints/:id', (req: Request, res: Response) => {
       try {
         const id = req.params.id as string;
@@ -309,7 +309,7 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
 
 export function registerUniversalDynamicGroupRoutes(app: Express, profile: IProfile): void {
 
-  if (profile.bmsVersion === BmsVersion.BMS_26R1) {
+  if (isAtLeast(profile.bmsVersion, BmsVersion.BMS_26R1)) {
   // GET /v2.0/UniversalDynamicGroups
   app.get('/v2.0/UniversalDynamicGroups', (req: Request, res: Response) => {
     try {
@@ -357,7 +357,7 @@ export function registerUniversalDynamicGroupRoutes(app: Express, profile: IProf
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
 
-  } // end 26R1-only block
+  } // end of the block since 26R1
 
   // Sub-resource routes: UniversalDynamicGroups/{id}/... (P13.2.8)
   const udgSubResources: Array<{ childPath: string; childFixture: string; searchFields: string[] }> = [
@@ -382,7 +382,7 @@ export function registerUniversalDynamicGroupRoutes(app: Express, profile: IProf
     });
   }
 
-  if (profile.bmsVersion === BmsVersion.BMS_26R1) {
+  if (isAtLeast(profile.bmsVersion, BmsVersion.BMS_26R1)) {
     // UniversalDynamicGroupsFolder/{id}/Folders sub-resource
     registerSubResourceList(app, profile, {
       parentPath: '/v2.0/UniversalDynamicGroupsFolder',

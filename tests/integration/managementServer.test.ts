@@ -25,9 +25,10 @@ const cases = Object.values(ProfileMode).flatMap((mode) =>
 describe('ManagementServer', () => {
   afterEach(() => { delete process.env[OVERRIDE]; });
 
-  it('reports 25.2.x for 25R2 and 26.1.x for 26R1', () => {
+  it('reports 25.2.x for 25R2, 26.1.x for 26R1 and 26.2.x for 26R2', () => {
     expect(MANAGEMENT_SERVER_VERSIONS[BmsVersion.BMS_25R2]).toMatch(/^25\.2\.\d+\.\d+$/);
     expect(MANAGEMENT_SERVER_VERSIONS[BmsVersion.BMS_26R1]).toBe('26.1.161.0');
+    expect(MANAGEMENT_SERVER_VERSIONS[BmsVersion.BMS_26R2]).toMatch(/^26\.2\.\d+\.\d+$/);
   });
 
   it.each(cases)('%s / %s: version of the simulated release, spec fields only', async (mode, version) => {
