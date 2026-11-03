@@ -103,18 +103,21 @@ function windows(item: Item, h: number): Item {
   const build = windowsBuild(os);
   const address = str(item['primaryIP']) ?? ip(h);
   const user = str(item['primaryUser'])?.split('@')[0];
+  // Co-managed with Intune (spec): the probed bMS had none; some inventoried endpoints here are,
+  // so the Intune remote actions (26R2) have endpoints to act on
+  const intune = inventoried && roll(h, 17) < 40;
   const always: Item = {
     activity: roll(h, 2) < 35 ? pick(PC_ACTIVITIES, h >>> 2)(shortDate(moment(h, 30, 'none'))) : undefined,
     comment: roll(h, 3) < 40 ? pick(COMMENTS, h >>> 3) : undefined,
     clientAgentLink: { extendedInternetMode: false, networkMode: roll(h, 4) < 15 ? 'Internet' : 'LAN', lastNetworkMode: roll(h, 4) < 15 ? 'Internet' : 'LAN' },
     clientAgentState: inventoried ? 'Running' : 'Unknown', // length
-    coManagement: 'None',
-    entraIdDeviceId: '',
-    isAutopilotDevice: false,
+    coManagement: intune ? 'Intune' : 'None',
+    entraIdDeviceId: intune ? guidOf(h, 17) : '',
+    isAutopilotDevice: intune && roll(h, 18) < 50,
     isDeactivated: false,
     isEnergyManagementActive: roll(h, 5) < 55,
     lastChange: moment(h, 0, 'none'),
-    modernManagementState: 'NotManaged',
+    modernManagementState: intune ? 'ManagedAndBaramundiAgentInstalled' : 'NotManaged',
     registeredUserUpdateMode: roll(h, 6) < 30 ? 'EnterManually' : 'UseNextLogonUser', // length
     userRelatedJobExecution: 'ForRegisteredUser', // length
     storageMedia: inventoried ? windowsDisk(h, (salt) => guidOf(h, salt)) : [],

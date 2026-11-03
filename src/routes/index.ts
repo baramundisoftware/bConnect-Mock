@@ -9,14 +9,15 @@ import type { Express } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
 import { BmsVersion, isAtLeast } from '../profiles/ProfileManager';
 
-import { registerEndpointRoutes } from './endpoints';
+import { registerEndpointRoutes, registerIntuneRemoteActionRoutes } from './endpoints';
 import { registerJobRoutes } from './jobs';
 import { registerAssetRoutes, registerAssetStockRoutes, registerVariableRoutes } from './assets';
 import { registerSoftwareRoutes, registerSoftware26R1Routes } from './software';
 import { registerComplianceRoutes } from './compliance';
 import { registerActiveDirectoryRoutes } from './activeDirectory';
 import { registerDefenseControlRoutes } from './defenseControl';
-import { registerServerManagementRoutes, registerServerManagement26R1Routes } from './serverManagement';
+import { registerServerManagementRoutes, registerServerManagement26R1Routes, registerServerManagement26R2Routes } from './serverManagement';
+import { registerThresholdRoutes } from './thresholds';
 import { registerGroupRoutes, registerUniversalDynamicGroupRoutes } from './groups';
 import { registerMiscRoutes } from './misc';
 import { registerActionRoutes } from './actions';
@@ -87,6 +88,13 @@ export function registerAllRoutes(app: Express, profile: IProfile): void {
     registerComplianceRoutes(app, profile);
     registerSoftware26R1Routes(app, profile);
     registerServerManagement26R1Routes(app, profile);
+  }
+
+  // Routes since 26R2
+  if (isAtLeast(profile.bmsVersion, BmsVersion.BMS_26R2)) {
+    registerThresholdRoutes(app, profile);
+    registerServerManagement26R2Routes(app, profile);
+    registerIntuneRemoteActionRoutes(app, profile);
   }
 }
 

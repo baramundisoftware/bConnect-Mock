@@ -68,7 +68,7 @@ describe('endpoint inventory', () => {
   it('keeps a value the item has, and leaves other entity types alone', () => {
     const item = { id: 'e5000001-0000-0000-0000-000000000001', primaryIP: '10.1.2.3', timeZone: null };
     const filled = withInventory('windowsEndpoints', item);
-    expect(filled['coManagement']).toBe('None');
+    expect(['None', 'Intune']).toContain(filled['coManagement']);
     if (filled['cpu']) { expect(filled['primaryIP']).toBe('10.1.2.3'); }
     expect(withInventory('logicalGroups', item)).toBe(item);
   });
