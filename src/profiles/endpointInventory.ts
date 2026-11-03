@@ -12,6 +12,7 @@
  *   `coManagement`, `modernManagementState`, `lastChange` and an empty `entraIdDeviceId` are on
  *   every endpoint. Date-times have no fraction of a second (`2026-10-30T08:15:00Z`).
  * - `activity` is a sentence, not a state; `timeZone` reads `UTC+01:00 Europe/Berlin`.
+ * - `ieVersionString` only on inventoried Windows endpoints: four numbers and a lowercase word.
  * - Linux endpoints are managed over SSH (`sshConfiguration`), network endpoints have
  *   `snmpPort` 0, `totalRAM` 0 and `operatingSystem` "Unknown".
  * Values the probe could not show (mobile devices were not enrolled there) follow the spec and
@@ -137,6 +138,7 @@ function windows(item: Item, h: number): Item {
     manufacturer: vendorOf(str(item['machineModel']) ?? str(item['modelName']), 'Dell Inc.'),
     osVersionString: build,
     osVersionText: `${os} 64-Bit (Build ${build.split('.').slice(2).join('.')})`,
+    ieVersionString: `11.0.${build.split('.').slice(2).join('.')} (rtm)`, // length
     timeZone: pick(TIME_ZONES, h >>> 9),
     totalRAM: pick([8, 16, 16, 32], h >>> 11) * GIB - 4_194_304,
     uuid: guidOf(h, 7).toUpperCase(),

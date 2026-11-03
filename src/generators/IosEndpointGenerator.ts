@@ -6,6 +6,7 @@
  */
 
 import { BaseGenerator } from './BaseGenerator';
+import { logicalGroupOf } from './LogicalGroupGenerator';
 
 const IOS_VERSIONS = [
   'iOS 17.4', 'iOS 17.3', 'iOS 16.7', 'iOS 16.6', 'iOS 15.8',
@@ -74,6 +75,8 @@ function indexToUDID(index: number): string {
 }
 
 export interface IosEndpointRecord {
+  logicalGroupId: string;
+  logicalGroup: string;
   id: string;
   guid: string;
   type: 'IOSEndpoint';
@@ -118,6 +121,7 @@ export class IosEndpointGenerator extends BaseGenerator<IosEndpointRecord> {
       id: guid,
       guid,
       type: 'IOSEndpoint',
+      ...logicalGroupOf(4, index),
       displayName: `${prefix}-MOB-${zeroPad(index + 1, 5)}`,
       primaryUser,
       operatingSystem: osVersion,

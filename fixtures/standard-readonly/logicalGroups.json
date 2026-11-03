@@ -20,6 +20,7 @@
     "displayName": "Windows Endpoints",
     "parentId": "d1000001-0001-0001-0001-000000000001",
     "description": "All Windows-managed endpoints",
+    "dip": "\\\\dip01.corp.test\\DIP",
     "isBuiltIn": false,
     "memberCount": 10,
     "childGroupCount": 0,

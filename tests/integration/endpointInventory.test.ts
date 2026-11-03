@@ -41,11 +41,12 @@ describe('endpoint inventory', () => {
     expect(w['lastBoot']).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/); // no fraction of a second
     expect(w['storageMedia']).toEqual([expect.objectContaining({ busType: 'NVMe', partitionStyle: 'GPT', storageVolumes: expect.any(Array) })]);
     expect(w['cpu']).toMatchObject({ architecture: 'x64', physicalCPUs: 1 });
+    expect(w['ieVersionString']).toMatch(/^11\.0\.\d{5}\.\d{3,4} \(rtm\)$/);
   });
 
   it('leaves the others without hardware details, with what every endpoint has', () => {
     const bare = windows.find((w) => w['cpu'] === null) as Item;
-    expect(bare).toMatchObject({ storageMedia: [], bootMode: null, timeZone: null, coManagement: 'None', entraIdDeviceId: '', modernManagementState: 'NotManaged' });
+    expect(bare).toMatchObject({ storageMedia: [], bootMode: null, timeZone: null, ieVersionString: null, coManagement: 'None', entraIdDeviceId: '', modernManagementState: 'NotManaged' });
     expect(bare['lastChange']).toMatch(/Z$/);
     expect(bare['clientAgentLink']).toMatchObject({ extendedInternetMode: false });
   });
@@ -63,6 +64,27 @@ describe('endpoint inventory', () => {
     expect(linux['primaryIP']).toMatch(/^172\./);
     const network = (await request(app).get('/bconnect/endpoints/v2.0/NetworkEndpoints')).body.data[0] as Item;
     expect(network).toMatchObject({ operatingSystem: 'Unknown', snmpPort: 0, totalRAM: 0, sshAuthenticationMethod: 'None' });
+  });
+
+  it('links every large-scale endpoint to a logical group the profile has, named for its type', async () => {
+    const groups = new Map(((await request(large).get('/bconnect/endpoints/v2.0/LogicalGroups?PageSize=300')).body.data as Item[]).map((g) => [g['id'], g['name']]));
+    for (const [type, name] of [['Windows', 'Windows Endpoints'], ['Linux', 'Linux Endpoints'], ['Mac', 'Mac Endpoints'], ['Android', 'Android Devices'], ['Ios', 'iOS Devices'], ['Network', 'IT Infrastructure']]) {
+      const endpoints = (await request(large).get(`/bconnect/endpoints/v2.0/${type}Endpoints?PageSize=30`)).body.data as Item[];
+      for (const e of endpoints) {
+        expect(groups.get(e['logicalGroupId'])).toBe(e['logicalGroup']);
+        expect(e['logicalGroup']).toMatch(new RegExp(`^${name}( \\d+)?$`));
+      }
+    }
+  });
+
+  it('a few logical groups install from the DIP, by UNC path', async () => {
+    for (const app of [large, strictApp(ProfileMode.STANDARD_READONLY)]) {
+      const groups = (await request(app).get('/bconnect/endpoints/v2.0/LogicalGroups?PageSize=300')).body.data as Item[];
+      const withDip = groups.filter((g) => g['dip'] !== null);
+      expect(withDip.length).toBeGreaterThan(0);
+      expect(withDip.length).toBeLessThan(groups.length / 5);
+      for (const g of withDip) { expect(g['dip']).toBe('\\\\dip01.corp.test\\DIP'); }
+    }
   });
 
   it('keeps a value the item has, and leaves other entity types alone', () => {
