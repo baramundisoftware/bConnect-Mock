@@ -32,6 +32,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Defender: `isMicrosoftDefenderActive` and, for inventoried endpoints, `microsoftDefenderState` (engine, definitions, protection flags, scans), with active/resolved threats and the highest severity from the profile's threats
   - The mock's own fields of these states (`conversionStatus`, `defenderStatus`, `signatureVersion`, ...) go into the spec's fields where they fit; strict routing no longer answers them
   - `OrgUnits.comment` is null on the live bMS too and no longer reported as a gap
+- More record fields from the live 26R1 probe (baseline → 308/218/183):
+  - Large-scale assets are owned by a Windows endpoint (`ownerId`, `ownerName`, `ownerType` Machine), large-scale job definitions are in a job folder (`folderId`, `folder`)
+  - Job definitions: a `category` and a `description` on few (1 of 66 live)
+  - DIPs: empty `details` and a `lastUpdate`; security profiles: `displayAdministratorIdentities`, `displayEndpointUserIdentities`
+  - Variable definitions (not probed): `scopes`, those of their instances
+  - Assets' `contact` is null on the live bMS too and no longer reported as a gap
 
 ### Fixed
 - JSON Patch paths are case-insensitive, as on a live bMS (ASP.NET Core JsonPatch): each segment maps onto the patched resource's real property name, so the spec examples' `/Value`, `/IsActive`, `/IsAvailableViaGateway`, `/SecurityProfiles` work. Before, Thresholds and ApiKeys PATCH rejected them with 400, and 15 other PATCH routes (endpoints, logical groups, folders, security profiles, variables, ...) answered 200 but silently dropped the change. Fields a route doesn't let you modify are still rejected, by their camelCase name
