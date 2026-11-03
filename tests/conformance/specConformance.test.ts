@@ -117,8 +117,8 @@ function itemFields(route: SpecRoute | undefined): Set<string> | undefined {
  * module and the list's last path segment (`*`: every list of the module). From a read-only probe
  * of a live 26R1 bMS (26.1.161.0, probe version 7, 2026-11-02: 32 endpoints, 20 of them Windows,
  * 5 Linux, 4 network, 2 Android, 1 Mac; 29 logical groups; 13 asset types, 66 job definitions,
- * 156 job instances, 122 installed software entries). Android, Mac and network endpoints have
- * no hardware inventory there.
+ * 156 job instances, 122 installed software entries, 2 org units). Android, Mac and network
+ * endpoints have no hardware inventory there.
  */
 const LIVE_NULL: Record<string, readonly string[]> = {
   'endpoints *': ['assignedScannerId', 'assignedScannerName', 'registeredUserId'],
@@ -128,6 +128,7 @@ const LIVE_NULL: Record<string, readonly string[]> = {
   'endpoints MacEndpoints': ['category', 'osVersionString', 'patchLevel', 'uniqueDeviceId'],
   'endpoints NetworkEndpoints': ['activity', 'description', 'firstSeen', 'manufacturer', 'opcuaInformation', 'ouiVendor', 'registeredUser', 'snmpConfiguration', 'snmpName', 'snmpProperties', 'upTime', 'vendorId', 'webInterfaceUrl'],
   'endpoints LogicalGroups': ['defaultDomain'],
+  'activedirectory OrgUnits': ['comment'],
   'assets AssetTypes': ['additionalProperties', 'contact', 'costCenter', 'encodedIcon', 'inventoryNumber', 'summary'],
   'jobs JobDefinitions': ['validity'],
   'jobs JobInstances': ['nextExecution'],
