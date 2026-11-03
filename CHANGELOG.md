@@ -27,6 +27,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Inventoried Windows endpoints have an `ieVersionString`
   - A few logical groups name the DIP they install from (`dip`, a UNC path)
   - Fields the live bMS leaves null too are no longer reported as gaps: Android and Mac hardware/OS details, the SNMP/OPC UA details of network endpoints, `LogicalGroups.defaultDomain`
+- BitLocker and Microsoft Defender states answer the spec's fields, following the inventory of their Windows endpoint (baseline → 332/244/209):
+  - BitLocker: `isSecureBootEnabled`, `networkUnlockStatus`, `tpmData`, the startup PIN/USB key flags and the endpoint's disks, with `bitLockerVolumeData` on the Windows volume; endpoints without inventory have no disks and no TPM
+  - Defender: `isMicrosoftDefenderActive` and, for inventoried endpoints, `microsoftDefenderState` (engine, definitions, protection flags, scans), with active/resolved threats and the highest severity from the profile's threats
+  - The mock's own fields of these states (`conversionStatus`, `defenderStatus`, `signatureVersion`, ...) go into the spec's fields where they fit; strict routing no longer answers them
+  - `OrgUnits.comment` is null on the live bMS too and no longer reported as a gap
 
 ### Fixed
 - The route generator merges the fields of a discriminator's subtypes (26R2 `DownloadJob.interval`, `JobDefinition.validity.validityPeriods`); before, projection would have dropped a weekly interval's `weekdays`

@@ -15,6 +15,7 @@
  *   ManagedSoftware, with an `applicationId`), half `Inventoried`; every entry has a
  *   `detectionRuleId`, `lastFound` and `autUsage` AutDeactivated (usage tracking off).
  * - Job definitions: a `comment` on about a third of them.
+ * - BitLocker and Microsoft Defender states: src/profiles/defenseControlFields.ts.
  *
  * withRecordFields() fills these where an item has none; values are synthetic and fixed per item
  * (src/profiles/seeded.ts). Links (an asset's type, an asset type's folder) point to items the
@@ -22,6 +23,7 @@
  */
 
 import { type Item, seedOf, roll, pick, str, moment, guidOf, fillMissing } from './seeded';
+import { bitLockerFields, defenderFields } from './defenseControlFields';
 
 /** Another entity type's items of the same profile */
 export type Related = (entityType: string) => Item[];
@@ -102,6 +104,8 @@ const FILL: Readonly<Record<string, Fill>> = {
   },
   jobInstances: (item, h) => ({ delays: 0, steps: steps(item, h) }),
   jobs: (_item, h) => ({ comment: roll(h, 21) < 38 ? pick(JOB_COMMENTS, h >>> 2) : undefined }), // 25 of 66 on the live bMS
+  bitLockerStates: (item) => bitLockerFields(item),
+  microsoftDefenderStates: (item, _h, related) => defenderFields(item, related('microsoftDefenderThreats')),
   installedWindowsSoftware: (_item, h) => {
     const managed = roll(h, 22) < 50; // 50 of 100 on the live bMS
     return {
