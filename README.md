@@ -116,19 +116,20 @@ Verify: `curl http://localhost:3433/health`
 |----------|---------|-------------|
 | `BCONNECT_PROFILE` | `standard-readonly` | Data profile (see table above) |
 | `PORT` | `3433` | HTTP port |
-| `BCONNECT_BMS_VERSION` | `25r2` | bMS version to simulate: `25r2` or `26r1` |
+| `BCONNECT_BMS_VERSION` | `25r2` | bMS version to simulate: `25r2`, `26r1` or `26r2` |
 | `LOG_LEVEL` | `info` | Logging: `debug` or `info` |
 | `RATE_LIMIT_ENABLED` | `true` | Rate limiting (100 req/min per IP) |
 | `RATE_LIMIT_MAX` | `100` | Max requests per window |
 | `ALLOWED_ORIGINS` | `*` | CORS allowed origins |
 | `REQUIRE_API_KEY` | — | If set, write operations require `X-Api-Key` header |
 | `BCONNECT_MODULE_ROUTING` | `strict` | `strict`: like a real bMS, each route answers only under its module prefix; `lenient`: any prefix or none (pre-0.4 behaviour). See [Module prefixes](#module-prefixes) |
-| `BCONNECT_MANAGEMENT_SERVER_VERSION` | — | Overrides the `version` of `GET …/ManagementServer` (default: `25.2.0.0` for 25R2, `26.1.161.0` for 26R1), to test clients with an unknown version |
+| `BCONNECT_MANAGEMENT_SERVER_VERSION` | — | Overrides the `version` of `GET …/ManagementServer` (default: `25.2.0.0` for 25R2, `26.1.161.0` for 26R1, `26.2.0.0` for 26R2), to test clients with an unknown version |
 
 ### bMS Version Support
 
 - **25R2 mode** (default): 172 routes covering all standard bConnect V2.0 endpoints
 - **26R1 mode**: 264 routes — adds Compliance, Universal Dynamic Groups, Bundles, and more
+- **26R2 mode**: everything since 26R1, answered with the 26R2 spec's fields (e.g. network endpoints without the inventory fields 26R2 removed, no `CloudConnectors`). Routes new in 26R2 (Thresholds, API key management, Intune remote actions) are not served yet
 
 ```bash
 # 25R2 (default)
@@ -136,6 +137,9 @@ npm start
 
 # 26R1
 BCONNECT_BMS_VERSION=26r1 npm start
+
+# 26R2
+BCONNECT_BMS_VERSION=26r2 npm start
 ```
 
 ---

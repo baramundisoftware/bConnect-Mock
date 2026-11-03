@@ -6,7 +6,7 @@
  */
 
 import { effectivePageSize } from '../middleware/pagedList';
-import { BmsVersion, type IProfile } from '../profiles/ProfileManager';
+import { BmsVersion, isAtLeast, type IProfile } from '../profiles/ProfileManager';
 import type { StateManager } from '../state/StateManager';
 
 /** Shared GUID format regex */
@@ -97,7 +97,7 @@ export interface ResolvedEntityData {
  * industrial endpoints 'Deprecated_IndustrialEndpoint', 25R2's 'IndustrialEndpoint'.
  */
 export function withReleaseEndpointType(item: Record<string, unknown>, bmsVersion: BmsVersion): Record<string, unknown> {
-  return bmsVersion === BmsVersion.BMS_26R1 && item['type'] === 'IndustrialEndpoint'
+  return isAtLeast(bmsVersion, BmsVersion.BMS_26R1) && item['type'] === 'IndustrialEndpoint'
     ? { ...item, type: 'Deprecated_IndustrialEndpoint' }
     : item;
 }

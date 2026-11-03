@@ -71,7 +71,7 @@ BCONNECT_PROFILE=minimal-readonly npm start
 
 1. **Route not registered.** Verify the path is listed in [API.md](API.md) or the Swagger UI at `/api-docs`.
 
-2. **26R1-only endpoint in 25R2 mode.** Endpoints such as `/v2.0/Vulnerabilities` and `/v2.0/UniversalDynamicGroups` only exist in 26R1 mode.
+2. **Endpoint since 26R1 in 25R2 mode.** Endpoints such as `/v2.0/Vulnerabilities` and `/v2.0/UniversalDynamicGroups` only exist in 26R1 and 26R2 mode.
 
    **Fix:**
    ```bash

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, it, expect } from 'vitest';
-import { BmsVersion, ProfileManager, ProfileMode } from '../../../src/profiles/ProfileManager';
+import { BmsVersion, ProfileManager, ProfileMode, isAtLeast } from '../../../src/profiles/ProfileManager';
 
 describe('ProfileManager', () => {
   describe('ProfileMode enum', () => {
@@ -147,6 +147,17 @@ describe('ProfileManager', () => {
     it('should define BMS_26R1 as "26r1"', () => {
       expect(BmsVersion.BMS_26R1).toBe('26r1');
     });
+
+    it('should define BMS_26R2 as "26r2"', () => {
+      expect(BmsVersion.BMS_26R2).toBe('26r2');
+    });
+
+    it('isAtLeast: a release has what it and every earlier release brought', () => {
+      expect(isAtLeast(BmsVersion.BMS_26R2, BmsVersion.BMS_26R1)).toBe(true);
+      expect(isAtLeast(BmsVersion.BMS_26R1, BmsVersion.BMS_26R1)).toBe(true);
+      expect(isAtLeast(BmsVersion.BMS_25R2, BmsVersion.BMS_26R1)).toBe(false);
+      expect(isAtLeast(BmsVersion.BMS_26R1, BmsVersion.BMS_26R2)).toBe(false);
+    });
   });
 
   describe('ProfileManager with BmsVersion', () => {
@@ -183,6 +194,7 @@ describe('ProfileManager', () => {
     it('isValidVersion should return true for valid BMS versions', () => {
       expect(ProfileManager.isValidVersion('25r2')).toBe(true);
       expect(ProfileManager.isValidVersion('26r1')).toBe(true);
+      expect(ProfileManager.isValidVersion('26r2')).toBe(true);
     });
 
     it('isValidVersion should return false for invalid BMS versions', () => {
@@ -195,6 +207,7 @@ describe('ProfileManager', () => {
       const versions = ProfileManager.getAvailableVersions();
       expect(versions).toContain(BmsVersion.BMS_25R2);
       expect(versions).toContain(BmsVersion.BMS_26R1);
+      expect(versions).toContain(BmsVersion.BMS_26R2);
     });
   });
 

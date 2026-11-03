@@ -7,7 +7,7 @@
 
 import type { Express } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
-import { BmsVersion } from '../profiles/ProfileManager';
+import { BmsVersion, isAtLeast } from '../profiles/ProfileManager';
 
 import { registerEndpointRoutes } from './endpoints';
 import { registerJobRoutes } from './jobs';
@@ -82,8 +82,8 @@ export function registerAllRoutes(app: Express, profile: IProfile): void {
   // UniversalDynamicGroups (all versions — sub-resource routes used by both 25R2 and 26R1)
   registerUniversalDynamicGroupRoutes(app, profile);
 
-  // 26R1-only routes
-  if (profile.bmsVersion === BmsVersion.BMS_26R1) {
+  // Routes since 26R1
+  if (isAtLeast(profile.bmsVersion, BmsVersion.BMS_26R1)) {
     registerComplianceRoutes(app, profile);
     registerSoftware26R1Routes(app, profile);
     registerServerManagement26R1Routes(app, profile);

@@ -10,7 +10,7 @@
  *                             Set to 127.0.0.1 to restrict to loopback only.
  *                             A warning is emitted when binding to a non-loopback address.
  *   BCONNECT_PROFILE        — Profile mode (default: standard-readonly)
- *   BCONNECT_BMS_VERSION    — BMS version: 25r2 | 26r1 (default: 25r2)
+ *   BCONNECT_BMS_VERSION    — BMS version: 25r2 | 26r1 | 26r2 (default: 25r2)
  *   LOG_LEVEL               — Logging level: info | debug (default: info)
  *   LOG_FORMAT              — Log output format: text | json (default: text)
  */
@@ -51,11 +51,12 @@ const versionEnv = (process.env.BCONNECT_BMS_VERSION ?? '25r2').toLowerCase();
 const versionMap: Record<string, BmsVersion> = {
   '25r2': BmsVersion.BMS_25R2,
   '26r1': BmsVersion.BMS_26R1,
+  '26r2': BmsVersion.BMS_26R2,
 };
 const bmsVersion = versionMap[versionEnv];
 if (!bmsVersion) {
   console.error(
-    `[bconnect-mock] Invalid BCONNECT_BMS_VERSION="${versionEnv}". Valid values: 25r2, 26r1`
+    `[bconnect-mock] Invalid BCONNECT_BMS_VERSION="${versionEnv}". Valid values: ${Object.keys(versionMap).join(', ')}`
   );
   process.exit(1);
 }

@@ -8,7 +8,7 @@
 import { KIOSK_SEARCH_FIELDS } from './catalog';
 import type { Express } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
-import { BmsVersion } from '../profiles/ProfileManager';
+import { BmsVersion, isAtLeast } from '../profiles/ProfileManager';
 import { registerSubResourceList } from './factories/subResourceList';
 
 export function registerSubResourceRoutes(app: Express, profile: IProfile): void {
@@ -48,7 +48,7 @@ export function registerSubResourceRoutes(app: Express, profile: IProfile): void
     childEntityName: 'Variable instance',
   });
 
-  if (profile.bmsVersion === BmsVersion.BMS_26R1) {
+  if (isAtLeast(profile.bmsVersion, BmsVersion.BMS_26R1)) {
     registerSubResourceList(app, profile, {
       parentPath: '/v2.0/Endpoints',
       childPath: 'DetectedVulnerabilities',
@@ -88,7 +88,7 @@ export function registerSubResourceRoutes(app: Express, profile: IProfile): void
     childEntityName: 'Installed software',
   });
 
-  if (profile.bmsVersion === BmsVersion.BMS_26R1) {
+  if (isAtLeast(profile.bmsVersion, BmsVersion.BMS_26R1)) {
     registerSubResourceList(app, profile, {
       parentPath: '/v2.0/WindowsEndpoints',
       childPath: 'DetectedVulnerabilities',
@@ -141,7 +141,7 @@ export function registerSubResourceRoutes(app: Express, profile: IProfile): void
     childEntityName: 'Kiosk release',
   });
 
-  if (profile.bmsVersion === BmsVersion.BMS_26R1) {
+  if (isAtLeast(profile.bmsVersion, BmsVersion.BMS_26R1)) {
     registerSubResourceList(app, profile, {
       parentPath: '/v2.0/ADObjects',
       childPath: 'Assets',
@@ -315,7 +315,7 @@ export function registerSubResourceRoutes(app: Express, profile: IProfile): void
     childEntityName: 'Org unit',
   });
 
-  if (profile.bmsVersion === BmsVersion.BMS_26R1) {
+  if (isAtLeast(profile.bmsVersion, BmsVersion.BMS_26R1)) {
     registerSubResourceList(app, profile, {
       parentPath: '/v2.0/OrgUnits',
       childPath: 'Assets',
@@ -366,7 +366,7 @@ export function registerSubResourceRoutes(app: Express, profile: IProfile): void
     childEntityName: 'Job definition',
   });
 
-  if (profile.bmsVersion === BmsVersion.BMS_26R1) {
+  if (isAtLeast(profile.bmsVersion, BmsVersion.BMS_26R1)) {
     registerSubResourceList(app, profile, {
       parentPath: '/v2.0/Folders',
       childPath: 'UniversalDynamicGroups',
@@ -427,9 +427,9 @@ export function registerSubResourceRoutes(app: Express, profile: IProfile): void
     childEntityName: 'Threat',
   });
 
-  // ─── Bundle/Folders sub-resources (26R1 only) ────────────────────────────────
+  // ─── Bundle/Folders sub-resources (since 26R1) ────────────────────────────────
 
-  if (profile.bmsVersion === BmsVersion.BMS_26R1) {
+  if (isAtLeast(profile.bmsVersion, BmsVersion.BMS_26R1)) {
     registerSubResourceList(app, profile, {
       parentPath: '/v2.0/Bundle/Folders',
       childPath: 'Folders',
@@ -444,7 +444,7 @@ export function registerSubResourceRoutes(app: Express, profile: IProfile): void
 
   // ─── Bundles/{id}/BundleApplications ─────────────────────────────────────────
 
-  if (profile.bmsVersion === BmsVersion.BMS_26R1) {
+  if (isAtLeast(profile.bmsVersion, BmsVersion.BMS_26R1)) {
     registerSubResourceList(app, profile, {
       parentPath: '/v2.0/Bundles',
       childPath: 'BundleApplications',

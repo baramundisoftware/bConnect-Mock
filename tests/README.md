@@ -36,7 +36,7 @@ tests/
 
 ## Spec conformance
 
-`tests/conformance/specConformance.test.ts` calls every GET route of the 25R2 and 26R1 specs
+`tests/conformance/specConformance.test.ts` calls every GET route of the 25R2, 26R1 and 26R2 specs
 against the mock (strict routing, `standard-readonly`) and validates each answer against the
 spec's 200 schema: types, enums, formats (`guid`, `date-time`), required fields, and fields the
 spec doesn't define. Path parameters get real IDs from the parent list.

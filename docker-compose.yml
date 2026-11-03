@@ -6,7 +6,7 @@ version: '3.9'
 # Usage:
 #   docker compose up                  # standard-readonly, BMS 25R2
 #   PROFILE=minimal-readwrite docker compose up
-#   BMS_VERSION=26r1 docker compose up
+#   BMS_VERSION=26r1 docker compose up   # or 26r2
 #   BIND_ADDRESS=127.0.0.1 docker compose up   # restrict to loopback only
 #   docker compose --profile test up   # includes test runner
 # ──────────────────────────────────────────────────────────

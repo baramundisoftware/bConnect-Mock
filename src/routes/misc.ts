@@ -6,7 +6,7 @@
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
 import type { StateManager } from '../state/StateManager';
-import { BmsVersion } from '../profiles/ProfileManager';
+import { BmsVersion, isAtLeast } from '../profiles/ProfileManager';
 import { resolveEntityData, applyMultiKeywordSearch, applyMultiFieldSort, parsePage, GUID_REGEX, parsePageSize } from './utils';
 import { validateGenericUpdate, validateWriteBody } from '../middleware/validateBody';
 import { withTreeParent } from './factories/treeParent';
@@ -41,8 +41,8 @@ export function registerMiscRoutes(app: Express, profile: IProfile): void {
   // ─── /v2.0/Folders — Jobs context (P13.4.6) ────────────────────────────────
   registerFolderRoutes(app, profile, { basePath: '/v2.0/Folders', fixtureKey: 'jobFolders' });
 
-  // GET /v2.0/EntraIdData + GET /v2.0/EntraIdData/:deviceId (26R1 only)
-  if (profile.bmsVersion === BmsVersion.BMS_26R1) {
+  // GET /v2.0/EntraIdData + GET /v2.0/EntraIdData/:deviceId (since 26R1)
+  if (isAtLeast(profile.bmsVersion, BmsVersion.BMS_26R1)) {
     app.get('/v2.0/EntraIdData', (req: Request, res: Response) => {
       try {
         const page = parsePage(req.query.Page);

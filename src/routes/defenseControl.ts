@@ -5,7 +5,7 @@
 
 import type { Express, Request, Response } from 'express';
 import type { IProfile } from '../profiles/ProfileManager';
-import { BmsVersion } from '../profiles/ProfileManager';
+import { BmsVersion, isAtLeast } from '../profiles/ProfileManager';
 import { applyMultiKeywordSearch, applyMultiFieldSort, parsePage, parsePageSize } from './utils';
 
 export function registerDefenseControlRoutes(app: Express, profile: IProfile): void {
@@ -35,8 +35,8 @@ export function registerDefenseControlRoutes(app: Express, profile: IProfile): v
     } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
   });
 
-  // GET /v2.0/BitLocker/WindowsEndpoints/:id/Secrets (P13.6.2, 26R1 only)
-  if (profile.bmsVersion === BmsVersion.BMS_26R1) {
+  // GET /v2.0/BitLocker/WindowsEndpoints/:id/Secrets (P13.6.2, since 26R1)
+  if (isAtLeast(profile.bmsVersion, BmsVersion.BMS_26R1)) {
     app.get('/v2.0/BitLocker/WindowsEndpoints/:id/Secrets', (req: Request, res: Response) => {
       try {
         const { id } = req.params;
@@ -47,7 +47,7 @@ export function registerDefenseControlRoutes(app: Express, profile: IProfile): v
       } catch (error) { console.error(error instanceof Error ? error.message : String(error)); res.status(500).json({ error: 'Internal server error' }); }
     });
 
-    // PATCH /v2.0/BitLocker/WindowsEndpoints/:id/Secrets (P13.6.2, 26R1 only)
+    // PATCH /v2.0/BitLocker/WindowsEndpoints/:id/Secrets (P13.6.2, since 26R1)
     app.patch('/v2.0/BitLocker/WindowsEndpoints/:id/Secrets', (req: Request, res: Response) => {
       try {
         const { id } = req.params;

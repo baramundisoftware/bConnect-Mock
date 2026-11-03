@@ -1,5 +1,5 @@
 /**
- * Compliance routes (26R1 only) — Rules, Vulnerabilities, DetectedVulnerabilities, DetectedRuleViolations.
+ * Compliance routes (since 26R1) — Rules, Vulnerabilities, DetectedVulnerabilities, DetectedRuleViolations.
  * Extracted from app.ts (P13.0.8).
  */
 

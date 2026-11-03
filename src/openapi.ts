@@ -9,7 +9,7 @@ export const openApiSpec = {
     title: 'bConnect V2.0 Mock API',
     version: '2.0.0',
     description:
-      'Mock server for bConnect V2.0 API — supports multiple profiles (minimal, standard, largescale) and BMS versions (25R2, 26R1).',
+      'Mock server for bConnect V2.0 API — supports multiple profiles (minimal, standard, largescale) and BMS versions (25R2, 26R1, 26R2).',
   },
   servers: [{ url: '/', description: 'Mock server' }],
   tags: [
