@@ -15,7 +15,8 @@
  * - Linux endpoints are managed over SSH (`sshConfiguration`), network endpoints have
  *   `snmpPort` 0, `totalRAM` 0 and `operatingSystem` "Unknown".
  * Values the probe could not show (mobile devices were not enrolled there) follow the spec and
- * are marked "spec" below. Enum values chosen by string length alone are marked "length".
+ * are marked "spec" below. So do the fields 26R2 added (network endpoints' `deviceInfo`, the
+ * Kerberos identity and domain membership of unmanaged endpoints): the probed bMS is a 26R1. Enum values chosen by string length alone are marked "length".
  *
  * withEndpointInventory() fills these fields where an item has none, for every source
  * (fixtures, generators, the read-write store seeded from fixtures). All values are synthetic
@@ -25,12 +26,13 @@
 
 import { type Item, seedOf, roll, pick, str, moment, shortDate, guidOf, fillMissing } from './seeded';
 
-type Kind = 'windows' | 'linux' | 'mac' | 'android' | 'ios' | 'network';
+type Kind = 'windows' | 'linux' | 'mac' | 'android' | 'ios' | 'network' | 'unmanaged';
 
 /** Fixture and store names of the endpoint types this module fills */
 export const INVENTORY_KINDS: Readonly<Record<string, Kind>> = {
   windowsEndpoints: 'windows', linuxEndpoints: 'linux', macEndpoints: 'mac',
   androidEndpoints: 'android', iosEndpoints: 'ios', networkEndpoints: 'network',
+  unmanagedEndpoints: 'unmanaged',
 };
 
 const ip = (h: number): string => `172.${16 + (h % 16)}.${(h >>> 4) & 0xff}.${((h >>> 12) % 253) + 1}`;
@@ -215,6 +217,7 @@ function android(item: Item, h: number): Item {
 
 function network(item: Item, h: number): Item {
   const ssh = roll(h, 13) < 75; // 3 of 4 on the live bMS
+  const model = str(item['modelName']);
   return {
     comment: roll(h, 14) < 75 ? `Discovered by network scan on ${shortDate(moment(h, 2000, 'none'))}` : undefined,
     hostName: str(item['displayName']),
@@ -224,11 +227,49 @@ function network(item: Item, h: number): Item {
     totalRAM: 0,
     sshAuthenticationMethod: 'None',
     sshConfiguration: ssh ? { sshVersion: 'SSH-2.0-OpenSSH_9.2p1 Debian-2+deb12u3', port: 22, discoveryDate: moment(h, 2000, 'ticks'), authenticationMethod: 'None', username: null, hostKeys: [] } : undefined,
+    // 26R2 (spec): the device's own data, from the mock's model, firmware and serial number
+    deviceInfo: {
+      manufacturer: vendorOf(model, model?.split(' ')[0] ?? 'Unknown'),
+      moduleType: model ?? null,
+      cpu: null,
+      hardwareVersion: null,
+      firmwareVersion: str(item['firmwareVersion']) ?? null,
+      serialNumber: str(item['serialNumber']) ?? null,
+      orderNumber: null,
+    },
+  };
+}
+
+/** The mock's AD domain (its users are user@corp.test, DC=corp,DC=test) */
+const AD_DOMAIN = 'corp.test';
+const hex = (h: number, salt: number): string => (Math.imul(h ^ Math.imul(salt, 0x9e3779b1), 0x85ebca6b) >>> 0).toString(16).padStart(8, '0');
+
+/**
+ * Unmanaged endpoints (spec): the network group 26R1 called networkGroupName and 26R2
+ * computerGroupName, and in 26R2 the identity an endpoint proved with a Kerberos token (empty
+ * without one), its domain membership, the expiry of the token it enrolled with and the
+ * fingerprint of its key
+ */
+function unmanaged(item: Item, h: number): Item {
+  const inDomain = roll(h, 15) < 60;
+  const kerberos = inDomain && roll(h, 16) < 70;
+  const host = (str(item['displayName']) ?? `PC-${hex(h, 1).slice(0, 6)}`).toUpperCase();
+  const group = inDomain ? AD_DOMAIN : 'WORKGROUP';
+  return {
+    networkGroupName: group,
+    computerGroupName: group,
+    isPartOfDomain: inDomain,
+    isKerberosAuthenticated: kerberos,
+    kerberosPrincipal: kerberos ? `${host}$@${AD_DOMAIN.toUpperCase()}` : '',
+    endpointSid: kerberos ? `S-1-5-21-3623811015-3361044348-30300820-${1100 + (h % 900)}` : '',
+    adDnsName: kerberos ? `${host.toLowerCase()}.${AD_DOMAIN}` : '',
+    tokenExpirationDate: `${new Date(Date.UTC(2027, 0, 1) + (h % 180) * 86_400_000).toISOString().slice(0, 19)}Z`,
+    publicKeySha1Fingerprint: [1, 2, 3, 4, 5].map((salt) => hex(h, salt)).join('').toUpperCase(),
   };
 }
 
 const FILL: Record<Kind, (item: Item, h: number) => Item> = {
-  windows, linux, network, android,
+  windows, linux, network, android, unmanaged,
   mac: (item, h) => apple(item, h, 'mac'),
   ios: (item, h) => apple(item, h, 'ios'),
 };

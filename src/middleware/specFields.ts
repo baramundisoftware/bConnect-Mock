@@ -14,7 +14,7 @@
  */
 
 import type { Express } from 'express';
-import type { IProfile } from '../profiles/ProfileManager';
+import { BmsVersion, isAtLeast, type IProfile } from '../profiles/ProfileManager';
 import { currentRecords } from '../routes/factories/currentRecords';
 
 type Item = Record<string, unknown>;
@@ -213,14 +213,32 @@ export const FILLERS: Record<string, Filler> = {
   }),
 };
 
-/** The item with the spec fields its schema's filler derives, where the item has none */
-export function fillSpecFields(schema: string, item: Item, lookup: Lookup): Item {
+/** 26R2's ADObjectType tells AD from Entra ID objects; the mock's directory objects are all AD */
+const AD_OBJECT_TYPES: Readonly<Record<string, string>> = { User: 'ADUser', Group: 'ADGroup' };
+
+/**
+ * Enum values a later release names differently from the mock's data: from release `since` on,
+ * `field` of the schemas' objects gets the release's name for its value.
+ */
+const RELEASE_VALUES: ReadonlyArray<{ since: BmsVersion; schemas: readonly string[]; field: string; values: Readonly<Record<string, string>> }> = [
+  { since: BmsVersion.BMS_26R2, schemas: ['ADUser', 'ADGroup', 'ADObject'], field: 'type', values: AD_OBJECT_TYPES },
+];
+
+/**
+ * The item with the spec fields its schema's filler derives, where the item has none, and with
+ * the names the release (if given) uses for its enum values
+ */
+export function fillSpecFields(schema: string, item: Item, lookup: Lookup, release?: BmsVersion): Item {
   const filler = FILLERS[schema];
-  if (!filler) { return item; }
-  const derived = filler(item, lookup);
+  const renames = release ? RELEASE_VALUES.filter((r) => r.schemas.includes(schema) && isAtLeast(release, r.since)) : [];
+  if (!filler && renames.length === 0) { return item; }
   const out: Item = { ...item };
-  for (const [name, value] of Object.entries(derived)) {
+  for (const [name, value] of Object.entries(filler ? filler(item, lookup) : {})) {
     if ((out[name] === undefined || out[name] === null) && value !== undefined && value !== null) { out[name] = value; }
+  }
+  for (const { field, values } of renames) {
+    const renamed = typeof out[field] === 'string' ? values[out[field] as string] : undefined;
+    if (renamed) { out[field] = renamed; }
   }
   return out;
 }

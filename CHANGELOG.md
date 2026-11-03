@@ -8,7 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- bMS 26R2 (`BCONNECT_BMS_VERSION=26r2`): everything since 26R1, answered with the fields of the 26R2 spec. Network endpoints lose the inventory fields 26R2 removed (`macList`, `operatingSystem`, `totalRAM`, `cpu`, `networkInfo`, `industrialDeviceInfo`, ...), `GET …/servermanagement/v2.0/CloudConnectors` answers 404 as the route is gone, and `GET …/ManagementServer` reports `26.2.0.0` (not yet confirmed on a live 26R2). The 26R2 data changes (AD object types, `deviceInfo`, the new fields of unmanaged endpoints and update management) and the new routes (Thresholds, API key management, Intune remote actions) follow in the next pull requests; the spec conformance baseline lists them
+- bMS 26R2 (`BCONNECT_BMS_VERSION=26r2`): everything since 26R1, answered with the fields of the 26R2 spec. Network endpoints lose the inventory fields 26R2 removed (`macList`, `operatingSystem`, `totalRAM`, `cpu`, `networkInfo`, `industrialDeviceInfo`, ...), `GET …/servermanagement/v2.0/CloudConnectors` answers 404 as the route is gone, and `GET …/ManagementServer` reports `26.2.0.0` (not yet confirmed on a live 26R2). The new routes (Thresholds, API key management, Intune remote actions) follow in the next pull request; the spec conformance baseline lists them
+- 26R2 data, values synthetic and fixed per item, formats from the spec (no live 26R2 probed yet):
+  - AD users, groups and objects have the 26R2 `type` values `ADUser` and `ADGroup` (26R1 and 25R2 keep `User` and `Group`); the projection renames enum values per release (`RELEASE_VALUES` in `src/middleware/specFields.ts`)
+  - Network endpoints carry `deviceInfo` (manufacturer, module type, firmware version, serial number) from the mock's model, firmware and serial number
+  - Unmanaged endpoints: `computerGroupName` (`corp.test` or `WORKGROUP`), `isPartOfDomain`, a Kerberos identity on most domain members (`isKerberosAuthenticated`, `kerberosPrincipal`, `endpointSid`, `adDnsName`; empty strings without one), `tokenExpirationDate` and `publicKeySha1Fingerprint`. 26R1 gets the same group as `networkGroupName`
+  - Update management Windows endpoints: the cumulative update an endpoint is patched to (`osUpdateVersion` such as `KB5071541`, `osUpdateReleaseDate`) and `requiredOSUpdateInstalled` (`Yes` for patched endpoints, `No` otherwise, `Unknown` without an inventory)
 - Spec conformance covers 26R2, and its validator follows a `discriminator` to the subtype a value names
 
 ### Fixed

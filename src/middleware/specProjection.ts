@@ -17,23 +17,26 @@
 
 import type { Express, Request, Response, NextFunction } from 'express';
 import type { ResponseShape } from '../generated/moduleRoutes';
-import type { IProfile } from '../profiles/ProfileManager';
+import type { BmsVersion, IProfile } from '../profiles/ProfileManager';
 import { ROUTE_LOCAL, type MatchedRoute } from './bmsErrors';
 import { createLookup, fillSpecFields, type Lookup } from './specFields';
 
-/** Project a value onto a response shape; with a lookup, named objects get their spec fields filled first */
-export function projectOntoShape(value: unknown, shape: ResponseShape | undefined, lookup?: Lookup): unknown {
+/**
+ * Project a value onto a response shape; with a lookup, named objects get their spec fields
+ * filled first, and the release's names for enum values
+ */
+export function projectOntoShape(value: unknown, shape: ResponseShape | undefined, lookup?: Lookup, release?: BmsVersion): unknown {
   if (!shape || value === null || value === undefined) { return value; }
   if ('a' in shape) {
-    return Array.isArray(value) ? value.map((item) => projectOntoShape(item, shape.a, lookup)) : value;
+    return Array.isArray(value) ? value.map((item) => projectOntoShape(item, shape.a, lookup, release)) : value;
   }
   if (typeof value !== 'object' || Array.isArray(value)) { return value; }
   let source = value as Record<string, unknown>;
-  if (lookup && shape.n) { source = fillSpecFields(shape.n, source, lookup); }
+  if (lookup && shape.n) { source = fillSpecFields(shape.n, source, lookup, release); }
   const out: Record<string, unknown> = {};
   for (const [name, child] of Object.entries(shape.o)) {
     if (name in source) {
-      out[name] = projectOntoShape(source[name], child, lookup);
+      out[name] = projectOntoShape(source[name], child, lookup, release);
     } else if (shape.z.includes(name)) {
       out[name] = null;
     }
@@ -46,7 +49,8 @@ export function specProjection(req: Request, res: Response, next: NextFunction):
   res.json = (body?: unknown) => {
     const route = res.locals[ROUTE_LOCAL] as MatchedRoute | undefined;
     if (route?.shape === undefined || res.statusCode < 200 || res.statusCode >= 300) { return json(body); }
-    return json(projectOntoShape(body, route.shape, createLookup(req.app as Express, req.app.locals['profile'] as IProfile | undefined)));
+    const profile = req.app.locals['profile'] as IProfile | undefined;
+    return json(projectOntoShape(body, route.shape, createLookup(req.app as Express, profile), profile?.bmsVersion));
   };
   next();
 }

@@ -25,6 +25,23 @@ function hashId(id: string): number {
 const UPDATE_STATES = ['NonCompliant', 'InventoryOutdated', 'NonCompliant', 'Unknown'] as const;
 const UPDATE_PROFILES = ['Standard Security', 'Critical Only', 'Full Auto', null] as const;
 
+/**
+ * Cumulative updates an endpoint can be patched to (26R2): KB article and release day, newest
+ * first. Synthetic numbers; the days are the Patch Tuesdays before the mock's date.
+ */
+const CUMULATIVE_UPDATES = [
+  ['KB5071541', '2026-10-13T00:00:00Z'],
+  ['KB5069825', '2026-09-08T00:00:00Z'],
+  ['KB5068492', '2026-08-11T00:00:00Z'],
+  ['KB5067113', '2026-07-14T00:00:00Z'],
+] as const;
+
+function cumulativeUpdate(state: string, isPatched: boolean, h: number): Record<string, unknown> {
+  if (state === 'Unknown') { return { osUpdateVersion: null, osUpdateReleaseDate: null, requiredOSUpdateInstalled: 'Unknown' }; }
+  const [kb, released] = CUMULATIVE_UPDATES[isPatched ? 0 : 1 + ((h >> 7) % (CUMULATIVE_UPDATES.length - 1))] ?? CUMULATIVE_UPDATES[0];
+  return { osUpdateVersion: kb, osUpdateReleaseDate: released, requiredOSUpdateInstalled: isPatched ? 'Yes' : 'No' };
+}
+
 /** Project a full Windows endpoint record into the update management schema */
 function toUpdateProjection(ep: Record<string, unknown>): Record<string, unknown> {
   const id = String(ep['id'] ?? ep['guid'] ?? '');
@@ -65,6 +82,9 @@ function toUpdateProjection(ep: Record<string, unknown>): Record<string, unknown
     featureUpdatesAvailable: !isPatched && (h % 7 === 0),
     updateState: state,
     targetReleaseVersion: h % 4 === 0 ? '24H2' : h % 4 === 1 ? '23H2' : null,
+    // 26R2: the cumulative update it is patched to (none known before an inventory), and
+    // whether that is the one it should have: the newest for a patched endpoint
+    ...cumulativeUpdate(state, isPatched, h),
   };
 }
 
