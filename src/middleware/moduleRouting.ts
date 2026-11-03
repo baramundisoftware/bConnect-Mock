@@ -163,10 +163,12 @@ export function createModuleRoutingGuard(
       return;
     }
 
+    const target = method === 'PATCH' || method === 'PUT' ? pathMatches.find((r) => r.method === 'GET')?.shape : undefined;
     const matched: MatchedRoute = {
       params,
       ...(route.body ? { body: route.body } : {}),
       ...(route.shape !== undefined ? { shape: route.shape } : {}),
+      ...(target !== undefined ? { target } : {}),
     };
     res.locals[ROUTE_LOCAL] = matched;
     next();

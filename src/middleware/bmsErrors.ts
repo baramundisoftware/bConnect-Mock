@@ -30,6 +30,8 @@ export interface MatchedRoute {
   body?: string;
   /** The spec's response shape of the route (specProjection) */
   shape?: import('../generated/moduleRoutes').ResponseShape;
+  /** For PATCH and PUT: the shape of the resource at the same path (its GET), whose property names a JSON Patch path maps onto */
+  target?: import('../generated/moduleRoutes').ResponseShape;
 }
 
 const GUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
