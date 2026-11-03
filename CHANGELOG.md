@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - The route generator merges the fields of a discriminator's subtypes (26R2 `DownloadJob.interval`, `JobDefinition.validity.validityPeriods`); before, projection would have dropped a weekly interval's `weekdays`
+- `POST WindowsEndpoints/{id}/TriggerInstallationViaIntune` answers 200 `true` as every version's spec says (was 204 without a body), and 409 for an endpoint not managed by Intune
 
 ## [0.10.0] - 2026-11-02
 
