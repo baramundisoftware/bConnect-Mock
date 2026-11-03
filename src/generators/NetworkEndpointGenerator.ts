@@ -6,6 +6,7 @@
  */
 
 import { BaseGenerator } from './BaseGenerator';
+import { logicalGroupOf } from './LogicalGroupGenerator';
 
 const DEVICE_TYPES = [
   'Router', 'Switch', 'Firewall', 'AccessPoint', 'LoadBalancer',
@@ -60,6 +61,8 @@ function indexToMAC(index: number): string {
 }
 
 export interface NetworkEndpointRecord {
+  logicalGroupId: string;
+  logicalGroup: string;
   id: string;
   guid: string;
   type: 'NetworkEndpoint';
@@ -100,6 +103,7 @@ export class NetworkEndpointGenerator extends BaseGenerator<NetworkEndpointRecor
       id: guid,
       guid,
       type: 'NetworkEndpoint',
+      ...logicalGroupOf(18, index),
       displayName: `${prefix}-NET-${zeroPad(index + 1, 5)}`,
       deviceType,
       modelName,

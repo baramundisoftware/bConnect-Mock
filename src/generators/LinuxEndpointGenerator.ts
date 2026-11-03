@@ -6,6 +6,7 @@
  */
 
 import { BaseGenerator } from './BaseGenerator';
+import { logicalGroupOf } from './LogicalGroupGenerator';
 
 const LINUX_OS = [
   'Ubuntu 22.04.3 LTS',
@@ -70,6 +71,8 @@ function indexToMAC(index: number): string {
 }
 
 export interface LinuxEndpointRecord {
+  logicalGroupId: string;
+  logicalGroup: string;
   id: string;
   guid: string;
   type: 'LinuxEndpoint';
@@ -119,6 +122,7 @@ export class LinuxEndpointGenerator extends BaseGenerator<LinuxEndpointRecord> {
       id: guid,
       guid,
       type: 'LinuxEndpoint',
+      ...logicalGroupOf(1, index),
       displayName,
       hostName: displayName.toLowerCase(),
       primaryUser: 'sysadmin@company.com',

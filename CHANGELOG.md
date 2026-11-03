@@ -21,6 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Some inventoried Windows endpoints are co-managed with Intune (`coManagement` Intune, `modernManagementState` ManagedAndBaramundiAgentInstalled, an `entraIdDeviceId`), in every release; the probed live bMS had none
 - Spec conformance covers 26R2, and its validator follows a `discriminator` to the subtype a value names
 
+### Changed
+- Endpoints closer to a live bMS (formats from the 26R1 probe; spec conformance baseline 450/363/328 → 350/262/227 for 25R2/26R1/26R2):
+  - Large-scale endpoints of every type link to a logical group the profile has, named for their type (`Windows Endpoints`, `Linux Endpoints 3`, ...); Android, iOS, Mac, Linux and network endpoints had none, and Windows endpoints pointed to group IDs that did not exist
+  - Inventoried Windows endpoints have an `ieVersionString`
+  - A few logical groups name the DIP they install from (`dip`, a UNC path)
+  - Fields the live bMS leaves null too are no longer reported as gaps: Android and Mac hardware/OS details, the SNMP/OPC UA details of network endpoints, `LogicalGroups.defaultDomain`
+
 ### Fixed
 - The route generator merges the fields of a discriminator's subtypes (26R2 `DownloadJob.interval`, `JobDefinition.validity.validityPeriods`); before, projection would have dropped a weekly interval's `weekdays`
 - `POST WindowsEndpoints/{id}/TriggerInstallationViaIntune` answers 200 `true` as every version's spec says (was 204 without a body), and 409 for an endpoint not managed by Intune

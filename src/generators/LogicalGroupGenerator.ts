@@ -16,6 +16,9 @@ const GROUP_NAMES = [
   'HR Endpoints', 'Management Devices', 'IT Infrastructure', 'Security Devices',
 ];
 
+/** The UNC path of the mock's DIP (servermanagement Dips: dip01.corp.test) */
+const DIP_PATH = '\\\\dip01.corp.test\\DIP';
+
 const OU_TEMPLATES = [
   'ou=Endpoints,ou=Root',
   'ou=Windows,ou=Groups,ou=Root',
@@ -47,6 +50,16 @@ function groupName(index: number): string {
   return index < GROUP_NAMES.length ? baseName : `${baseName} ${Math.floor(index / GROUP_NAMES.length) + 1}`;
 }
 
+/**
+ * The logical group an endpoint of the large-scale profile is in: one of the groups named for
+ * its type (`base` indexes GROUP_NAMES: 'Windows Endpoints', 'Linux Endpoints', ...), or of
+ * their numbered copies further down the tree, so endpoints link to groups the profile has
+ */
+export function logicalGroupOf(base: number, index: number): { logicalGroupId: string; logicalGroup: string } {
+  const group = base + GROUP_NAMES.length * (index % 15);
+  return { logicalGroupId: indexToGuid(group), logicalGroup: groupName(group) };
+}
+
 export interface LogicalGroupRecord {
   id: string;
   guid: string;
@@ -60,6 +73,7 @@ export interface LogicalGroupRecord {
   memberCount: number;
   childGroupCount: number;
   orgUnit: string;
+  dip: string | null;
 }
 
 export class LogicalGroupGenerator extends BaseGenerator<LogicalGroupRecord> {
@@ -90,6 +104,8 @@ export class LogicalGroupGenerator extends BaseGenerator<LogicalGroupRecord> {
       memberCount: (index * 19 + 3) % 500,
       childGroupCount: (index * 7) % 10,
       orgUnit: pick(OU_TEMPLATES, index),
+      // A few groups install from the profile's DIP (UNC path), as about one in 30 on a live bMS
+      dip: index % 25 === 1 ? DIP_PATH : null,
     };
   }
 }

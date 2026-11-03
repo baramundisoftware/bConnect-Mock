@@ -6,6 +6,7 @@
  */
 
 import { BaseGenerator } from './BaseGenerator';
+import { logicalGroupOf } from './LogicalGroupGenerator';
 
 const MAC_OS = [
   'macOS Sonoma 14.3',
@@ -71,6 +72,8 @@ function indexToMAC(index: number): string {
 }
 
 export interface MacEndpointRecord {
+  logicalGroupId: string;
+  logicalGroup: string;
   id: string;
   guid: string;
   type: 'MacEndpoint';
@@ -120,6 +123,7 @@ export class MacEndpointGenerator extends BaseGenerator<MacEndpointRecord> {
       id: guid,
       guid,
       type: 'MacEndpoint',
+      ...logicalGroupOf(2, index),
       displayName,
       hostName: `${firstName}-mbp`,
       primaryUser,

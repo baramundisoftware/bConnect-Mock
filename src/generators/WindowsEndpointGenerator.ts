@@ -15,6 +15,7 @@
  */
 
 import { BaseGenerator } from './BaseGenerator';
+import { logicalGroupOf } from './LogicalGroupGenerator';
 
 // ---------------------------------------------------------------------------
 // Data pools (deterministic lookup tables, index % pool.length)
@@ -58,21 +59,6 @@ const MODELS: Record<string, string[]> = {
   'Panasonic': ['Toughbook 55', 'Toughpad FZ-G2'],
   'Toshiba': ['Portégé Z30-E', 'Tecra X40-F'],
 };
-
-const LOGICAL_GROUPS = [
-  'Default Group',
-  'Workstations',
-  'Laptops',
-  'Servers',
-  'Development',
-  'Finance',
-  'HR',
-  'Engineering',
-  'Marketing',
-  'Sales',
-  'IT',
-  'Operations',
-];
 
 const ENROLLMENT_TYPES = ['Native', 'Native', 'SSH', 'SSHAndNative', 'Native'];
 
@@ -313,8 +299,7 @@ export class WindowsEndpointGenerator extends BaseGenerator<WindowsEndpointRecor
     const primaryUser = `${firstName}.${lastName}${region.userSuffix}`;
     const registeredUser = `${region.domain}\\${firstName}.${lastName}`;
 
-    const logicalGroupId = `00000000-0000-0000-0000-${zeroPad(index % 1000 + 1, 12)}`;
-    const logicalGroup = pick(LOGICAL_GROUPS, index);
+    const { logicalGroupId, logicalGroup } = logicalGroupOf(0, index);
 
     const department = pick(
       ['Headquarters', 'Finance', 'Engineering', 'Marketing', 'Sales', 'HR', 'IT', 'Operations'],

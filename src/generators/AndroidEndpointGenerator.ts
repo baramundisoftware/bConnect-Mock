@@ -6,6 +6,7 @@
  */
 
 import { BaseGenerator } from './BaseGenerator';
+import { logicalGroupOf } from './LogicalGroupGenerator';
 
 const ANDROID_VERSIONS = [
   'Android 14', 'Android 13', 'Android 12', 'Android 11', 'Android 10',
@@ -86,6 +87,8 @@ function indexToIMEI(index: number): string {
 }
 
 export interface AndroidEndpointRecord {
+  logicalGroupId: string;
+  logicalGroup: string;
   id: string;
   guid: string;
   type: 'AndroidEndpoint';
@@ -127,6 +130,7 @@ export class AndroidEndpointGenerator extends BaseGenerator<AndroidEndpointRecor
       id: guid,
       guid,
       type: 'AndroidEndpoint',
+      ...logicalGroupOf(3, index),
       displayName: `AND-MOB-${zeroPad(index + 1, 5)}`,
       primaryUser,
       operatingSystem: ANDROID_VERSIONS[osIdx] as string,
