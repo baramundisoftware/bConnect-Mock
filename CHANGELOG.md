@@ -60,8 +60,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - DIPs: empty `details` and a `lastUpdate`; security profiles: `displayAdministratorIdentities`, `displayEndpointUserIdentities`
   - Variable definitions (not probed): `scopes`, those of their instances
   - Assets' `contact` is null on the live bMS too and no longer reported as a gap
-
-### Fixed
 - JSON Patch paths are case-insensitive, as on a live bMS (ASP.NET Core JsonPatch): each segment maps onto the patched resource's real property name, so the spec examples' `/Value`, `/IsActive`, `/IsAvailableViaGateway`, `/SecurityProfiles` work. Before, Thresholds and ApiKeys PATCH rejected them with 400, and 15 other PATCH routes (endpoints, logical groups, folders, security profiles, variables, ...) answered 200 but silently dropped the change. Fields a route doesn't let you modify are still rejected, by their camelCase name
 - The route generator merges the fields of a discriminator's subtypes (26R2 `DownloadJob.interval`, `JobDefinition.validity.validityPeriods`); before, projection would have dropped a weekly interval's `weekdays`
 - `POST WindowsEndpoints/{id}/TriggerInstallationViaIntune` answers 200 `true` as every version's spec says (was 204 without a body), and 409 for an endpoint not managed by Intune
