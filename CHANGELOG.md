@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Times: job instances and their steps, and download jobs, without a fraction of a second; update management's `lastInventory` with ticks, `lastSuccessfulUpdate` without a fraction; download job repetitions at `HH:mm`
   - AD objects' `ldapPath` is the distinguished name itself, without an `LDAP://` prefix
   - The management server is named by its host name (`bms01.corp.test`)
-- Fields the 26R1 probe found empty, which the live 26R2 fills (spec conformance now checks them; a few more sampling cases in the baseline, 304/214/179 → 327/237/202):
+- Fields the 26R1 probe found empty, which the live 26R2 fills (spec conformance now checks them; a few more sampling cases in the baseline, 257/167/132 → 280/190/155):
   - Network devices answering SNMP (about three in four): `snmpName`, `upTime`, `vendorId` (IANA enterprise number), `snmpProperties` (the MIB-II system group) and a `description`; few with an assigned scanner, a `firstSeen` or a `manufacturer`. `deviceInfo` (26R2) is null, as on all network devices of the live 26R2
   - `registeredUserId` of Windows, Mac, iOS and Android endpoints: the AD user they are linked to (`adUserId`); large-scale endpoints link to generated AD users (most mobile devices and Macs, about one in nine Windows endpoints)
   - Android endpoints' `hostName`; some Linux endpoints' `comment`; few inventoried Windows endpoints in an IP network (`ipNetworkId`, `ipNetworkName`, `logicalMAC`)
