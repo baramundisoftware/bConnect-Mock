@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Fields a live bMS fills that the mock left out (formats from a probe of a live pre-release 26R2, 26.2.110.0, which had far more data than the 26R1 one; values synthetic). Spec conformance baseline 308/218/183 → 261/171/136 for 25R2/26R1/26R2:
+  - AD users, groups and objects: a domain `sid` and the AD import `comment`; users get their `ldapPath` (from their org unit), large-scale groups an org unit
+  - `GET …/Gateway` answers `availability`, `configurationStatus` and `lastContact`, `GET …/VpnAppliance` its `status`; before, the gateway answered only `lastContact` (null) and the appliance only its name
+  - Security groups have an assigned security profile (one, as on the live bMS)
+  - Variable definitions have a `category` and some a `defaultValue`; instances take their definition's category
+- Spec conformance also checks the single objects (gateway, VPN appliance, management server) for spec fields without a value
+
 ### Fixed
 - 26R2: `GET …/servermanagement/v2.0/ManagementServer` reports the build of the 26R2 release, `26.2.137.0`, instead of the placeholder `26.2.0.0`. A read-only probe of a live pre-release 26R2 bMS (26.2.110.0, 56 routes) confirmed the 26R2 mode's routes, fields and statuses: the fields 26R2 removed from network endpoints and added to update management, `CloudConnectors` answering 404, and the API key and threshold routes
 

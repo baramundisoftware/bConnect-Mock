@@ -108,7 +108,7 @@ describe('spec fields the mock keeps under other names are answered (#86)', () =
 
   it('SecurityGroups: groupName and assignedSecurityProfiles, for fixtures and created groups', async () => {
     const list = await request(app).get('/bconnect/servermanagement/v2.0/SecurityGroups?PageSize=50');
-    expect(list.body.data[0]).toEqual({ id: expect.any(String), groupName: 'Default Security Group', assignedSecurityProfiles: [] });
+    expect(list.body.data[0]).toEqual({ id: expect.any(String), groupName: 'Default Security Group', assignedSecurityProfiles: [{ id: expect.any(String), name: expect.any(String) }] }); // one, as on a live bMS
     const profiles = await request(app).get('/bconnect/servermanagement/v2.0/SecurityProfiles');
     const profile = profiles.body.data[0] as { id: string; name: string };
     // The write model is { name, profiles }, the read model { groupName, assignedSecurityProfiles }

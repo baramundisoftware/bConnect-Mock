@@ -1,6 +1,8 @@
 /**
  * Assets, asset types, job definitions, job instances, installed software, DIPs, security profiles
- * and variable definitions carry the fields a live bMS fills (formats from a 26R1 probe, 2026-11-02).
+ * and variable definitions carry the fields a live bMS fills (formats from a 26R1 probe, 2026-11-02);
+ * AD objects, the gateway, the VPN appliance, security groups and variables those of a live 26R2
+ * (pre-release 26.2.110.0, 2026-11-05).
  */
 
 import { describe, it, expect, beforeAll, vi } from 'vitest';
@@ -102,5 +104,58 @@ describe('record fields', () => {
     const h = seedOf('a0000001-0001-0001-0001-000000000001');
     const rolls = Array.from({ length: 20 }, (_, salt) => roll(h, salt));
     expect(new Set(rolls).size).toBeGreaterThan(10);
+  });
+});
+
+describe('record fields from the 26R2 probe', () => {
+  const apps = new Map<ProfileMode, Express>();
+  const appFor = (mode: ProfileMode): Express => {
+    if (!apps.has(mode)) {
+      const previous = process.env.BCONNECT_MODULE_ROUTING;
+      process.env.BCONNECT_MODULE_ROUTING = 'strict';
+      try { apps.set(mode, createApp(mode, BmsVersion.BMS_26R2)); } finally {
+        if (previous === undefined) { delete process.env.BCONNECT_MODULE_ROUTING; } else { process.env.BCONNECT_MODULE_ROUTING = previous; }
+      }
+    }
+    return apps.get(mode) as Express;
+  };
+  const list = async (mode: ProfileMode, path: string): Promise<Item[]> => (await request(appFor(mode)).get(`/bconnect/${path}`)).body.data as Item[];
+
+  it('AD users, groups and objects: a domain SID and the import comment; users with their distinguished name', async () => {
+    for (const mode of [ProfileMode.STANDARD_READONLY, ProfileMode.LARGESCALE_READONLY]) {
+      for (const entity of ['ADUsers', 'ADGroups', 'ADObjects']) {
+        for (const item of await list(mode, `activedirectory/v2.0/${entity}?PageSize=20`)) {
+          expect(item['sid']).toMatch(/^S-1-5-21-\d{10}-\d{10}-\d{8}-\d{4}$/);
+          expect(item['comment']).toMatch(/^Synchronized from Active Directory/);
+          expect(item['orgUnitId']).toEqual(expect.any(String));
+        }
+      }
+      const user = (await list(mode, 'activedirectory/v2.0/ADUsers?PageSize=1'))[0] as Item;
+      expect(user['ldapPath']).toContain(`CN=${user['name'] as string},`);
+    }
+  });
+
+  it('gateway and VPN appliance: their states; security groups: one security profile the profile has', async () => {
+    const app = appFor(ProfileMode.STANDARD_READONLY);
+    const gateway = (await request(app).get('/bconnect/servermanagement/v2.0/Gateway')).body as Item;
+    expect(gateway).toMatchObject({ availability: 'Up', configurationStatus: 'Enrolled' });
+    expect(gateway['lastContact']).toMatch(/\.\d{7}Z$/);
+    expect((await request(app).get('/bconnect/servermanagement/v2.0/VpnAppliance')).body).toMatchObject({ status: 'Ok' });
+    const profiles = new Map((await list(ProfileMode.STANDARD_READONLY, 'servermanagement/v2.0/SecurityProfiles')).map((p) => [p['id'], p['name']]));
+    for (const group of await list(ProfileMode.STANDARD_READONLY, 'servermanagement/v2.0/SecurityGroups')) {
+      const assigned = group['assignedSecurityProfiles'] as Item[];
+      expect(assigned).toHaveLength(1);
+      expect(profiles.get(assigned[0]?.['id'])).toBe(assigned[0]?.['name']);
+    }
+  });
+
+  it('variables: definitions with a category, instances with their definition\'s', async () => {
+    const definitions = new Map((await list(ProfileMode.STANDARD_READONLY, 'variables/v2.0/VariableDefinitions')).map((d) => [d['id'], d]));
+    for (const d of definitions.values()) { expect(d['category']).toEqual(expect.any(String)); }
+    for (const i of await list(ProfileMode.STANDARD_READONLY, 'variables/v2.0/VariableInstances')) {
+      expect(i['category']).toBe(definitions.get(i['variableDefinitionId'])?.['category']);
+    }
+    const withDefault = withRecordFields('variables', { id: 'a0000001-0000-0000-0000-00000000000a', values: ['Berlin'] }, () => []);
+    expect([null, undefined, 'Berlin']).toContain(withDefault['defaultValue']);
   });
 });

@@ -134,6 +134,7 @@ const LIVE_NULL: Record<string, readonly string[]> = {
   'jobs JobDefinitions': ['validity'],
   'jobs JobInstances': ['nextExecution'],
   'software InstalledWindowsSoftware': ['autFirstUse', 'autLastData', 'autLastUse'],
+  'servermanagement ManagementServer': ['plannedServerRestartTimes'], // no restart planned (26R1 and 26R2)
 };
 
 /**
@@ -143,6 +144,7 @@ const LIVE_NULL: Record<string, readonly string[]> = {
  * `groupName`), and the strict projection drops it.
  */
 function neverSet(route: SpecRoute, body: unknown): string[] {
+  if (body && typeof body === 'object' && !Array.isArray(body) && !('data' in body) && !route.path.includes('{')) { return unsetFields(route, body as Record<string, unknown>); }
   const items = Array.isArray(body) ? body : (body as { data?: unknown } | undefined)?.data;
   const fields = itemFields(route);
   if (!Array.isArray(items) || items.length === 0 || !fields) { return []; }
@@ -151,6 +153,16 @@ function neverSet(route: SpecRoute, body: unknown): string[] {
   return [...fields].filter((f) => !liveNull.has(f))
     .filter((f) => items.every((i) => { const v = (i as Record<string, unknown> | null)?.[f]; return v === null || v === undefined; }))
     .map((f) => `${prefix}.${f}: never set`);
+}
+
+/**
+ * Spec fields a single object (the gateway, the VPN appliance, ...) has no value for: a live bMS
+ * answers every field of these (probe of a live 26R2, 2026-11-05)
+ */
+function unsetFields(route: SpecRoute, body: Record<string, unknown>): string[] {
+  const props = route.schema ? route.validator.resolve(route.validator.resolve(route.schema))['properties'] as Schema | undefined : undefined;
+  const liveNull = new Set(LIVE_NULL[`${route.module} ${route.path.split('/').pop() ?? ''}`] ?? []);
+  return Object.keys(props ?? {}).filter((f) => !liveNull.has(f) && (body[f] === null || body[f] === undefined)).map((f) => `${f}: never set`);
 }
 
 /** All findings of one version, as baseline lines */
