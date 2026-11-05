@@ -85,10 +85,14 @@ describe('26R2 data', () => {
     for (const o of objects) { expect(['ADUser', 'ADGroup']).toContain(o['type']); }
   });
 
-  it('network endpoints carry deviceInfo from their model, firmware and serial number', async () => {
+  it('network endpoints answer deviceInfo null, and their SNMP data', async () => {
+    // A live 26R2 (pre-release 26.2.110.0) left deviceInfo null on all 33 of its network endpoints
     const endpoints = (await request(r2).get('/bconnect/endpoints/v2.0/NetworkEndpoints')).body.data as Item[];
-    const info = endpoints[0]?.['deviceInfo'] as Item;
-    expect(info).toMatchObject({ manufacturer: 'Cisco', moduleType: 'Cisco Catalyst 9300', serialNumber: expect.any(String), firmwareVersion: expect.any(String) });
+    expect(endpoints.length).toBeGreaterThan(0);
+    for (const e of endpoints) { expect(e['deviceInfo']).toBeNull(); }
+    const snmp = endpoints.find((e) => e['snmpName'] !== null) as Item;
+    expect(snmp['vendorId']).toMatch(/^\d+$/);
+    expect(snmp['upTime']).toEqual(expect.any(Number));
   });
 
   it('unmanaged endpoints: a Kerberos identity only in a domain, empty without a token', async () => {

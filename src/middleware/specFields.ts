@@ -113,6 +113,8 @@ function endpoint(item: Item, lookup: Lookup): Item {
     logicalGroup: nameOf(lookup(['logicalGroups'], item['logicalGroupId'])),
     supervised: item['isSupervised'],
     uniqueDeviceId: item['udid'],
+    // The AD user the device is registered to; none for Linux endpoints on the live 26R2
+    registeredUserId: item['type'] === 'LinuxEndpoint' ? undefined : item['adUserId'],
   };
 }
 

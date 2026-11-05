@@ -114,29 +114,37 @@ function itemFields(route: SpecRoute | undefined): Set<string> | undefined {
 
 /**
  * Spec fields a live bMS leaves null on every item too, so the mock's null is right: keyed by
- * module and the list's last path segment (`*`: every list of the module). From a read-only probe
- * of a live 26R1 bMS (26.1.161.0, probe version 7, 2026-11-02: 32 endpoints, 20 of them Windows,
- * 5 Linux, 4 network, 2 Android, 1 Mac; 29 logical groups; 13 asset types, 66 job definitions,
- * 156 job instances, 122 installed software entries, 2 org units). Android, Mac and network
- * endpoints have no hardware inventory there.
+ * module and the list's last path segment (`*`: every list of the module). From read-only probes
+ * of a live 26R1 bMS (26.1.161.0, probe version 7, 2026-11-02: 32 endpoints, 20 of them Windows)
+ * and of a live pre-release 26R2 with far more data (26.2.110.0, probe version 8, 2026-11-05:
+ * 100 each of Windows, Android and iOS endpoints, 59 Macs, 33 network devices, 5 Linux; 100 AD
+ * users, 36 org units, 40 logical groups). A field either of them fills is not listed.
  */
 const LIVE_NULL: Record<string, readonly string[]> = {
-  'endpoints *': ['assignedScannerId', 'assignedScannerName', 'registeredUserId'],
-  'endpoints WindowsEndpoints': ['customState', 'ipNetworkId', 'ipNetworkName', 'logicalMAC', 'opcuaInformation'],
-  'endpoints LinuxEndpoints': ['activity', 'comment', 'osVersionString', 'primarySubnetMask', 'opcuaInformation', 'clientAgentVersion'],
-  'endpoints IosEndpoints': ['osVersionText'], // 26R2 probe: 100 iOS devices
-
-  'endpoints AndroidEndpoints': ['availableRAM', 'category', 'cpu', 'hostName', 'macList', 'manufacturer', 'osVersionString', 'osVersionText', 'primaryIP', 'primaryMAC', 'primarySubnetMask', 'timeZone', 'totalRAM', 'uniqueDeviceId'],
-  'endpoints MacEndpoints': ['category', 'osVersionString', 'osVersionText', 'patchLevel', 'uniqueDeviceId'],
-  'endpoints NetworkEndpoints': ['activity', 'description', 'firstSeen', 'manufacturer', 'opcuaInformation', 'ouiVendor', 'registeredUser', 'snmpConfiguration', 'snmpName', 'snmpProperties', 'upTime', 'vendorId', 'webInterfaceUrl'],
-  'endpoints LogicalGroups': ['defaultDomain'],
-  'activedirectory OrgUnits': ['comment'],
+  'endpoints WindowsEndpoints': ['assignedScannerId', 'assignedScannerName', 'customState', 'opcuaInformation'],
+  'endpoints LinuxEndpoints': ['activity', 'assignedScannerId', 'assignedScannerName', 'clientAgentVersion', 'osVersionString', 'primarySubnetMask', 'opcuaInformation', 'registeredUserId'],
+  'endpoints AndroidEndpoints': ['assignedScannerId', 'assignedScannerName', 'category', 'osVersionText', 'primaryIP', 'primarySubnetMask', 'uniqueDeviceId'],
+  'endpoints IosEndpoints': ['assignedScannerId', 'assignedScannerName', 'osVersionText'],
+  'endpoints MacEndpoints': ['assignedScannerId', 'assignedScannerName', 'category', 'osVersionText', 'patchLevel', 'uniqueDeviceId'],
+  'endpoints NetworkEndpoints': ['activity', 'deviceInfo', 'opcuaInformation', 'ouiVendor', 'registeredUser', 'registeredUserId', 'snmpConfiguration', 'webInterfaceUrl'],
+  'endpoints Endpoints': ['assignedScannerId', 'assignedScannerName'],
+  'endpoints IndustrialEndpoints': ['assignedScannerId', 'assignedScannerName', 'registeredUserId'],
   'assets *': ['contact'],
   'assets AssetTypes': ['additionalProperties', 'contact', 'costCenter', 'encodedIcon', 'inventoryNumber', 'summary'],
   'jobs JobDefinitions': ['validity'],
   'jobs JobInstances': ['nextExecution'],
-  'software InstalledWindowsSoftware': ['autFirstUse', 'autLastData', 'autLastUse'],
   'servermanagement ManagementServer': ['plannedServerRestartTimes'], // no restart planned (26R1 and 26R2)
+};
+
+/**
+ * Spec fields the live 26R2 fills on few items only (1 or 2 of 33 to 100): the mock fills them on
+ * as few, so a short list (a sub-resource's) often has none, as it would on a live bMS
+ */
+const LIVE_RARE: Record<string, readonly string[]> = {
+  'endpoints WindowsEndpoints': ['ipNetworkId', 'ipNetworkName', 'logicalMAC'],
+  'endpoints NetworkEndpoints': ['assignedScannerId', 'assignedScannerName', 'firstSeen', 'manufacturer'],
+  'endpoints Endpoints': ['registeredUserId'], // 39 of 100, but none of the Windows endpoints a short list may hold
+  'endpoints LogicalGroups': ['defaultDomain'],
 };
 
 /**
@@ -151,7 +159,8 @@ function neverSet(route: SpecRoute, body: unknown): string[] {
   const fields = itemFields(route);
   if (!Array.isArray(items) || items.length === 0 || !fields) { return []; }
   const prefix = Array.isArray(body) ? '[*]' : 'data[*]';
-  const liveNull = new Set([...(LIVE_NULL[`${route.module} *`] ?? []), ...(LIVE_NULL[`${route.module} ${route.path.split('/').pop() ?? ''}`] ?? [])]);
+  const last = route.path.split('/').pop() ?? '';
+  const liveNull = new Set([...(LIVE_NULL[`${route.module} *`] ?? []), ...(LIVE_NULL[`${route.module} ${last}`] ?? []), ...(LIVE_RARE[`${route.module} ${last}`] ?? [])]);
   return [...fields].filter((f) => !liveNull.has(f))
     .filter((f) => items.every((i) => { const v = (i as Record<string, unknown> | null)?.[f]; return v === null || v === undefined; }))
     .map((f) => `${prefix}.${f}: never set`);

@@ -100,7 +100,7 @@ describe('record fields', () => {
   it('keeps a value the item has; decisions about one item are independent', () => {
     const item = { id: 'j1', comment: 'kept' };
     expect(withRecordFields('jobs', item, () => [])['comment']).toBe('kept');
-    expect(withRecordFields('logicalGroups', item, () => [])).toBe(item);
+    expect(withRecordFields('windowsUpdates', item, () => [])).toBe(item);
     const h = seedOf('a0000001-0001-0001-0001-000000000001');
     const rolls = Array.from({ length: 20 }, (_, salt) => roll(h, salt));
     expect(new Set(rolls).size).toBeGreaterThan(10);

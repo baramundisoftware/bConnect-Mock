@@ -40,6 +40,7 @@ const ip = (h: number): string => `172.${16 + (h % 16)}.${(h >>> 4) & 0xff}.${((
 const mac = (h: number): string =>
   [0x00, 0x15, 0x5d, (h >>> 16) & 0xff, (h >>> 8) & 0xff, h & 0xff].map((b) => b.toString(16).padStart(2, '0').toUpperCase()).join(':');
 const GIB = 1024 ** 3;
+const IP_NETWORKS = ['Head Office', 'Branch Vienna', 'Data Center'];
 
 const TIME_ZONES = ['UTC+01:00 Europe/Berlin', 'UTC+01:00 Europe/Berlin', 'UTC+01:00 Europe/Berlin', 'UTC+00:00 Europe/London', 'UTC-05:00 America/New_York', 'UTC-08:00 America/Los_Angeles', 'UTC+08:00 Asia/Singapore'];
 const COMMENTS = ['Reception desk, ground floor', 'Shared workstation in training room 2', 'Mainboard replaced 2026-04, keep inventory up to date', 'Kiosk use, no reboot during business hours', 'Loaner device, return to IT service desk'];
@@ -142,6 +143,8 @@ function windows(item: Item, h: number): Item {
     timeZone: pick(TIME_ZONES, h >>> 9),
     totalRAM: pick([8, 16, 16, 32], h >>> 11) * GIB - 4_194_304,
     uuid: guidOf(h, 7).toUpperCase(),
+    // In a defined IP network, with a logical MAC: 1 of 100 on the live 26R2
+    ...(roll(h, 19) < 5 ? { ipNetworkId: guidOf(h, 19).toUpperCase(), ipNetworkName: pick(IP_NETWORKS, h >>> 5), logicalMAC: mac(h >>> 1) } : {}),
   });
 }
 
@@ -152,6 +155,7 @@ function linux(item: Item, h: number): Item {
   const key = Buffer.from(guidOf(h, 11) + guidOf(h, 12)).toString('base64').slice(0, 68);
   return {
     hostName: str(item['displayName'])?.toLowerCase(),
+    comment: roll(h, 14) < 40 ? pick(COMMENTS, h >>> 3) : undefined, // 2 of 5 on the live 26R2
     managementMode: 'SSH',
     manufacturer: vendorOf(str(item['machineModel']), 'Dell Inc.'),
     osVersionText: os,
@@ -207,6 +211,7 @@ function android(item: Item, h: number): Item {
   return {
     ...common,
     manufacturer: vendorOf(str(item['machineModel']) ?? str(item['modelName']), 'samsung'),
+    hostName: str(item['displayName']),
     primaryIP: ip(h),
     primarySubnetMask: '255.255.255.0',
     primaryMAC: address,
@@ -218,11 +223,33 @@ function android(item: Item, h: number): Item {
   };
 }
 
+/** IANA enterprise numbers, as SNMP agents report their vendor (sysObjectID) */
+const VENDOR_IDS: Readonly<Record<string, string>> = { Cisco: '9', HP: '11', HPE: '11', Aruba: '14823', Juniper: '2636', Netgear: '4526', Fortinet: '12356', Ubiquiti: '41112', Palo: '25461' };
+
+/** The SNMP system group (MIB-II) of a device that answers SNMP */
+function snmpProperties(item: Item, h: number, description: string, upTime: number): Item[] {
+  return [
+    ['System description', '1.3.6.1.2.1.1.1.0', description],
+    ['System object ID', '1.3.6.1.2.1.1.2.0', `1.3.6.1.4.1.${VENDOR_IDS[String(item['vendor'])] ?? '8072'}.1.${h % 900}`],
+    ['System uptime', '1.3.6.1.2.1.1.3.0', String(upTime * 100)],
+    ['System contact', '1.3.6.1.2.1.1.4.0', 'it-network@corp.test'],
+    ['System name', '1.3.6.1.2.1.1.5.0', str(item['displayName']) ?? ''],
+    ['System location', '1.3.6.1.2.1.1.6.0', pick(IP_NETWORKS, h >>> 5)],
+    ['System services', '1.3.6.1.2.1.1.7.0', '6'],
+    ['Number of interfaces', '1.3.6.1.2.1.2.1.0', String(8 + (h % 48))],
+  ].map(([name, oid, value]) => ({ name, oid, value, available: true }));
+}
+
 function network(item: Item, h: number): Item {
   const ssh = roll(h, 13) < 75; // 3 of 4 on the live bMS
+  const snmp = roll(h, 15) < 75; // 25 of 33 on the live 26R2
   const model = str(item['modelName']);
+  const vendor = vendorOf(model, model?.split(' ')[0] ?? 'Unknown');
+  const description = `${model ?? `${vendor} network device`}${str(item['firmwareVersion']) ? `, firmware ${item['firmwareVersion'] as string}` : ''}`;
+  const upTime = 354 + (h % 28_000_000); // seconds
   return {
     comment: roll(h, 14) < 75 ? `Discovered by network scan on ${shortDate(moment(h, 2000, 'none'))}` : undefined,
+    description: roll(h, 16) < 72 ? description : undefined,
     hostName: str(item['displayName']),
     operatingSystem: 'Unknown',
     macList: str(item['primaryMAC']),
@@ -230,16 +257,17 @@ function network(item: Item, h: number): Item {
     totalRAM: 0,
     sshAuthenticationMethod: 'None',
     sshConfiguration: ssh ? { sshVersion: 'SSH-2.0-OpenSSH_9.2p1 Debian-2+deb12u3', port: 22, discoveryDate: moment(h, 2000, 'ticks'), authenticationMethod: 'None', username: null, hostKeys: [] } : undefined,
-    // 26R2 (spec): the device's own data, from the mock's model, firmware and serial number
-    deviceInfo: {
-      manufacturer: vendorOf(model, model?.split(' ')[0] ?? 'Unknown'),
-      moduleType: model ?? null,
-      cpu: null,
-      hardwareVersion: null,
-      firmwareVersion: str(item['firmwareVersion']) ?? null,
-      serialNumber: str(item['serialNumber']) ?? null,
-      orderNumber: null,
-    },
+    ...(snmp ? {
+      snmpName: str(item['displayName']),
+      upTime,
+      vendorId: VENDOR_IDS[vendor] ?? '8072',
+      snmpProperties: roll(h, 18) < 88 ? snmpProperties({ ...item, vendor }, h, description, upTime) : undefined,
+    } : {}),
+    // Few on the live 26R2 (1 or 2 of 33): a scanner assigned, the first sighting, a virtual appliance
+    ...(roll(h, 19) < 6 ? { assignedScannerId: guidOf(h, 19), assignedScannerName: 'NETSCANNER-01' } : {}),
+    firstSeen: roll(h, 20) < 6 ? moment(h, 9000, 'none').replace('Z', `.${String(h % 100).padStart(2, '0')}Z`) : undefined,
+    manufacturer: roll(h, 21) < 6 ? 'VMware, Inc.' : undefined,
+    // 26R2: deviceInfo is null on all 33 network endpoints of the live 26R2 (the device data of OT devices)
   };
 }
 

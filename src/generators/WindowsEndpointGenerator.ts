@@ -16,6 +16,7 @@
 
 import { BaseGenerator } from './BaseGenerator';
 import { logicalGroupOf } from './LogicalGroupGenerator';
+import { indexToGuid as adUserGuid } from './ADUserGenerator';
 
 // ---------------------------------------------------------------------------
 // Data pools (deterministic lookup tables, index % pool.length)
@@ -241,6 +242,7 @@ export interface WindowsEndpointRecord {
   serialNumber: string;
   registeredUser: string;
   primaryUser: string;
+  adUserId?: string;
   managementState: string;
   enrollmentType: string;
   isOnline: boolean;
@@ -330,6 +332,7 @@ export class WindowsEndpointGenerator extends BaseGenerator<WindowsEndpointRecor
       serialNumber: serialNum,
       registeredUser,
       primaryUser,
+      adUserId: index % 9 === 0 ? adUserGuid(index % 5000) : undefined, // the AD user the device is registered to: 11 of 100 on the live 26R2
       managementState: pick(MANAGEMENT_STATES, index),
       enrollmentType: pick(ENROLLMENT_TYPES, index),
       isOnline: (index % 10) < 7, // 70% online

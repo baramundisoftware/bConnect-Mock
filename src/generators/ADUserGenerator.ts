@@ -48,7 +48,8 @@ function toHex(n: number, len: number): string {
   return (n >>> 0).toString(16).padStart(len, '0').slice(-len);
 }
 
-function indexToGuid(index: number): string {
+/** The ID of the generated AD user with this index (endpoints link to it by adUserId) */
+export function indexToGuid(index: number): string {
   const seg1 = toHex(0xa1000002 + (index & 0x0fffffff), 8);
   const seg2 = toHex((index >> 8) & 0xffff, 4);
   const seg3 = toHex(index & 0xffff, 4);

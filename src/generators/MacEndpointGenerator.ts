@@ -7,6 +7,7 @@
 
 import { BaseGenerator } from './BaseGenerator';
 import { logicalGroupOf } from './LogicalGroupGenerator';
+import { indexToGuid as adUserGuid } from './ADUserGenerator';
 
 const MAC_OS = [
   'macOS Sonoma 14.3',
@@ -81,6 +82,7 @@ export interface MacEndpointRecord {
   displayName: string;
   hostName: string;
   primaryUser: string;
+  adUserId?: string;
   operatingSystem: string;
   osVersion: string;
   modelName: string;
@@ -128,6 +130,7 @@ export class MacEndpointGenerator extends BaseGenerator<MacEndpointRecord> {
       displayName,
       hostName: `${firstName}-mbp`,
       primaryUser,
+      adUserId: adUserGuid(index % 5000), // the AD user the device is registered to: 59 of 59 on the live 26R2
       operatingSystem: MAC_OS[osIdx] as string,
       osVersion: MAC_OS_VERSIONS[osIdx] as string,
       modelName: pick(MODELS, index),
