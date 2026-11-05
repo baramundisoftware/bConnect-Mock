@@ -163,6 +163,11 @@ const FILL: Readonly<Record<string, Fill>> = {
     };
   },
   dips: (_item, h) => ({ details: '', lastUpdate: moment(h, 60, 'none') }),
+  // The AD synchronization's note with the org unit's path: 34 of 36 on the live 26R2
+  orgUnits: (item, h) => (roll(h, 27) < 94 && str(item['distinguishedName'])
+    ? { comment: `Synchronized from Active Directory (${item['distinguishedName'] as string}) on 01.10.2026 06:00` } : {}),
+  // The domain new endpoints of the group join: 2 of 40 on the live 26R2
+  logicalGroups: (_item, h) => ({ defaultDomain: roll(h, 28) < 6 ? 'corp.test' : undefined }),
   securityProfiles: (_item, h) => ({ displayAdministratorIdentities: roll(h, 25) < 67, displayEndpointUserIdentities: true }), // 2 and 3 of 3
   // A definition's scopes: those of its instances (an instance's scope is its owner's kind)
   variables: (item, h, related) => {
@@ -186,6 +191,8 @@ const FILL: Readonly<Record<string, Fill>> = {
       detectionRuleId: guidOf(h, 22),
       autUsage: 'AutDeactivated',
       lastFound: moment(h, 120, 'none'),
+      // Usage dates from before tracking was deactivated: 91 of 100 on the live 26R2
+      ...(roll(h, 29) < 90 ? { autFirstUse: moment(0, 30_000 + (h % 10_000), 'none'), autLastUse: moment(0, 2_000 + (h % 10_000), 'none'), autLastData: moment(0, 1_000 + (h % 1_000), 'none') } : {}),
     };
   },
 };

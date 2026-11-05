@@ -7,6 +7,7 @@
 
 import { BaseGenerator } from './BaseGenerator';
 import { logicalGroupOf } from './LogicalGroupGenerator';
+import { indexToGuid as adUserGuid } from './ADUserGenerator';
 
 const ANDROID_VERSIONS = [
   'Android 14', 'Android 13', 'Android 12', 'Android 11', 'Android 10',
@@ -94,6 +95,7 @@ export interface AndroidEndpointRecord {
   type: 'AndroidEndpoint';
   displayName: string;
   primaryUser: string;
+  adUserId?: string;
   operatingSystem: string;
   androidVersion: string;
   manufacturer: string;
@@ -133,6 +135,7 @@ export class AndroidEndpointGenerator extends BaseGenerator<AndroidEndpointRecor
       ...logicalGroupOf(3, index),
       displayName: `AND-MOB-${zeroPad(index + 1, 5)}`,
       primaryUser,
+      adUserId: index % 10 < 8 ? adUserGuid(index % 5000) : undefined, // the AD user the device is registered to: 82 of 100 on the live 26R2
       operatingSystem: ANDROID_VERSIONS[osIdx] as string,
       androidVersion: ANDROID_VERSION_NUMS[osIdx] as string,
       manufacturer,

@@ -94,4 +94,38 @@ describe('endpoint inventory', () => {
     if (filled['cpu']) { expect(filled['primaryIP']).toBe('10.1.2.3'); }
     expect(withInventory('logicalGroups', item)).toBe(item);
   });
+
+  it('fields the live 26R2 fills: SNMP data of network devices, Android host names, AD users of devices', async () => {
+    const networks = (await request(large).get('/bconnect/endpoints/v2.0/NetworkEndpoints?PageSize=100')).body.data as Item[];
+    const snmp = networks.filter((n) => n['snmpName'] !== null);
+    expect(snmp.length).toBeGreaterThan(50);
+    expect(snmp.length).toBeLessThan(95);
+    const withProperties = snmp.find((n) => Array.isArray(n['snmpProperties'])) as Item;
+    expect(withProperties['snmpProperties']).toEqual(expect.arrayContaining([{ name: 'System name', oid: '1.3.6.1.2.1.1.5.0', value: withProperties['displayName'], available: true }]));
+    expect(networks.filter((n) => n['assignedScannerId'] !== null).length).toBeLessThan(15);
+    const android = (await request(large).get('/bconnect/endpoints/v2.0/AndroidEndpoints?PageSize=50')).body.data as Item[];
+    for (const a of android.filter((e) => e['cpu'] !== null)) { expect(a['hostName']).toBe(a['displayName']); }
+    const users = new Set(((await request(large).get('/bconnect/activedirectory/v2.0/ADUsers?PageSize=5000')).body.data as Item[]).map((u) => u['id']));
+    const ios = (await request(large).get('/bconnect/endpoints/v2.0/IosEndpoints?PageSize=50')).body.data as Item[];
+    for (const i of ios) { expect(users.has(i['registeredUserId'])).toBe(true); }
+    expect(windows.filter((w) => w['registeredUserId'] !== null).length).toBeLessThan(25);
+    expect(windows.filter((w) => w['ipNetworkId'] !== null).length).toBeLessThan(10);
+  });
+
+  it('records the live 26R2 fills: org unit notes, installed software usage dates, a default domain on few groups', async () => {
+    const app = strictApp(ProfileMode.STANDARD_READONLY);
+    const units = (await request(app).get('/bconnect/activedirectory/v2.0/OrgUnits')).body.data as Item[];
+    expect(units.some((u) => /^Synchronized from Active Directory \((OU|DC)=/.test(String(u['comment'])))).toBe(true);
+    const software = (await request(large).get('/bconnect/software/v2.0/InstalledWindowsSoftware?PageSize=100')).body.data as Item[];
+    const used = software.filter((s) => s['autFirstUse'] !== null);
+    expect(used.length).toBeGreaterThan(software.length / 2);
+    for (const s of used) {
+      expect(s['autFirstUse']).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+      expect(Date.parse(s['autFirstUse'] as string)).toBeLessThan(Date.parse(s['autLastUse'] as string));
+    }
+    const groups = (await request(large).get('/bconnect/endpoints/v2.0/LogicalGroups?PageSize=300')).body.data as Item[];
+    const withDomain = groups.filter((g) => g['defaultDomain'] !== null);
+    expect(withDomain.length).toBeGreaterThan(0);
+    expect(withDomain.length).toBeLessThan(groups.length / 5);
+  });
 });

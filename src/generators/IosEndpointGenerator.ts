@@ -7,6 +7,7 @@
 
 import { BaseGenerator } from './BaseGenerator';
 import { logicalGroupOf } from './LogicalGroupGenerator';
+import { indexToGuid as adUserGuid } from './ADUserGenerator';
 
 const IOS_VERSIONS = [
   'iOS 17.4', 'iOS 17.3', 'iOS 16.7', 'iOS 16.6', 'iOS 15.8',
@@ -82,6 +83,7 @@ export interface IosEndpointRecord {
   type: 'IOSEndpoint';
   displayName: string;
   primaryUser: string;
+  adUserId?: string;
   operatingSystem: string;
   modelName: string;
   serialNumber: string;
@@ -124,6 +126,7 @@ export class IosEndpointGenerator extends BaseGenerator<IosEndpointRecord> {
       ...logicalGroupOf(4, index),
       displayName: `${prefix}-MOB-${zeroPad(index + 1, 5)}`,
       primaryUser,
+      adUserId: adUserGuid(index % 5000), // the AD user the device is registered to: 99 of 100 on the live 26R2
       operatingSystem: osVersion,
       modelName,
       serialNumber: `APL${zeroPad(index, 9)}`,
