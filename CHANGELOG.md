@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-05
+
+Checked against a live pre-release 26R2 bMS (26.2.110.0, read-only probe of 56 routes, with far more data than the earlier 26R1 probe). The 26R2 mode's routes, fields and statuses matched; 26R2 now reports the release build `26.2.137.0`. The other corrections apply to every release and change some values clients see: operating systems are named by platform (`Windows 11`, `iOS`), network endpoints answer `deviceInfo` null.
+
 ### Changed
 - Fields a live bMS fills that the mock left out (formats from a probe of a live pre-release 26R2, 26.2.110.0, which had far more data than the 26R1 one; values synthetic). Spec conformance baseline 308/218/183 → 261/171/136 for 25R2/26R1/26R2:
   - AD users, groups and objects: a domain `sid` and the AD import `comment`; users get their `ldapPath` (from their org unit), large-scale groups an org unit
