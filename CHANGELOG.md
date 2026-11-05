@@ -23,8 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - MAC addresses of generated endpoints are hex: large-scale Windows, Mac, Linux and network endpoints had decimal bytes, some with three digits (`00:1B:63:01:44:255`)
-
-### Fixed
 - 26R2: `GET …/servermanagement/v2.0/ManagementServer` reports the build of the 26R2 release, `26.2.137.0`, instead of the placeholder `26.2.0.0`. A read-only probe of a live pre-release 26R2 bMS (26.2.110.0, 56 routes) confirmed the 26R2 mode's routes, fields and statuses: the fields 26R2 removed from network endpoints and added to update management, `CloudConnectors` answering 404, and the API key and threshold routes
 
 ## [0.11.0] - 2026-11-03
