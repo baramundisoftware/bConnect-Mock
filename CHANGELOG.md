@@ -14,8 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Security groups have an assigned security profile (one, as on the live bMS)
   - Variable definitions have a `category` and some a `defaultValue`; instances take their definition's category
 - Spec conformance also checks the single objects (gateway, VPN appliance, management server) for spec fields without a value
+- Values in the formats a live bMS answers (probes of a live 26R1 and a live pre-release 26R2), in every release:
+  - Operating systems by platform: Android, iOS, Mac and Linux endpoints answer `operatingSystem` Android, iOS, macOS or Linux; the version is in `osVersionString` (`14.0`, `17.4`, `macOS 14.3`), a Linux distribution in `osVersionText`. Windows endpoints answer their version (`Windows 11`, `Windows Server 2022`), `Unknown` without an inventory; search still finds the edition (`Enterprise`). The operatingsystems module names them the same way, with `releaseId` 2009 as Windows reports it
+  - Client agent versions of the release: Windows agents the release's build (`26.2.137.0` in 26R2) or, for about one in five, the one before; Mac and mobile agents major.minor (`26.2`); Linux endpoints none
+  - Times: job instances and their steps, and download jobs, without a fraction of a second; update management's `lastInventory` with ticks, `lastSuccessfulUpdate` without a fraction; download job repetitions at `HH:mm`
+  - AD objects' `ldapPath` is the distinguished name itself, without an `LDAP://` prefix
+  - The management server is named by its host name (`bms01.corp.test`)
 
 ### Fixed
+- MAC addresses of generated endpoints are hex: large-scale Windows, Mac, Linux and network endpoints had decimal bytes, some with three digits (`00:1B:63:01:44:255`)
 - 26R2: `GET …/servermanagement/v2.0/ManagementServer` reports the build of the 26R2 release, `26.2.137.0`, instead of the placeholder `26.2.0.0`. A read-only probe of a live pre-release 26R2 bMS (26.2.110.0, 56 routes) confirmed the 26R2 mode's routes, fields and statuses: the fields 26R2 removed from network endpoints and added to update management, `CloudConnectors` answering 404, and the API key and threshold routes
 
 ## [0.11.0] - 2026-11-03
@@ -53,8 +60,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - DIPs: empty `details` and a `lastUpdate`; security profiles: `displayAdministratorIdentities`, `displayEndpointUserIdentities`
   - Variable definitions (not probed): `scopes`, those of their instances
   - Assets' `contact` is null on the live bMS too and no longer reported as a gap
-
-### Fixed
 - JSON Patch paths are case-insensitive, as on a live bMS (ASP.NET Core JsonPatch): each segment maps onto the patched resource's real property name, so the spec examples' `/Value`, `/IsActive`, `/IsAvailableViaGateway`, `/SecurityProfiles` work. Before, Thresholds and ApiKeys PATCH rejected them with 400, and 15 other PATCH routes (endpoints, logical groups, folders, security profiles, variables, ...) answered 200 but silently dropped the change. Fields a route doesn't let you modify are still rejected, by their camelCase name
 - The route generator merges the fields of a discriminator's subtypes (26R2 `DownloadJob.interval`, `JobDefinition.validity.validityPeriods`); before, projection would have dropped a weekly interval's `weekdays`
 - `POST WindowsEndpoints/{id}/TriggerInstallationViaIntune` answers 200 `true` as every version's spec says (was 204 without a body), and 409 for an endpoint not managed by Intune

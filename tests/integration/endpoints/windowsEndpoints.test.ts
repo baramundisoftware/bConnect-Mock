@@ -609,9 +609,10 @@ describe('GET /v2.0/WindowsEndpoints (standard-readonly profile)', () => {
     expect(response.body.data.length).toBeLessThanOrEqual(10);
 
     // All returned endpoints should match at least one keyword
-    response.body.data.forEach((endpoint: { displayName: string; operatingSystem: string }) => {
+    // The edition: a live bMS names the OS by its version only ("Windows 11")
+    response.body.data.forEach((endpoint: { displayName: string; osEdition: string }) => {
       const matchesNYC = endpoint.displayName.includes('NYC');
-      const matchesEnterprise = endpoint.operatingSystem.includes('Enterprise');
+      const matchesEnterprise = endpoint.osEdition.includes('Enterprise');
       expect(matchesNYC || matchesEnterprise).toBe(true);
     });
 

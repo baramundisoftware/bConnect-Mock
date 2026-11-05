@@ -80,7 +80,7 @@ export function registerActiveDirectoryRoutes(app: Express, profile: IProfile): 
 
   // ADUsers sub-resource routes (P13.2.9)
   const adUserEndpointSubs: Array<{ childPath: string; childFixture: string; searchFields: string[] }> = [
-    { childPath: 'WindowsEndpoints', childFixture: 'windowsEndpoints', searchFields: ['displayName', 'hostName', 'primaryIP', 'operatingSystem'] },
+    { childPath: 'WindowsEndpoints', childFixture: 'windowsEndpoints', searchFields: ['displayName', 'hostName', 'primaryIP', 'operatingSystem', 'osEdition'] },
     { childPath: 'AndroidEndpoints', childFixture: 'androidEndpoints', searchFields: ['displayName', 'primaryIP'] },
     { childPath: 'IosEndpoints',     childFixture: 'iosEndpoints',     searchFields: ['displayName', 'primaryIP'] },
     { childPath: 'LinuxEndpoints',   childFixture: 'linuxEndpoints',   searchFields: ['displayName', 'hostName', 'primaryIP'] },

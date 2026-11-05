@@ -43,8 +43,13 @@ function derivedGuid(prefix: string, h: number): string {
   return `${prefix}${String(h % 10000).padStart(4, '0')}-0000-0000-0000-000000000001`;
 }
 
-/** Parse the fixture's OS string ("Microsoft Windows 11 Enterprise 23H2") into the spec's WindowsOperatingSystem */
-function toOperatingSystem(osName: unknown, h: number): Record<string, unknown> | null {
+/**
+ * Parse the endpoint's OS edition ("Microsoft Windows 11 Enterprise 23H2") into the spec's
+ * WindowsOperatingSystem, named as the endpoint's operatingSystem ("Windows 11"). The release ID
+ * is the one Windows reports: 2009 since Windows 10 20H2 (later releases have only a display
+ * version), as on a live bMS
+ */
+function toOperatingSystem(osName: unknown, name: unknown, h: number): Record<string, unknown> | null {
   if (typeof osName !== 'string' || !osName.trim()) { return null; }
   const displayVersion = /\b(\d{2}H\d)\b/.exec(osName)?.[1] ?? null;
   const windows = /Windows (11|10)\b/.exec(osName)?.[1];
@@ -52,10 +57,10 @@ function toOperatingSystem(osName: unknown, h: number): Record<string, unknown> 
   const build = (server ? BUILDS[server] : windows && displayVersion ? BUILDS[`${windows}:${displayVersion}`] : undefined) ?? 0;
   const patchLevel = build ? 1000 + (h % 4000) : 0;
   return {
-    name: osName,
+    name: typeof name === 'string' && name !== 'Unknown' ? name : osName,
     version: { full: `10.0.${build}.${patchLevel}`, major: 10, minor: 0, build, patchLevel },
     displayVersion,
-    releaseId: displayVersion,
+    releaseId: displayVersion || (server && server !== 'Server 2019') ? '2009' : server ? '1809' : null,
     localeId: h % 3 === 0 ? 1031 : 1033, // de-DE / en-US
   };
 }
@@ -71,7 +76,7 @@ function toOsProjection(ep: Record<string, unknown>): Record<string, unknown> {
     hardwareProfileId: h % 5 === 0 ? null : derivedGuid('ab00', h >> 3),
     isOSInstallAllowed: h % 3 !== 0,
     inheritsAutoInstallation: h % 2 === 0,
-    operatingSystem: toOperatingSystem(ep['operatingSystem'], h),
+    operatingSystem: toOperatingSystem(ep['osEdition'] ?? ep['operatingSystem'], ep['operatingSystem'], h),
   };
 }
 

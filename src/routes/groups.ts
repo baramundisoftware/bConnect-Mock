@@ -107,7 +107,7 @@ export function registerGroupRoutes(app: Express, profile: IProfile): void {
 
   // Sub-resource routes: LogicalGroups/{id}/ChildEndpoints (P13.2.5)
   const endpointSubResources: Array<{ childPath: string; childFixture: string; childEntityName: string; searchFields: string[] }> = [
-    { childPath: 'WindowsEndpoints',  childFixture: 'windowsEndpoints',  childEntityName: 'Windows endpoint',  searchFields: ['displayName', 'hostName', 'primaryIP', 'operatingSystem'] },
+    { childPath: 'WindowsEndpoints',  childFixture: 'windowsEndpoints',  childEntityName: 'Windows endpoint',  searchFields: ['displayName', 'hostName', 'primaryIP', 'operatingSystem', 'osEdition'] },
     { childPath: 'AndroidEndpoints',  childFixture: 'androidEndpoints',  childEntityName: 'Android endpoint',  searchFields: ['displayName', 'primaryIP'] },
     { childPath: 'LinuxEndpoints',    childFixture: 'linuxEndpoints',    childEntityName: 'Linux endpoint',    searchFields: ['displayName', 'hostName', 'primaryIP'] },
     { childPath: 'MacEndpoints',      childFixture: 'macEndpoints',      childEntityName: 'Mac endpoint',      searchFields: ['displayName', 'hostName', 'primaryIP'] },

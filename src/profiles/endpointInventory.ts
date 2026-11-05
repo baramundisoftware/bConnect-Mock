@@ -184,7 +184,6 @@ function apple(item: Item, h: number, kind: 'mac' | 'ios'): Item {
   return {
     ...common,
     hostName: str(item['displayName']),
-    osVersionText: str(item['operatingSystem']),
     primaryIP: ip(h),
     primarySubnetMask: '255.255.255.0',
     ...(kind === 'ios' ? { primaryMAC: mac(h), macList: mac(h) } : {}),
@@ -208,7 +207,6 @@ function android(item: Item, h: number): Item {
   return {
     ...common,
     manufacturer: vendorOf(str(item['machineModel']) ?? str(item['modelName']), 'samsung'),
-    osVersionText: str(item['operatingSystem']),
     primaryIP: ip(h),
     primarySubnetMask: '255.255.255.0',
     primaryMAC: address,
@@ -280,8 +278,44 @@ const FILL: Record<Kind, (item: Item, h: number) => Item> = {
 };
 
 /** The item with the inventory fields it has none of (missing or null) */
+/**
+ * The operating system as a live bMS names it (probes of a live 26R1 and 26R2): the platform
+ * alone (Android, iOS, macOS, Linux), the version in `osVersionString` (Android "14.0", iOS
+ * "17.4", macOS "macOS 14.3"; none for Linux, whose distribution is the `osVersionText`).
+ * Windows by its version ("Windows 11", "Windows Server 2022"), Unknown without an inventory;
+ * the full name stays in the mock's own `osEdition` (the operatingsystems module reads it).
+ */
+function platformOs(kind: Kind, item: Item): Item {
+  const os = str(item['operatingSystem']);
+  if (!os) { return item; }
+  const version = (pattern: RegExp): string | undefined => pattern.exec(os)?.[1];
+  switch (kind) {
+    case 'android': {
+      const v = version(/^Android\s+(\d+(?:\.\d+)*)/i);
+      return os === 'Android' ? item : { ...item, operatingSystem: 'Android', osVersionString: item['osVersionString'] ?? (v ? (v.includes('.') ? v : `${v}.0`) : null) };
+    }
+    case 'ios': {
+      const v = version(/^(?:iOS|iPadOS)\s+(\d+(?:\.\d+)*)/i);
+      return os === 'iOS' ? item : { ...item, operatingSystem: 'iOS', osVersionString: item['osVersionString'] ?? v ?? null };
+    }
+    case 'mac': {
+      const v = version(/^macOS(?:\s+[A-Za-z]+)?\s+(\d+(?:\.\d+)*)/i);
+      return os === 'macOS' ? item : { ...item, operatingSystem: 'macOS', osVersionString: item['osVersionString'] ?? (v ? `macOS ${v}` : null) };
+    }
+    case 'windows': {
+      const edition = str(item['osEdition']) ?? os;
+      const name = /Windows (?:Server \d{4}|\d+)/.exec(edition)?.[0] ?? edition;
+      return { ...item, osEdition: edition, operatingSystem: item['cpu'] ? name : 'Unknown' };
+    }
+    case 'linux':
+      return os === 'Linux' ? item : { ...item, operatingSystem: 'Linux', osVersionText: item['osVersionText'] ?? os };
+    default:
+      return item;
+  }
+}
+
 export function withInventory(entityType: string, item: Item): Item {
   const kind = INVENTORY_KINDS[entityType];
   if (!kind || !item) { return item; }
-  return fillMissing(item, FILL[kind](item, seedOf(item['id'] ?? item['guid'])));
+  return platformOs(kind, fillMissing(item, FILL[kind](item, seedOf(item['id'] ?? item['guid']))));
 }

@@ -16,6 +16,8 @@
 import type { Express } from 'express';
 import { BmsVersion, isAtLeast, type IProfile } from '../profiles/ProfileManager';
 import { currentRecords } from '../routes/factories/currentRecords';
+import { clientAgentVersion } from '../profiles/releases';
+import { seedOf } from '../profiles/seeded';
 
 type Item = Record<string, unknown>;
 
@@ -76,7 +78,8 @@ function dnDomain(dn: unknown): string | undefined {
   return parts && parts.length > 0 ? parts.join('.') : undefined;
 }
 
-const ldapPath = (dn: unknown): string | undefined => (str(dn) ? `LDAP://${dn as string}` : undefined);
+/** A live bMS answers the distinguished name itself, without an LDAP:// prefix (26R2 probe) */
+const ldapPath = (dn: unknown): string | undefined => str(dn)?.replace(/^LDAP:\/\//i, '');
 
 /** "2026-01-15" → "2026-01-15T00:00:00Z"; a date-time stays as it is */
 function dateTime(v: unknown): string | undefined {
@@ -224,14 +227,56 @@ const RELEASE_VALUES: ReadonlyArray<{ since: BmsVersion; schemas: readonly strin
   { since: BmsVersion.BMS_26R2, schemas: ['ADUser', 'ADGroup', 'ADObject'], field: 'type', values: AD_OBJECT_TYPES },
 ];
 
+/** A date-time as a live bMS writes it: without a fraction of a second, or with seven digits of ticks */
+function asMoment(v: unknown, fraction: 'none' | 'ticks'): unknown {
+  if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(v)) { return v; }
+  const seconds = v.slice(0, 19);
+  return fraction === 'none' ? `${seconds}Z` : `${seconds}.${String(seedOf(v) % 10_000_000).padStart(7, '0')}Z`;
+}
+
+const moments = (item: Item, formats: Record<string, 'none' | 'ticks'>): Item =>
+  Object.fromEntries(Object.entries(formats).filter(([f]) => f in item).map(([f, fraction]) => [f, asMoment(item[f], fraction)]));
+
+/** The client agent platform of an endpoint schema, or of an item of the endpoint list by its type */
+const AGENT_PLATFORMS: Readonly<Record<string, 'windows' | 'apple' | 'android' | 'linux'>> = {
+  WindowsEndpoint: 'windows', MacEndpoint: 'apple', IosEndpoint: 'apple', IOSEndpoint: 'apple', AndroidEndpoint: 'android', LinuxEndpoint: 'linux',
+};
+
+function agentVersion(schema: string, item: Item, release: BmsVersion | undefined): Item {
+  const platform = AGENT_PLATFORMS[schema === 'Endpoint' ? String(item['type']) : schema];
+  // Endpoints without an agent (no inventory on the 26R1 probe) keep none
+  if (!platform || !release || item['clientAgentVersion'] === undefined || item['clientAgentVersion'] === null) { return {}; }
+  return { clientAgentVersion: clientAgentVersion(platform, release, seedOf(item['id'] ?? item['guid'])) };
+}
+
 /**
- * The item with the spec fields its schema's filler derives, where the item has none, and with
- * the names the release (if given) uses for its enum values
+ * Values the mock keeps in another format than a live bMS answers them (probes of a live 26R1 and
+ * a live 26R2): replaced, not only filled. Job and download job times without a fraction of a
+ * second, the last inventory of update management with ticks, repetition times as HH:mm, and
+ * client agent versions of the release.
+ */
+type Reformat = (item: Item, schema: string, release?: BmsVersion) => Item;
+const endpointFormat: Reformat = (item, schema, release) => agentVersion(schema, item, release);
+
+const REFORMAT: Readonly<Record<string, Reformat>> = {
+  ...Object.fromEntries(ENDPOINT_SCHEMAS.map((name) => [name, endpointFormat])),
+  // Update management's Windows endpoints share the endpoints' schema name
+  WindowsEndpoint: (item, schema, release) => ({ ...endpointFormat(item, schema, release), ...moments(item, { lastInventory: 'ticks', lastSuccessfulUpdate: 'none' }) }),
+  JobInstance: (item) => moments(item, { start: 'none', lastAction: 'none' }),
+  JobInstanceStep: (item) => moments(item, { lastAction: 'none' }),
+  DownloadJob: (item) => moments(item, { lastExecution: 'none', lastUpdate: 'none' }),
+  RepetitionDefinition: (item) => (typeof item['time'] === 'string' ? { time: item['time'].slice(0, 5) } : {}),
+};
+
+/**
+ * The item with the spec fields its schema's filler derives, where the item has none, with the
+ * names the release (if given) uses for its enum values, and in the formats of a live bMS
  */
 export function fillSpecFields(schema: string, item: Item, lookup: Lookup, release?: BmsVersion): Item {
   const filler = FILLERS[schema];
   const renames = release ? RELEASE_VALUES.filter((r) => r.schemas.includes(schema) && isAtLeast(release, r.since)) : [];
-  if (!filler && renames.length === 0) { return item; }
+  const reformat = REFORMAT[schema];
+  if (!filler && renames.length === 0 && !reformat) { return item; }
   const out: Item = { ...item };
   for (const [name, value] of Object.entries(filler ? filler(item, lookup) : {})) {
     if ((out[name] === undefined || out[name] === null) && value !== undefined && value !== null) { out[name] = value; }
@@ -240,5 +285,5 @@ export function fillSpecFields(schema: string, item: Item, lookup: Lookup, relea
     const renamed = typeof out[field] === 'string' ? values[out[field] as string] : undefined;
     if (renamed) { out[field] = renamed; }
   }
-  return out;
+  return reformat ? Object.assign(out, reformat(out, schema, release)) : out;
 }

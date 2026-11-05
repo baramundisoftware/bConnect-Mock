@@ -68,7 +68,8 @@ function indexToMAC(index: number): string {
   const b3 = (index >> 8) & 0xff;
   const b4 = index & 0xff;
   const b5 = (index * 17 + 7) & 0xff;
-  return `00:1B:63:${zeroPad(b3, 2).toUpperCase()}:${zeroPad(b4, 2).toUpperCase()}:${zeroPad(b5, 2).toUpperCase()}`;
+  const hex = (b: number): string => b.toString(16).padStart(2, '0').toUpperCase();
+  return `00:1B:63:${hex(b3)}:${hex(b4)}:${hex(b5)}`;
 }
 
 export interface MacEndpointRecord {

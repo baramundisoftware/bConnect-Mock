@@ -64,7 +64,7 @@ function indexToLastSeen(index: number): string {
 }
 
 function indexToMAC(index: number): string {
-  const toHex = (n: number): string => zeroPad(n & 0xff, 2).toUpperCase();
+  const toHex = (n: number): string => (n & 0xff).toString(16).padStart(2, '0').toUpperCase();
   return [0x02, (index >> 16) & 0xff, (index >> 12) & 0xff,
     (index >> 8) & 0xff, (index >> 4) & 0xff, index & 0xff]
     .map(toHex).join(':');
