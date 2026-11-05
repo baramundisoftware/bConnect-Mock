@@ -18,6 +18,15 @@
  *   `description` on few.
  * - DIPs: empty `details` and a `lastUpdate`; security profiles: the two display flags.
  * - Variable definitions (not probed): the `scopes` of their instances.
+ *
+ * A probe of a live pre-release 26R2 bMS (26.2.110.0, probe version 8, 2026-11-05) with more
+ * data added the formats of:
+ * - AD users, groups and objects: a domain `sid` (S-1-5-21-…-RID) and the same import `comment`
+ *   on every object; users with their distinguished name, groups in an org unit.
+ * - The gateway (`availability` Up, `configurationStatus` Enrolled, `lastContact` with ticks)
+ *   and the VPN appliance (`status`); security groups with one assigned security profile.
+ * - Variable definitions: a `category` on all, a `defaultValue` on about a fifth; instances take
+ *   their definition's category.
  * - BitLocker and Microsoft Defender states: src/profiles/defenseControlFields.ts.
  *
  * withRecordFields() fills these where an item has none; values are synthetic and fixed per item
@@ -77,7 +86,38 @@ const INSTANCE_SCOPES: ReadonlyArray<[string, string]> = [
   ['windowsApplicationId', 'WindowsApplication'], ['windowsJobDefinitionId', 'WindowsJobDefinition'],
 ];
 
+/** The domain part of the SIDs of the mock's AD (the example domain of Microsoft's docs) */
+const DOMAIN_SID = 'S-1-5-21-3623811015-3361044348-30300820';
+const AD_COMMENT = 'Synchronized from Active Directory on 01.10.2026 06:00';
+const sid = (h: number): string => `${DOMAIN_SID}-${1100 + (h % 8900)}`;
+
+/** The org unit an AD object is in: its own, else one of the profile's */
+function orgUnitOf(item: Item, h: number, related: Related): Item | undefined {
+  const units = related('orgUnits');
+  return units.find((u) => u['id'] === item['orgUnitId']) ?? (units.length ? pick(units, h) : undefined);
+}
+
+const VARIABLE_CATEGORIES = ['General', 'Location', 'Software', 'Network', 'Security'];
+
 const FILL: Readonly<Record<string, Fill>> = {
+  adUsers: (item, h, related) => {
+    const unit = orgUnitOf(item, h, related);
+    const dn = str(unit?.['distinguishedName']);
+    return { sid: sid(h), comment: AD_COMMENT, distinguishedName: dn && str(item['displayName']) ? `CN=${item['displayName'] as string},${dn}` : undefined };
+  },
+  adGroups: (item, h, related) => ({ sid: sid(h), comment: AD_COMMENT, orgUnitId: orgUnitOf(item, h, related)?.['id'] }),
+  adObjects: (_item, h) => ({ sid: sid(h), comment: AD_COMMENT }),
+  gateway: (item, h) => ({
+    availability: item['isConnected'] === false ? 'Down' : 'Up',
+    configurationStatus: 'Enrolled',
+    lastContact: item['isConnected'] === false ? undefined : moment(h, 2, 'ticks'),
+  }),
+  vpnAppliance: (item) => ({ status: item['isEnabled'] === false ? 'NotConfigured' : 'Ok' }),
+  // Read as assignedSecurityProfiles (src/middleware/specFields.ts); one each on the live bMS
+  securityGroups: (_item, h, related) => {
+    const profiles = related('securityProfiles');
+    return { profiles: profiles.length ? [pick(profiles, h)['id']] : undefined };
+  },
   assets: (item, h, related) => {
     const types = related('assetTypes');
     const byName = types.find((t) => str(t['name'])?.toLowerCase() === str(item['type'])?.toLowerCase());
@@ -125,10 +165,15 @@ const FILL: Readonly<Record<string, Fill>> = {
   dips: (_item, h) => ({ details: '', lastUpdate: moment(h, 60, 'none') }),
   securityProfiles: (_item, h) => ({ displayAdministratorIdentities: roll(h, 25) < 67, displayEndpointUserIdentities: true }), // 2 and 3 of 3
   // A definition's scopes: those of its instances (an instance's scope is its owner's kind)
-  variables: (item, _h, related) => {
+  variables: (item, h, related) => {
     const own = related('variableInstances').filter((i) => i['variableDefinitionId'] === item['id']);
     const scopes = [...new Set(own.map((i) => INSTANCE_SCOPES.find(([field]) => str(i[field]))?.[1]).filter((s): s is string => Boolean(s)))];
-    return { scopes: scopes.length ? scopes : ['Endpoint'] };
+    const values = Array.isArray(item['values']) ? item['values'] : [];
+    return {
+      scopes: scopes.length ? scopes : ['Endpoint'],
+      category: pick(VARIABLE_CATEGORIES, h),
+      defaultValue: roll(h, 26) < 18 ? str(values[0]) : undefined, // 7 of 40 on the live bMS
+    };
   },
   bitLockerStates: (item) => bitLockerFields(item),
   microsoftDefenderStates: (item, _h, related) => defenderFields(item, related('microsoftDefenderThreats')),
