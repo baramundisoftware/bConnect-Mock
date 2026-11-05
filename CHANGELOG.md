@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- 26R2: `GET …/servermanagement/v2.0/ManagementServer` reports the build of the 26R2 release, `26.2.137.0`, instead of the placeholder `26.2.0.0`. A read-only probe of a live pre-release 26R2 bMS (26.2.110.0, 56 routes) confirmed the 26R2 mode's routes, fields and statuses: the fields 26R2 removed from network endpoints and added to update management, `CloudConnectors` answering 404, and the API key and threshold routes
+
 ## [0.11.0] - 2026-11-03
 
 26R2 mode follows the 26R2 OpenAPI specs and is not yet checked against a live 26R2 bMS; its management server reports the placeholder build `26.2.0.0`. Corrections from a live 26R2 probe will follow in a patch release.

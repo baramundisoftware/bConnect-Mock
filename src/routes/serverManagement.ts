@@ -16,13 +16,14 @@ import { sendNotFoundDetail } from '../middleware/bmsErrors';
 /**
  * The version GET /v2.0/ManagementServer reports per simulated release. Clients detect the
  * bMS release from its first two parts (26.2 → 26R2, 26.1 → 26R1, 25.2 → 25R2; bConnect-MCP#159).
- * 26R1 is the value a live 26R1 returns; the 25R2 and 26R2 values are not yet confirmed on a
- * live system.
+ * 26R1 is the value a live 26R1 returns. 26R2 is the build of the 26R2 release (MA); a live
+ * pre-release 26R2 (26.2.110.0, probed 2026-11-05) answered the same format. The 25R2 value is
+ * not confirmed on a live system.
  */
 export const MANAGEMENT_SERVER_VERSIONS: Record<BmsVersion, string> = {
   [BmsVersion.BMS_25R2]: '25.2.0.0',
   [BmsVersion.BMS_26R1]: '26.1.161.0',
-  [BmsVersion.BMS_26R2]: '26.2.0.0',
+  [BmsVersion.BMS_26R2]: '26.2.137.0',
 };
 
 /** Used when a profile has no managementServer fixture: a bMS always has a management server. */
