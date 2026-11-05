@@ -113,7 +113,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
         return;
       }
       const pageSize = parsePageSize(req.query.PageSize);
-      const resolved = resolveEntityData(profile, 'windowsEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'operatingSystem'] }, app.locals.stateManager);
+      const resolved = resolveEntityData(profile, 'windowsEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'operatingSystem', 'osEdition'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'No Windows endpoints available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -242,7 +242,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
         return;
       }
       const pageSize = parsePageSize(req.query.PageSize);
-      const resolved = resolveEntityData(profile, 'androidEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'operatingSystem'] }, app.locals.stateManager);
+      const resolved = resolveEntityData(profile, 'androidEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'operatingSystem', 'osVersionString'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'No Android endpoints available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });
@@ -356,7 +356,7 @@ export function registerEndpointRoutes(app: Express, profile: IProfile): void {
       const orderBy = req.query.OrderBy as string | undefined;
       const pageSize = parsePageSize(req.query.PageSize);
       const page = parsePage(req.query.Page);
-      const resolved = resolveEntityData(profile, 'iosEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'operatingSystem', 'primaryUser'] }, app.locals.stateManager);
+      const resolved = resolveEntityData(profile, 'iosEndpoints', { searchQuery, orderBy, page, pageSize, searchFields: ['displayName', 'operatingSystem', 'osVersionString', 'primaryUser'] }, app.locals.stateManager);
       if (!resolved) { res.status(404).json({ error: 'No iOS endpoints available' }); return; }
       const eff = pageSize;
       res.status(200).json({ data: resolved.data, pageSize: eff, page, totalItems: resolved.totalItems });

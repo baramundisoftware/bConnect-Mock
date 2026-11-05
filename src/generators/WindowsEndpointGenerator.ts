@@ -177,7 +177,7 @@ function indexToMAC(index: number): string {
     (index >> 8) & 0xff,
     index & 0xff,
   ];
-  return bytes.map((b) => zeroPad(b, 2).toUpperCase()).join(':');
+  return bytes.map((b) => b.toString(16).padStart(2, '0').toUpperCase()).join(':');
 }
 
 /** Pick entry from an array deterministically by index */

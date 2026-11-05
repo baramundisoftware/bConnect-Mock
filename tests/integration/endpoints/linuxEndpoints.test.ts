@@ -44,8 +44,10 @@ describe('GET /v2.0/LinuxEndpoints', () => {
   it('should have realistic Linux OS data', async () => {
     const response = await request(app).get('/v2.0/LinuxEndpoints').expect(200);
 
-    response.body.data.forEach((endpoint: { operatingSystem: string }) => {
-      expect(endpoint.operatingSystem).toMatch(/Ubuntu|Red Hat|Debian|CentOS|Rocky|SUSE/i);
+    // A live bMS names the platform; the distribution is the osVersionText
+    response.body.data.forEach((endpoint: { operatingSystem: string; osVersionText: string }) => {
+      expect(endpoint.operatingSystem).toBe('Linux');
+      expect(endpoint.osVersionText).toMatch(/Ubuntu|Red Hat|Debian|CentOS|Rocky|SUSE/i);
     });
   });
 

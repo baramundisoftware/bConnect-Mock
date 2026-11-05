@@ -1,6 +1,6 @@
 [
   {
-    "name": "BMS Management Server",
+    "name": "bms01.corp.test",
     "state": "Running",
     "plannedServerRestartTimes": null
   }

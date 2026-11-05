@@ -123,9 +123,11 @@ function itemFields(route: SpecRoute | undefined): Set<string> | undefined {
 const LIVE_NULL: Record<string, readonly string[]> = {
   'endpoints *': ['assignedScannerId', 'assignedScannerName', 'registeredUserId'],
   'endpoints WindowsEndpoints': ['customState', 'ipNetworkId', 'ipNetworkName', 'logicalMAC', 'opcuaInformation'],
-  'endpoints LinuxEndpoints': ['activity', 'comment', 'osVersionString', 'primarySubnetMask', 'opcuaInformation'],
+  'endpoints LinuxEndpoints': ['activity', 'comment', 'osVersionString', 'primarySubnetMask', 'opcuaInformation', 'clientAgentVersion'],
+  'endpoints IosEndpoints': ['osVersionText'], // 26R2 probe: 100 iOS devices
+
   'endpoints AndroidEndpoints': ['availableRAM', 'category', 'cpu', 'hostName', 'macList', 'manufacturer', 'osVersionString', 'osVersionText', 'primaryIP', 'primaryMAC', 'primarySubnetMask', 'timeZone', 'totalRAM', 'uniqueDeviceId'],
-  'endpoints MacEndpoints': ['category', 'osVersionString', 'patchLevel', 'uniqueDeviceId'],
+  'endpoints MacEndpoints': ['category', 'osVersionString', 'osVersionText', 'patchLevel', 'uniqueDeviceId'],
   'endpoints NetworkEndpoints': ['activity', 'description', 'firstSeen', 'manufacturer', 'opcuaInformation', 'ouiVendor', 'registeredUser', 'snmpConfiguration', 'snmpName', 'snmpProperties', 'upTime', 'vendorId', 'webInterfaceUrl'],
   'endpoints LogicalGroups': ['defaultDomain'],
   'activedirectory OrgUnits': ['comment'],

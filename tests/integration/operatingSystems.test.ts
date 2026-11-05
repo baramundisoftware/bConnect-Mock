@@ -47,13 +47,13 @@ describe.each([BmsVersion.BMS_25R2, BmsVersion.BMS_26R1])('operatingsystems Wind
     expect(Object.keys(full.body.data[0])).toContain('hostName');
   });
 
-  it('derives the spec\'s WindowsOperatingSystem from the endpoint\'s OS name', async () => {
+  it('derives the spec\'s WindowsOperatingSystem from the endpoint\'s OS edition, named as a live bMS does', async () => {
     const res = await request(app).get(`${OS}/WindowsEndpoints/d0000001-0001-0001-0001-000000000001`);
     expect(res.status).toBe(200);
     expect(res.body.operatingSystem).toMatchObject({
-      name: 'Microsoft Windows 11 Enterprise 23H2',
+      name: 'Windows 11',
       displayVersion: '23H2',
-      releaseId: '23H2',
+      releaseId: '2009',
       version: { major: 10, minor: 0, build: 22631 },
     });
     expect(res.body.operatingSystem.version.full).toMatch(/^10\.0\.22631\.\d+$/);
