@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Docker base image `node:22.23.4-alpine` → `node:22.23.5-alpine` (#135)
+- Runtime dependency tslib 2.8.1 → 2.9.1 (#131)
+- Bumped dev dependencies: vitest 5.0.5 → 5.1.0 (#132), @vitest/coverage-v8 5.0.5 → 5.1.0 (#130), @typescript-eslint/eslint-plugin 8.72.1 → 8.72.2 (#133), prettier 3.9.10 → 3.10.1 (#134)
+- Bumped CI actions: docker/login-action 4.7.0 → 4.8.0 (#129)
+
 ## [0.12.0] - 2026-11-05
 
 Checked against a live pre-release 26R2 bMS (26.2.110.0, read-only probe of 56 routes, with far more data than the earlier 26R1 probe). The 26R2 mode's routes, fields and statuses matched; 26R2 now reports the release build `26.2.137.0`. The other corrections apply to every release and change some values clients see: operating systems are named by platform (`Windows 11`, `iOS`), network endpoints answer `deviceInfo` null.
